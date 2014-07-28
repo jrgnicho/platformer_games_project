@@ -161,23 +161,25 @@ class AnimatedPlayer(Player):
                 self.time_elapsed = current_time              
                 self.remove_last_from_queue()
             
-            self.select_next_frame()
-            return
+            #self.select_next_frame()
+            #return           
+            
+            self.image = sprite_set.sprites[len(sprite_set.sprites)-1]
         else:            
             self.image = sprite_set.sprites[self.animation_frame_index]
             
-            # setting values of view rectangle equal to collision
-            self.rect.x = self.collision_sprite.rect.x
-            self.rect.y = self.collision_sprite.rect.y
-            
-            # adjusting to sprite height
-            self.rect.y += (self.collision_sprite.rect.height - self.image.get_height())            
-            self.rect.height = self.image.get_height()
-            
-            # adjusting for orientation
-            if not self.facing_right:
-                self.rect.x -= (self.collision_sprite.rect.width - self.image.get_width()) 
-                self.rect.width = self.image.get_width()
+        # setting values of view rectangle equal to collision
+        self.rect.x = self.collision_sprite.rect.x
+        self.rect.y = self.collision_sprite.rect.y
+        
+        # adjusting to sprite height
+        self.rect.y += (self.collision_sprite.rect.height - self.image.get_height())            
+        self.rect.height = self.image.get_height()
+        
+        # adjusting for orientation
+        if not self.facing_right:
+            self.rect.x -= (self.collision_sprite.rect.width - self.image.get_width()) 
+            self.rect.width = self.image.get_width()
          
     #@overloaded  
     def update(self):
