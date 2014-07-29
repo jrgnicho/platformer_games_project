@@ -1,5 +1,5 @@
 key file	colums rows rate(miliseconds) N(sprite set follows on next line)
-1 hiei_stand_0-3.png 4 1 400
+1 hiei_stand_0-3.png 4 1 200
 2 hiei_run_0-7.png 8 1 80
 3 hiei_attack_slash_part1_0-0.png 1 1 100 N
 4 hiei_attack_slash_part2_0-0.png 1 1 100 N

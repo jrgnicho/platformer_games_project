@@ -48,7 +48,7 @@ class Player(pygame.sprite.Sprite):
         
     def update(self):
         
-        self.apply_gravity()
+        self.apply_vertical_motion()
         
         #self.world_pos.x += self.incr.x
         #self.world_pos.y += self.incr.y  
@@ -62,7 +62,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = self.collision_sprite.rect.x
         self.rect.y = self.collision_sprite.rect.y
         
-    def apply_gravity(self):
+    def apply_vertical_motion(self):
         
         if self.incr.y ==0: # on surface or end of jump
             self.incr.y = Player.FALL_SPEED

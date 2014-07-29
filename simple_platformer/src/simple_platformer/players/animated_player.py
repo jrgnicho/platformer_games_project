@@ -43,7 +43,7 @@ class AnimatedPlayer(Player):
         self.collision_sprite.rect = self.rect.copy()
         
         # motion state
-        self.in_midair = True
+        self.in_midair = False
         
     def add_animation_sets(self,action_key,sprite_set_right_side,sprite_set_left_side):
         """
@@ -127,7 +127,7 @@ class AnimatedPlayer(Player):
         self.current_action_key = self.action_keys_queue[0]
         self.animation_frame_index = 0
             
-    def select_next_frame(self):
+    def animate_next_frame(self):
         
         sprite_set = None
         if self.facing_right:
@@ -161,7 +161,7 @@ class AnimatedPlayer(Player):
                 self.time_elapsed = current_time              
                 self.remove_last_from_queue()
             
-            #self.select_next_frame()
+            #self.animate_next_frame()
             #return           
             
             self.image = sprite_set.sprites[len(sprite_set.sprites)-1]
@@ -176,25 +176,17 @@ class AnimatedPlayer(Player):
         self.rect.y += (self.collision_sprite.rect.height - self.image.get_height())            
         self.rect.height = self.image.get_height()
         
-        # adjusting for orientation
-        if not self.facing_right:
-            self.rect.x -= (self.collision_sprite.rect.width - self.image.get_width()) 
-            self.rect.width = self.image.get_width()
+        self.rect.centerx = self.collision_sprite.rect.centerx
+        self.rect.width = self.image.get_width()
          
     #@overloaded  
     def update(self):
         
-        # prevent motion if landing
-        if self.current_action_key == AnimatedPlayer.JUMP_LAND_ACTION:
-            self.incr.x = 0
-              
-        self.apply_gravity()
-        
-        #self.world_pos.x += self.incr.x
-        #self.world_pos.y += self.incr.y  
-           
-        
-        # collisions and boundary checks
+        # applying movement
+        self.apply_horizontal_motion_()              
+        self.apply_vertical_motion()
+                
+        # applying collision rules
         self.check_collisions()
         self.check_level_bounds()
         self.check_screen_bounds()
@@ -209,27 +201,34 @@ class AnimatedPlayer(Player):
                 self.set_current_key_in_queue(AnimatedPlayer.STAND_ACTION)
                 #print "Updated to STAND_ACTION from WALK_ACTION, current queue %s"%(str(self.action_keys_queue))
                 
-        self.select_next_frame()
+        self.animate_next_frame()
+        
+    def apply_horizontal_motion_(self):
+        
+        # prevent motion if landing
+        if self.current_action_key == AnimatedPlayer.JUMP_LAND_ACTION:
+            self.incr.x = 0
         
     #@overloaded
-    def apply_gravity(self):
-        
-        if self.incr.y ==0: # on surface or end of jump
-            self.incr.y = Player.FALL_SPEED
-        else:
-            self.incr.y += Player.FALL_SPEED_INCREMENT # increase fall speed            
-        
+    def apply_vertical_motion(self):
+                
         # check for platform below
-        self.collision_sprite.rect.y += Player.PLATFORM_CHECK_STEP
-        platforms = pygame.sprite.spritecollide(self.collision_sprite,self.level.platforms,False)
-        self.collision_sprite.rect.y -= Player.PLATFORM_CHECK_STEP        
-        if (not self.in_midair) and (len(platforms)==0):
-            self.in_midair = True
+        if (not self.in_midair):
+            self.collision_sprite.rect.y += Player.PLATFORM_CHECK_STEP
+            platforms = pygame.sprite.spritecollide(self.collision_sprite,self.level.platforms,False)
+            self.collision_sprite.rect.y -= Player.PLATFORM_CHECK_STEP  
             
+            if len(platforms)==0: # falling                
             
-        if self.in_midair:# and (not self.is_key_next_in_queue(AnimatedPlayer.JUMP_MIDAIR_ACTION)):
-            self.set_current_key_in_queue(AnimatedPlayer.JUMP_MIDAIR_ACTION)
-        #    self.set_next_key_in_queue(AnimatedPlayer.JUMP_MIDAIR_ACTION)
+                self.in_midair = True                
+                self.set_current_key_in_queue(AnimatedPlayer.JUMP_MIDAIR_ACTION)
+            
+        if self.in_midair:                  
+            if self.incr.y ==0: # on surface or end of jump
+                self.incr.y = Player.FALL_SPEED
+            else:
+                self.incr.y += Player.FALL_SPEED_INCREMENT # increase fall speed                 
+            
      
     #@overloaded       
     def move_x(self,step):        
@@ -263,7 +262,7 @@ class AnimatedPlayer(Player):
             
     def resume_jump(self):
         
-        if self.in_midair:
+        if self.in_midair and self.incr.y>0 :
             self.incr.y = 0 
      
     ##@overloaded      
