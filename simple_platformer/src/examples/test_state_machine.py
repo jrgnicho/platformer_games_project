@@ -25,6 +25,7 @@ class TestStateMachine(StateMachine):
     ACTION_DECR_2 = "ACTION_DECR_2"
     ACTION_INCR_3 = "ACTION_INCR_3"
     ACTION_INCR_VAL="ACTION_INCR_VAL"
+    ACTION_EXIT = "ACTION_EXIT"
     
     # custom state keys
     STATE_A = "STATE_A"
@@ -52,19 +53,18 @@ class TestStateMachine(StateMachine):
         
         # rule 1
         st = State(TestStateMachine.STATE_A)
-        st.add_transition(TestStateMachine.ACTION_INCR_3,
-                          TestStateMachine.EXIT,
-                          lambda : self.exit(),
-                          lambda: self.action_exec_.is_counter_greater_than(9))
-        st.add_transition(TestStateMachine.ACTION_INCR_1,
-                          TestStateMachine.STATE_B,
-                          lambda: self.action_exec_.increment_counter_action(1),
-                          lambda: self.action_exec_.is_counter_greater_than(-1))
-        st.add_transition(TestStateMachine.ACTION_DECR_2,
-                          TestStateMachine.STATE_C,
-                          lambda: self.action_exec_.increment_counter_action(-2),
-                          lambda: self.action_exec_.is_counter_greater_than(4))        
-        self.add_state(st)
+        st.add_action(TestStateMachine.ACTION_INCR_3,lambda : self.exit())
+        st.add_action(TestStateMachine.ACTION_INCR_1,lambda: self.action_exec_.increment_counter_action(1))
+        st.add_action(TestStateMachine.ACTION_DECR_2,lambda: self.action_exec_.increment_counter_action(-2))
+        
+        self.add_transition(st,TestStateMachine.ACTION_INCR_3, TestStateMachine.EXIT,
+                            lambda: self.action_exec_.is_counter_greater_than(9))
+        self.add_transition(st,TestStateMachine.ACTION_INCR_1, TestStateMachine.STATE_B,
+                            lambda: self.action_exec_.is_counter_greater_than(-1))
+        self.add_transition(st,TestStateMachine.ACTION_DECR_2, TestStateMachine.STATE_C,
+                            lambda: self.action_exec_.is_counter_greater_than(4))        
+        
+        
         
         # rule 2
         st = State(TestStateMachine.STATE_B)
