@@ -46,17 +46,31 @@ class AnimatableObject(pygame.sprite.Sprite):
         
     def set_current_animation_key(self,animation_set_key):
         """
-            Replaces ongoing animation with the animation corresponding to animation set key
+            Replaces ongoing animation with the animation corresponding to animation set key.  If animation set is
+            already selected no change will be made.
             Input:
             - animation_set_key: key to Sprite set previously added to object.
             Output:
             - True/False : True if animation_set_key has a valid sprite set in the current object. False otherwise
         """
-        if  self.animation_sprites_right_side_dict.has_key(animation_set_key):
-            self.animation_set_key = animation_set_key;
-            self.animation_time_elapsed = 0
-            self.animation_finished = False
         
+        # check if already selected
+        if self.animation_set_key != animation_set_key:
+        
+            if  self.animation_sprites_right_side_dict.has_key(animation_set_key):
+                self.animation_set_key = animation_set_key;
+                self.animation_frame_index = 0
+                self.animation_time_elapsed = 0
+                self.animation_finished = False
+            else:
+                False
+            
+            #endif
+        
+        #endif
+        
+        return True
+            
     def animate_next_frame(self):
         
         sprite_set = None
