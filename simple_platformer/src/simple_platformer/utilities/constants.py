@@ -19,3 +19,4 @@ class ScreenProperties:
 class GameProperties:
     
     FRAME_RATE = 40
+    GRAVITY_ACCELERATION = 0.35 # pixels per second square
