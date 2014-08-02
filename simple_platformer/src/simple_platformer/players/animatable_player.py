@@ -16,9 +16,7 @@ class AnimatablePlayer(AnimatableObject):
         
         # jump speed
         self.current_upward_speed = 0
-        self.current_forward_speed = 0
-        
-        
+        self.current_forward_speed = 0        
         
     def jump(self,action_key = ActionsKeys.JUMP):
         
@@ -50,6 +48,11 @@ class AnimatablePlayer(AnimatableObject):
         else:
             self.current_forward_speed -=deceleration_rate
             self.turn_left(0)
+            
+    def stand(self,action_key = ActionKeys.STAND):
+        self.current_forward_speed =0
+        self.set_current_animation_key(action_key)
+        
             
     def fall(self,action_key = ActionKey.FALL):
         
