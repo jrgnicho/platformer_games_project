@@ -53,41 +53,53 @@ class TestStateMachine(StateMachine):
         
         # rule 1
         st = State(TestStateMachine.STATE_A)
-        st.add_action(TestStateMachine.ACTION_INCR_3,lambda : self.exit())
+        st.add_action(TestStateMachine.ACTION_INCR_3,lambda : self.action_exec_.increment_counter_action(3))
         st.add_action(TestStateMachine.ACTION_INCR_1,lambda: self.action_exec_.increment_counter_action(1))
         st.add_action(TestStateMachine.ACTION_DECR_2,lambda: self.action_exec_.increment_counter_action(-2))
         
-        self.add_transition(st,TestStateMachine.ACTION_INCR_3, TestStateMachine.EXIT,
+        
+        self.add_transition(st,TestStateMachine.ACTION_EXIT, TestStateMachine.EXIT,
                             lambda: self.action_exec_.is_counter_greater_than(9))
         self.add_transition(st,TestStateMachine.ACTION_INCR_1, TestStateMachine.STATE_B,
                             lambda: self.action_exec_.is_counter_greater_than(-1))
         self.add_transition(st,TestStateMachine.ACTION_DECR_2, TestStateMachine.STATE_C,
-                            lambda: self.action_exec_.is_counter_greater_than(4))        
+                            lambda: self.action_exec_.is_counter_greater_than(4))  
+        self.add_transition(st,TestStateMachine.ACTION_INCR_VAL, TestStateMachine.STATE_C,
+                    lambda: self.action_exec_.is_counter_greater_than(4))       
         
         
         
         # rule 2
-        st = State(TestStateMachine.STATE_B)
-        st.add_transition(TestStateMachine.ACTION_DECR_2,
-                          TestStateMachine.STATE_C,
-                          lambda: self.action_exec_.increment_counter_action(-2),
-                          lambda: self.action_exec_.is_counter_greater_than(0))   
-        st.add_transition(TestStateMachine.ACTION_INCR_VAL,
-                          TestStateMachine.STATE_C,
-                          self.action_exec_.increment_counter_action)    
-        self.add_state(st)
+        st = State(TestStateMachine.STATE_B)        
+        st.add_action(TestStateMachine.ACTION_DECR_2,lambda: self.action_exec_.increment_counter_action(-2))
+        st.add_action(TestStateMachine.ACTION_INCR_1,lambda: self.action_exec_.increment_counter_action(1))
+        st.add_action(TestStateMachine.ACTION_INCR_VAL,self.action_exec_.increment_counter_action)
         
-        # rule 2
+        self.add_transition(st,TestStateMachine.ACTION_INCR_1, TestStateMachine.STATE_C,
+                            lambda: self.action_exec_.is_counter_greater_than(0))
+        self.add_transition(st,TestStateMachine.ACTION_INCR_3, TestStateMachine.STATE_A,
+                            lambda: self.action_exec_.is_counter_greater_than(6))  
+        self.add_transition(st,TestStateMachine.ACTION_EXIT, TestStateMachine.EXIT,
+                            lambda: self.action_exec_.is_counter_greater_than(9))      
+        
+        
+        # rule 3
         st = State(TestStateMachine.STATE_C)
-        st.add_transition(TestStateMachine.ACTION_INCR_3,
-                          TestStateMachine.STATE_B,
-                          lambda: self.action_exec_.increment_counter_action(3),
-                          lambda: self.action_exec_.is_counter_greater_than(0))  
-        st.add_transition(TestStateMachine.ACTION_INCR_1,
-                          TestStateMachine.STATE_A,
-                          self.action_exec_.increment_counter_action,
-                          lambda: self.action_exec_.is_counter_greater_than(0))   
+        st.add_action(TestStateMachine.ACTION_DECR_2,lambda: self.action_exec_.increment_counter_action(-2))
+        st.add_action(TestStateMachine.ACTION_INCR_1,lambda: self.action_exec_.increment_counter_action(1))
+        st.add_action(TestStateMachine.ACTION_INCR_VAL,lambda x:self.action_exec_.increment_counter_action(x))
+        
+        self.add_transition(st,TestStateMachine.ACTION_INCR_3, TestStateMachine.STATE_B,
+                            lambda: self.action_exec_.is_counter_greater_than(6))  
+        self.add_transition(st,TestStateMachine.ACTION_INCR_3, TestStateMachine.STATE_A) 
+        self.add_transition(st,TestStateMachine.ACTION_DECR_2, TestStateMachine.STATE_B,lambda:self.action_exec_.is_counter_greater_than(10)) 
+        self.add_transition(st,TestStateMachine.ACTION_EXIT, TestStateMachine.EXIT,
+                            lambda: self.action_exec_.is_counter_greater_than(9))   
+        
+        st = State(TestStateMachine.EXIT)
+        st.add_action(TestStateMachine.ACTION_EXIT,lambda: self.exit())
         self.add_state(st)
+
         
     def execute(self,action_key,args=()):
         
@@ -103,12 +115,17 @@ class TestStateMachine(StateMachine):
         
     def run(self):
         
-        while(self.proceed):
+        counter = 0
+        while(self.proceed and (counter < 4)    ):
             
-            self.execute(TestStateMachine.ACTION_INCR_1)            
+            self.execute(TestStateMachine.ACTION_INCR_1) 
+            self.execute(TestStateMachine.ACTION_EXIT)  
+            self.execute(TestStateMachine.ACTION_INCR_1)              
+            self.execute(TestStateMachine.ACTION_INCR_3)        
             self.execute(TestStateMachine.ACTION_INCR_VAL,[7])
-            self.execute(TestStateMachine.ACTION_INCR_3)
             self.execute(TestStateMachine.ACTION_DECR_2)
+            
+            counter+=1
             
 if __name__=="__main__":
     
