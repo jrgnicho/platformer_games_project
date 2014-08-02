@@ -72,8 +72,16 @@ class StateMachine:
         self.states_dict={}
         self.active_state_key = None
         self.transitions={}
+        
+    def add_state(self,state_obj):
+        
+        if not self.states_dict.has_key(state_obj.key):
+            self.states_dict[state_obj.key] = state_obj
+        else:
+            self.states_dict[state_obj.key] = state_obj
+            print "State was already registered in state machine, new entry will now replace it"
 
-    def add_transition(self,state_obj,action_key,next_state_key,condition_cb):
+    def add_transition(self,state_obj,action_key,next_state_key,condition_cb = lambda: True):
         
         # inserting as active state if None is currently selected
         if self.active_state_key == None:
@@ -116,7 +124,7 @@ class StateMachine:
                 for action_tuple in action_list:
                     
                     state_key = action_tuple[0]
-                    condition_cb = action_key[1]
+                    condition_cb = action_tuple[1]
                 
                     # examine condition
                     if condition_cb():
