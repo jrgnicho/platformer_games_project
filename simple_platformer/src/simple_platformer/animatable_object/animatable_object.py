@@ -70,6 +70,11 @@ class AnimatableObject(pygame.sprite.Sprite):
         #endif
         
         return True
+    
+    def draw(self,screen):
+                
+        self.animate_next_frame()
+        pygame.sprite.Sprite.draw(self,screen)
             
     def animate_next_frame(self):
         
