@@ -77,14 +77,12 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         
     def update(self):
         """
-            Checks user input and steps simulation.  
+            Checks user input and steps game.  Also calls the update method on all game objects including the player  
             
             - outputs: True if successful, False otherwise due to game exit condition or user input
         """
-        
-        # check sequece expiration
-        if self.player.animation_finished:
-            self.execute(ActionKeys.EXPIRED)            
+        # perform transition or execute action if supported by active state
+        self.execute(ActionKeys.STEP_GAME)                 
         
         # check user input
         if not self.check_input():
