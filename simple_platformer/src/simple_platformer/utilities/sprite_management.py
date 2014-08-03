@@ -51,13 +51,13 @@ class SpriteSet():
                 image.set_colorkey(Colors.BLACK)
                 
                 # scaling image                
-                #scaled_width = int(sx*w)
-                #scaled_height = int(sy*h)
-                #scaled_image = pygame.Surface([scaled_width, scaled_height]).convert()
-                #scaled_image = pygame.transform.smoothscale(image,(scaled_width,scaled_height))
-                #scaled_image.set_colorkey(Colors.BLACK)
-                self.sprites.append(image) 
-                #self.sprites.append(scaled_image) 
+                scaled_width = int(sx*w)
+                scaled_height = int(sy*h)
+                scaled_image = pygame.Surface([scaled_width, scaled_height]).convert()
+                scaled_image = pygame.transform.smoothscale(image,(scaled_width,scaled_height))
+                scaled_image.set_colorkey(Colors.BLACK)
+                #self.sprites.append(image) 
+                self.sprites.append(scaled_image) 
             #endfor
         #endfor
         
@@ -108,20 +108,28 @@ class SpriteLoader():
             
             if len(entries) < 5 :
                 return False  
-                
-            self.key = str(entries[0])      
-            self.image_file = entries[1]
-            self.columns = int(entries[2])
-            self.rows = int(entries[3])
-            self.frame_rate = int(entries[4]) # miliseconds
             
-            if len(entries) >= 6:
-                code = entries[5]
-                self.scale_x = float(code[2:len(code)])
+            #endif
+            
+            try: 
+                self.key = str(entries[0])      
+                self.image_file = entries[1]
+                self.columns = int(entries[2])
+                self.rows = int(entries[3])
+                self.frame_rate = int(entries[4]) # miliseconds
                 
-            if len(entries) >= 7:
-                code = entries[6]
-                self.scale_y = float(code[2:len(code)])
+                if len(entries) >= 6:
+                    code = entries[5]
+                    self.scale_x = float(code[2:len(code)])
+                    
+                if len(entries) >= 7:
+                    code = entries[6]
+                    self.scale_y = float(code[2:len(code)])
+                    
+            except ValueError:
+                
+                print "Incorrect entry %s"%(line)
+                return False
                 
             return True
             
