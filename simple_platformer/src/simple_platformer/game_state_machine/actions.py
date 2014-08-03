@@ -1,5 +1,5 @@
 
-class ActionsKeys:
+class ActionKeys:
     
     # action keys
     MOVE_LEFT = "MOVE_LEFT"

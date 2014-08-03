@@ -11,11 +11,15 @@ class StateKeys:
     
 class State:
     
-    def __init__(self,state_key):
+    def __init__(self,state_key,exit_cb = None):
         
         self.key = state_key
         self.actions = {} # dictionary of actions (keys) and their corresponding callbacks
+        self.exit_callback = exit_cb
         
+    def set_exit_callback(self,exit_cb):
+        
+        self.exit_callback = exit_cb        
         
     def add_action(self,action_key,
                        action_cb = lambda: sys.stdout.write("No action callback\n")):
@@ -38,21 +42,16 @@ class State:
         
         return self.actions.has_key(action_key)
         
-    def execute(self,action_key,action_cb_args=()):
+    def enter(self,action_key,action_cb_args=()):
         """
-            Executes the requested action on this state.  A transition is made to another state if
-            the condition callback registered for this action evaluates to True.  Otherwise no transition 
-            is made.  The returned argument is key value for the next state when the transition is permitted.
-            The current state is returned if a transition rule has not been added for this action or the requested
-            transition was not validated.
+            Invokes the callback corresponding to this action upon entering this state.  
             
             Inputs:
             - action_key: action to be executed.
-            - action_cb_args: tuple containing optional arguments to the registed action_callback
-            
+            - action_cb_args: tuple containing optional arguments to the registered action_callback
             Outputs:
-            - True/False: True when condition is validated.  False otherwise
-        
+            - Succeeded: True when action is registered within state.  False otherwise
+                    
         """
         
         if self.actions.has_key(action_key):
@@ -65,6 +64,11 @@ class State:
             print "Action not supported"
             return False
         
+    def exit(self):
+        
+        if self.exit_callback != None:
+            self.exit_callback()
+        
 class StateMachine:
     
     def __init__(self):
@@ -72,6 +76,7 @@ class StateMachine:
         self.states_dict={}
         self.active_state_key = None
         self.transitions={}
+        self.enter = self.execute  # will be called when used as a sub state machine
         
     def add_state(self,state_obj):
         
@@ -128,15 +133,22 @@ class StateMachine:
                 
                     # examine condition
                     if condition_cb():
-                        state_obj = self.states_dict[state_key]
+                        next_state_obj = self.states_dict[state_key]
+                        active_state_obj = self.states_dict[self.active_state_key]
                         
-                        # execute action
-                        if state_obj.execute(action_key,action_cb_args):
-                            self.active_state_key = state_key
-                            return True
+                        # exiting active state
+                        active_state_obj.exit()
                         
-                        else:
+                        # setting next state as active
+                        self.active_state_key = state_key
+                        
+                        # calling state enter routine
+                        if not next_state_obj.enter(action_key,action_cb_args):
+                            
+                            # reverting upon failure
+                            self.active_state_key = active_state_obj.key                            
                             print "Transition failed"
+                            return False                        
                     
                         #endif
                     
