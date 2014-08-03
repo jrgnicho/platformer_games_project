@@ -9,14 +9,16 @@ import rospkg
 
 G_Sprite_Loader = SpriteLoader()
 
-def test_sprite_loader():
+def load_sprites():
     
     rospack = rospkg.RosPack()
     desc_file = rospack.get_path('simple_platformer') + '/resources/hiei_sprites/sprite_details.txt'
     if G_Sprite_Loader.load_sets(desc_file):
         print "Sprites successfully loaded"
+        return True
     else:
         print "Sprites failed to load"
+        return False
     
     
 
@@ -26,7 +28,8 @@ if __name__ == "__main__":
     size = [ScreenProperties.SCREEN_WIDTH,ScreenProperties.SCREEN_HEIGHT]
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption("Horsy sauce.")
-    test_sprite_loader()
+    if not load_sprites():
+        exit()
     
     background = pygame.sprite.Sprite()
     background.image = pygame.Surface([ScreenProperties.SCREEN_WIDTH,ScreenProperties.SCREEN_HEIGHT])
@@ -41,7 +44,7 @@ if __name__ == "__main__":
     sp.rect.y = ScreenProperties.SCREEN_HEIGHT*0.5
     
     active_sprites = pygame.sprite.Group()
-    active_sprites.add(background)
+    #active_sprites.add(background)
     active_sprites.add(sp)    
     proceed = True
     clock = pygame.time.Clock()
@@ -50,6 +53,7 @@ if __name__ == "__main__":
     keys = G_Sprite_Loader.sprite_sets.keys()
     
     print "keys in sprite loader %s" % keys
+    print "Press N to go to next sprite sequence"
     key_index = 0
     sprite_index = 0
     sprite_set = G_Sprite_Loader.sprite_sets[keys[key_index]]
@@ -106,6 +110,7 @@ if __name__ == "__main__":
              
         
         active_sprites.update()
+        screen.blit(background.image,(0,0))
         active_sprites.draw(screen)
         
         clock.tick(20)
