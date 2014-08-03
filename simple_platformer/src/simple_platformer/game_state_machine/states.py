@@ -1,21 +1,17 @@
 import sys
-
-class StateKeys:
-    
-    NONE=""
-    STANDING="STANDING"
-    WALKING="WALKING"
-    JUMPING="JUMPING"
-    FALLING="FALLING"
-    LANDING="LANDING"
     
 class State:
     
-    def __init__(self,state_key,exit_cb = None):
+    def __init__(self,state_key,entry_cb = None,exit_cb = None):
         
         self.key = state_key
         self.actions = {} # dictionary of actions (keys) and their corresponding callbacks
+        self.entry_callback= entry_cb
         self.exit_callback = exit_cb
+        
+    def set_entry_callback(self,entry_cb):
+        
+        self.entry_callback = entry_cb
         
     def set_exit_callback(self,exit_cb):
         
@@ -42,7 +38,7 @@ class State:
         
         return self.actions.has_key(action_key)
         
-    def enter(self,action_key,action_cb_args=()):
+    def execute(self,action_key,action_cb_args=()):
         """
             Invokes the callback corresponding to this action upon entering this state.  
             
@@ -63,6 +59,11 @@ class State:
         else:
             print "Action not supported"
             return False
+        
+    def enter(self):
+        
+        if self.entry_callback != None:
+            self.entry_callback()
         
     def exit(self):
         
@@ -139,16 +140,24 @@ class StateMachine:
                         # exiting active state
                         active_state_obj.exit()
                         
+                        # entering new state
+                        next_state_obj.enter()
+                        
                         # setting next state as active
                         self.active_state_key = state_key
                         
                         # calling state enter routine
-                        if not next_state_obj.enter(action_key,action_cb_args):
+                        if next_state_obj.execute(action_key,action_cb_args):
+                            
+                            # transition succeeded
+                            return True
+                        
+                        else: 
                             
                             # reverting upon failure
                             self.active_state_key = active_state_obj.key                            
                             print "Transition failed"
-                            return False                        
+                            return False                 
                     
                         #endif
                     
@@ -161,8 +170,19 @@ class StateMachine:
                 #endfor
                 
             else:
-                print "Transition for the %s action at the state %s not supported"%(action_key,self.active_state_key)
-                return False
+                
+                # no transition for this action, check if current state supports action
+                active_state_obj = self.states_dict[self.active_state_key]
+                if (active_state_obj.has_action(action_key) and 
+                    active_state_obj.execute(action_key,action_cb_args)):
+                    
+                    # executed supported action under current state
+                    return True
+                else:
+                
+                    print "Transition for the %s action at the state %s not supported"%(action_key,self.active_state_key)
+                    return False
+                #endif
                 
             #endif
             
