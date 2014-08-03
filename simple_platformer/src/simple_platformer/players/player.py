@@ -13,7 +13,7 @@ class Player(pygame.sprite.Sprite):
     JUMP_SPEED = 10
     JUMP_HIGHER_SPEED = 12
     PLATFORM_CHECK_STEP = 2
-    X_STEP = 3.5
+    X_STEP = 5
     
     def __init__(self):
         
