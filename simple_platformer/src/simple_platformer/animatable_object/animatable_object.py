@@ -9,6 +9,12 @@ class AnimatableObject(pygame.sprite.Sprite):
     ANIMATION_MODE_CYCLE = 1
     ANIMATION_MODE_CONSUME = 2
     
+    class Events:
+    
+        ANIMATION_FRAME_COMPLETED = 1
+        ANIMATION_SEQUENCE_COMPLETED = 2
+            
+    
     def __init__(self,w = 40,h = 60):
         
         pygame.sprite.Sprite.__init__(self)
@@ -23,7 +29,7 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.animation_sprites_right_side_dict= {}
         self.animation_sprites_left_side_dict= {}
         self.facing_right = True;
-        self.animation_mode = AnimatedPlayer.ANIMATION_MODE_CONSUME
+        self.animation_mode = AnimatableObject.ANIMATION_MODE_CYCLE
         
         # Graphics
         self.image = pygame.Surface([w,h])
@@ -33,6 +39,35 @@ class AnimatableObject(pygame.sprite.Sprite):
         # collision 
         self.collision_sprite = pygame.sprite.Sprite()
         self.collision_sprite.rect = self.rect.copy()
+        
+        # event handlers
+        self.event_handlers = {} # dictionary of lists
+        self.event_handlers[AnimatableObject.Events.ANIMATION_FRAME_COMPLETED]=[]
+        self.event_handlers[AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED]=[]
+        
+    def add_event_handler(self,event_key,handler_cb):
+        
+        if self.event_handlers.has_key(event_key):
+            handlers = self.event_handlers[event_key]
+            handlers.append(handler_cb)
+            return True
+        else:
+            return False
+    
+    def remove_event_handlers(self,event_key):
+        
+        if self.event_handlers.has_key(event_key):
+            self.event_handlers.pop(event_key)
+            return True
+        else:
+            return False
+        
+    def notify(self,event_key):
+        
+        for key, handler in self.event_handlers.iteritems():
+            handler()
+            
+        #endfor    
         
     def add_animation_sets(self,animation_set_key,sprite_set_right_side,sprite_set_left_side):
         """
@@ -111,14 +146,23 @@ class AnimatableObject(pygame.sprite.Sprite):
             # check mode
             if self.animation_mode == AnimatableObject.ANIMATION_MODE_CYCLE: # cycle through current sprite set
                 self.animation_time_elapsed = 0
-                self.animation_finished = False
+                self.animation_finished = False                
                 
-            elif self.animation_mode == AnimatableObject.ANIMATION_MODE_CONSUME:  # discart last set and use next in queue  
+            elif self.animation_mode == AnimatableObject.ANIMATION_MODE_CONSUME:  # do not continue animating expired sequence
                 self.animation_finished = True
+                
+            #endif
+            
+            self.notify(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
+            
         else: 
             
             # select following frame           
             self.image = sprite_set.sprites[self.animation_frame_index]
+            
+            self.notify(AnimatableObject.Events.ANIMATION_FRAME_COMPLETED)
+            
+        #endif 
             
         # setting values of view rectangle equal to collision
         self.rect.x = self.collision_sprite.rect.x
