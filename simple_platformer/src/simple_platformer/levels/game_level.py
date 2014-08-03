@@ -1,5 +1,5 @@
 import pygame
-from simple_platformer.animatable_object import AnimatablePlayer
+from simple_platformer.players import AnimatablePlayer
 from simple_platformer.game_state_machine import ActionKeys
 from simple_platformer.utilities import ScreenBounds
 from simple_platformer.utilities import Colors, ScreenProperties
