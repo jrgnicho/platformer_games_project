@@ -7,16 +7,18 @@ class AnimatablePlayer(AnimatableObject):
     
     JUMP_SPEED = -10 # y axis points downwards
     SUPER_JUMP_SPEED = -12
-    RUN_SPEED = 3.5
+    RUN_SPEED = 3.5    
+
     
     def __init__(self):
         
         # superclass constructor
-        AnimatableObject.__init(self)
+        AnimatableObject.__init__(self)
         
         # jump speed
         self.current_upward_speed = 0
-        self.current_forward_speed = 0        
+        self.current_forward_speed = 0           
+
         
     def jump(self,action_key = ActionKeys.JUMP):
         
