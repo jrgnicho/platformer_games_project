@@ -50,9 +50,9 @@ if __name__ == "__main__":
     keys = G_Sprite_Loader.sprite_sets.keys()
     
     print "keys in sprite loader %s" % keys
-    key_index = keys[0]
+    key_index = 0
     sprite_index = 0
-    sprite_set = G_Sprite_Loader.sprite_sets[key_index]
+    sprite_set = G_Sprite_Loader.sprite_sets[keys[key_index]]
     time_elapsed = 0
     rate_change = sprite_set.rate_change
     while proceed:
@@ -84,7 +84,8 @@ if __name__ == "__main__":
                     sprite_set = G_Sprite_Loader.sprite_sets[keys[key_index]]
                     sprite_index = 0
                     
-                    print "Selected sprite set %i"%keys[key_index]
+                    print "Selected sprite set %s with %i sprites"%(keys[key_index] ,len(sprite_set.sprites))
+                    
             #endif
                     
         #endfor
@@ -100,6 +101,8 @@ if __name__ == "__main__":
             time_elapsed =  pygame.time.get_ticks()
                 
         sp.image = sprite_set.sprites[sprite_index]
+        
+        #print "Image size %i x %i"%(sp.image.get_rect().width,sp.image.get_rect().height)
              
         
         active_sprites.update()

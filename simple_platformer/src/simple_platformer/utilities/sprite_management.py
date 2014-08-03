@@ -11,12 +11,14 @@ class SpriteSet():
         self.sprites = [] # Sprites
         self.rate_change = 0
         
-    def load(self,file_name,details,rate):
+    def load(self,file_name,details,rate,sx = 1,sy = 1):
         """
             Loads sprites from an image file
             - file : path to the image file
             - details : array of tuples of type (columns, rows) one per sprite
-            - rate : frame rate at which to move to the next sprite in the list
+            - rate : frame rate at which to move to the next sprite in the list.
+            - sx : scale in the x direction
+            - sy : scale in the y direction
             
             Return:
                 - True : succeeded boolean
@@ -42,14 +44,25 @@ class SpriteSet():
             for i in range(0,columns):                
                 x = i * w
                 y = j * h
+                
+                # extrating image
                 image = pygame.Surface([w, h]).convert()
                 image.blit(sheet,(0,0),(x,y,w,h))
                 image.set_colorkey(Colors.BLACK)
+                
+                # scaling image                
+                #scaled_width = int(sx*w)
+                #scaled_height = int(sy*h)
+                #scaled_image = pygame.Surface([scaled_width, scaled_height]).convert()
+                #scaled_image = pygame.transform.smoothscale(image,(scaled_width,scaled_height))
+                #scaled_image.set_colorkey(Colors.BLACK)
                 self.sprites.append(image) 
+                #self.sprites.append(scaled_image) 
             #endfor
         #endfor
         
-        print "Loaded %i %ix%i sprites from image sheet %s "%(len(self.sprites),w,h,file_name)
+        print "Loaded %i %ix%i sprites at scale %f x %f from image sheet %s "%(len(self.sprites),w,h,
+                                                                               sx,sy,file_name)
         
         return True
         
@@ -72,7 +85,46 @@ class SpriteSet():
         #endfor        
         return inv_set
     
+   
+    
+    
 class SpriteLoader():
+    
+    class Entry:
+        
+        def __init__(self):
+            
+            self.key = ''
+            self.columns = 0
+            self.image_file = ''
+            self.rows = 0
+            self.scale_x = 1
+            self.frame_rate = 0
+            self.scale_y = 1
+            
+        def parse_entry(self,line):
+            
+            entries = line.split(' ') 
+            
+            if len(entries) < 5 :
+                return False  
+                
+            self.key = str(entries[0])      
+            self.image_file = entries[1]
+            self.columns = int(entries[2])
+            self.rows = int(entries[3])
+            self.frame_rate = int(entries[4]) # miliseconds
+            
+            if len(entries) >= 6:
+                code = entries[5]
+                self.scale_x = float(code[2:len(code)])
+                
+            if len(entries) >= 7:
+                code = entries[6]
+                self.scale_y = float(code[2:len(code)])
+                
+            return True
+            
     
     def __init__(self):
         self.sprite_sets = {}
@@ -99,59 +151,42 @@ class SpriteLoader():
         lines = f.readlines()
         
         set = SpriteSet()
-        key = 0
+        last_key = ''
+        current_key = ''
         collecting_next = False
+        entry = SpriteLoader.Entry()
         for i in range(1,len(lines)):
             
-            entries = lines[i].split(' ')        
-            #print "File entry "+ str(entries)    
-            
-                        
-            if len(entries) == 5:
+            if entry.parse_entry(lines[i]):
                 
-                if collecting_next:
-                    set = self.sprite_sets[key]
-                    collecting_next = False
-                else:
-                    key = int(entries[0])
-                    self.sprite_sets[key] = SpriteSet()
-                    set = self.sprite_sets[key]
-                
-                #key = int(entries[0])
-                image_file = os.path.join(parent_dir, entries[1])
-                columns = int(entries[2])
-                rows = int(entries[3])
-                frate = int(entries[4])
-                
-                if not set.load(image_file,(columns,rows),frate):
-                    return False
-            
-            #endif              
-
-                
-            if len(entries) == 6 and entries[5].count('N')>0:   
-                
-                if not collecting_next:
+                current_key = entry.key
+                if current_key != last_key: # create new set and storing                    
+                    self.sprite_sets[current_key] = SpriteSet()
+                    set = self.sprite_sets[current_key]
                     
-                    key = int(entries[0])
-                    self.sprite_sets[key] = SpriteSet()
-                    set = self.sprite_sets[key] 
-                    collecting_next = True
+                #endif
+                
+                entry.image_file = os.path.join(parent_dir, entry.image_file)
+                
+                if not set.load(entry.image_file,
+                                (entry.columns,entry.rows),
+                                entry.frame_rate,
+                                entry.scale_x,
+                                entry.scale_y):
                     
-                else:                  
-                    set = self.sprite_sets[key] 
-                      
-                image_file = os.path.join(parent_dir, entries[1])
-                columns = int(entries[2])
-                rows = int(entries[3])
-                frate = int(entries[4])
+                    return False 
+                #endif
                 
-                if not set.load(image_file,(columns,rows),frate):
-                    return False                  
+            else:
                 
+                print "Failed to parse line %i"%(i)
+                return False
+            
             #endif
             
-        #endfor
-        
+            last_key = current_key
+            
+        #endfor        
         return True
+    
         
