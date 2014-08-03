@@ -56,7 +56,6 @@ class SpriteSet():
                 scaled_image = pygame.Surface([scaled_width, scaled_height]).convert()
                 scaled_image = pygame.transform.smoothscale(image,(scaled_width,scaled_height))
                 scaled_image.set_colorkey(Colors.BLACK)
-                #self.sprites.append(image) 
                 self.sprites.append(scaled_image) 
             #endfor
         #endfor
