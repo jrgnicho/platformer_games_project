@@ -18,7 +18,7 @@ class AnimatablePlayer(AnimatableObject):
         self.current_upward_speed = 0
         self.current_forward_speed = 0        
         
-    def jump(self,action_key = ActionsKeys.JUMP):
+    def jump(self,action_key = ActionKeys.JUMP):
         
         self.current_upward_speed = AnimatablePlayer.JUMP_SPEED
         self.set_current_animation_key(action_key)
@@ -30,10 +30,13 @@ class AnimatablePlayer(AnimatableObject):
             self.current_forward_speed = AnimatablePlayer.RUN_SPEED
         else:
             self.facing_right = False
-            self.current_forward_speed = -AnimatablePlayer.RUN_SPEED            
+            self.current_forward_speed = -AnimatablePlayer.RUN_SPEED   
+        #endif
+        
+        self.set_current_animation_key(action_key)         
             
     def apply_gravity(self,dy = GameProperties.GRAVITY_ACCELERATION):        
-        self.current_forward_speed += dy
+        self.current_upward_speed += dy
             
     def land(self,action_key = ActionKeys.LAND):
         
@@ -43,18 +46,26 @@ class AnimatablePlayer(AnimatableObject):
     def apply_inertia(self,toward_right,deceleration_rate):
         
         if facing_right:
+            self.facing_right = True
             self.current_forward_speed +=deceleration_rate
-            self.turn_right(0)
         else:
+            self.facing_right = False
             self.current_forward_speed -=deceleration_rate
-            self.turn_left(0)
+            
+    def turn_right(self,dx):        
+        self.facing_right = True
+        self.current_forward_speed = dx
+        
+    def turn_left(self,dx):        
+        self.facing_right = False
+        self.current_forward_speed = dx
             
     def stand(self,action_key = ActionKeys.STAND):
         self.current_forward_speed =0
         self.set_current_animation_key(action_key)
         
             
-    def fall(self,action_key = ActionKey.FALL):
+    def fall(self,action_key = ActionKeys.FALL):
         
         self.current_upward_speed = 0
         self.set_current_animation_key(action_key)
