@@ -49,29 +49,29 @@ class PlatformerGame:
         # set player start position
         self.animated_player.rect.x = 300
         self.animated_player.rect.y = 30
-        self.animated_player.rect.width = 35
-        self.animated_player.rect.height = 50
+        self.animated_player.rect.width = 52
+        self.animated_player.rect.height = 75
         self.animated_player.collision_sprite.rect  = self.animated_player.rect.copy()
         
         # registering resources
         success = True;
-        if (self.animated_player.add_animation_sets(AnimatedPlayer.WALK_ACTION,self.sprite_loader.sprite_sets[2],
-                                                    self.sprite_loader.sprite_sets[2].invert_set()) and
+        if (self.animated_player.add_animation_sets(AnimatedPlayer.WALK_ACTION,self.sprite_loader.sprite_sets["RUN"],
+                                                    self.sprite_loader.sprite_sets["RUN"].invert_set()) and
             
-            self.animated_player.add_animation_sets(AnimatedPlayer.STAND_ACTION,self.sprite_loader.sprite_sets[1],
-                                                    self.sprite_loader.sprite_sets[1].invert_set()) and
+            self.animated_player.add_animation_sets(AnimatedPlayer.STAND_ACTION,self.sprite_loader.sprite_sets["STAND"],
+                                                    self.sprite_loader.sprite_sets["STAND"].invert_set()) and
             
-            self.animated_player.add_animation_sets(AnimatedPlayer.JUMP_ASCEND_ACTION,self.sprite_loader.sprite_sets[7],
-                                                    self.sprite_loader.sprite_sets[7].invert_set()) and
+            self.animated_player.add_animation_sets(AnimatedPlayer.JUMP_ASCEND_ACTION,self.sprite_loader.sprite_sets["JUMP"],
+                                                    self.sprite_loader.sprite_sets["JUMP"].invert_set()) and
             
-            self.animated_player.add_animation_sets(AnimatedPlayer.JUMP_MIDAIR_ACTION,self.sprite_loader.sprite_sets[8],
-                                                    self.sprite_loader.sprite_sets[8].invert_set()) and
+            self.animated_player.add_animation_sets(AnimatedPlayer.JUMP_MIDAIR_ACTION,self.sprite_loader.sprite_sets["FALL"],
+                                                    self.sprite_loader.sprite_sets["FALL"].invert_set()) and
             
-            self.animated_player.add_animation_sets(AnimatedPlayer.JUMP_LAND_ACTION,self.sprite_loader.sprite_sets[9],
-                                                    self.sprite_loader.sprite_sets[9].invert_set()) and
+            self.animated_player.add_animation_sets(AnimatedPlayer.JUMP_LAND_ACTION,self.sprite_loader.sprite_sets["LAND"],
+                                                    self.sprite_loader.sprite_sets["LAND"].invert_set()) and
             
-            self.animated_player.add_animation_sets(AnimatedPlayer.JUMP_ATTACK_ACTION,self.sprite_loader.sprite_sets[10],
-                                                    self.sprite_loader.sprite_sets[10].invert_set())) :
+            self.animated_player.add_animation_sets(AnimatedPlayer.JUMP_ATTACK_ACTION,self.sprite_loader.sprite_sets["ATTACK_SLASH"],
+                                                    self.sprite_loader.sprite_sets["ATTACK_SLASH"].invert_set())) :
             
             print "Added all sprite sets"
         else:
@@ -82,11 +82,15 @@ class PlatformerGame:
         # level setup
             # create lever
         platforms = [Platform(100, 200,100, 20),
-                     Platform(80, 80,100, 20),
+                     Platform(80, 100,100, 20),
                      Platform(400, 300,100, 20),
                      Platform(450, 20,100, 20),
-                     Platform(500, 100,100, 20),
-                     Platform(0,-10,1000,20)] # floor
+                     Platform(500, 120,100, 20),
+                     Platform(450 + 80, 400 + 100,100, 20),
+                     Platform(450 + 400, 400 + 300,100, 20),
+                     Platform(450 + 450, 400 + 20,200, 20),
+                     Platform(450 + 500, 400 + 120,100, 20),
+                     Platform(0,-10,2000,20)] # floor
         self.level = Level()
         self.level.set_platforms(platforms)
         self.animated_player.level = self.level
