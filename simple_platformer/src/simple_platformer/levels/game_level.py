@@ -8,7 +8,12 @@ from simple_platformer.game_state_machine import *
 
 class GameLevel(pygame.sprite.Sprite,StateMachine):
     
+    PLATFORM_CHECK_STEP = 2
+    
     def __init__(self,w = ScreenProperties.SCREEN_WIDTH*3,h = ScreenProperties.SCREEN_HEIGHT*4):
+        
+        pygame.sprite.Sprite.__init__(self)
+        StateMachine.__init__(self)
         
         # level objects
         self.player = None
@@ -20,6 +25,18 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         
         # level screen bounds
         self.screen_bounds = ScreenBounds()        
+        
+    def add_platforms(self,platforms):
+        
+        # place platforms relative to level
+        for p in platforms:
+            
+            if type(p) is Platform: 
+                p.rect.centerx = p.rect.centerx + self.rect.x  
+                p.rect.centery = self.rect.centery -  p.rect.y                         
+                self.platforms.add(p) 
+            #endif                
+        #endfor
         
         
     def check_input(self):
@@ -44,6 +61,8 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                 #endif
                     
                 if event.key == pygame.K_UP:
+                    
+                    print "JUMP commanded"
                     self.execute(ActionKeys.JUMP) 
                     
                 #endif
@@ -52,6 +71,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                     
                 if event.key == pygame.K_UP:
                     self.execute(ActionKeys.CANCEL_JUMP) 
+                    print "CANCEL_JUMP commanded"
                 #endif
                 
             #endif
@@ -101,7 +121,8 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         self.player.collision_sprite.rect.centerx += self.player.current_forward_speed 
         self.check_collisions_in_x() 
         
-        # check screen bounds
+        # check screen and level bounds        
+        self.check_level_bounds()
         self.check_screen_bounds()
                    
         # updating objects
@@ -144,9 +165,9 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         
     def check_platform_support(self):
         
-        self.player.collision_sprite.rect.y += Player.PLATFORM_CHECK_STEP
-        platforms = pygame.sprite.spritecollide(self.collision_sprite,self.level.platforms,False)
-        self.player.collision_sprite.rect.y -= Player.PLATFORM_CHECK_STEP
+        self.player.collision_sprite.rect.y += GameLevel.PLATFORM_CHECK_STEP
+        platforms = pygame.sprite.spritecollide(self.player.collision_sprite,self.platforms,False)
+        self.player.collision_sprite.rect.y -= GameLevel.PLATFORM_CHECK_STEP
         
         if len(platforms) == 0:
             self.execute(ActionKeys.PLATFORM_LOST);
@@ -158,10 +179,14 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         platforms = pygame.sprite.spritecollide(self.player.collision_sprite,self.platforms,False)     
         for platform in platforms:
             
-            if self.player.collision_sprite.rect.bottom > platform.rect.top:
-                self.execute(ActionKeys.COLLISION_BELOW,[platform.rect.top])                
-            elif self.player.collision_sprite.rect.top < platform.rect.bottom :
-                self.execute(ActionKeys.COLLISION_ABOVE,[platform.rect.bottom])                 
+            if self.player.collision_sprite.rect.centery < platform.rect.centery:
+                self.player.collision_sprite.rect.bottom = platform.rect.top
+                self.execute(ActionKeys.COLLISION_BELOW,[platform.rect.top])  
+                              
+            #elif self.player.collision_sprite.rect.top < platform.rect.bottom :
+            else:
+                self.player.collision_sprite.rect.top = platform.rect.bottom
+                self.execute(ActionKeys.COLLISION_ABOVE,[platform.rect.bottom])
             #endif
         
         #endfor               
@@ -173,11 +198,12 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         platforms = pygame.sprite.spritecollide(self.player.collision_sprite,self.platforms,False)     
         for platform in platforms:
             
-            if self.player.collision_sprite.rect.left < platform.rect.right:
+            if self.player.collision_sprite.rect.centerx > platform.rect.centerx:
                 self.player.collision_sprite.rect.left = platform.rect.right
                 #self.execute(ActionKeys.RECTIFY_LEFT,[platform.rect.right])
                 
-            elif self.player.collision_sprite.rect.right > platform.rect.left:
+            #elif self.player.collision_sprite.rect.right > platform.rect.left:
+            else:
                 self.player.collision_sprite.rect.right = platform.rect.left
                 #self.execute(ActionKeys.RECTIFY_RIGHT,[platform.rect.left])
                 
