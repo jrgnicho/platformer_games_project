@@ -7,7 +7,7 @@ class AnimatablePlayer(AnimatableObject):
     
     JUMP_SPEED = -10 # y axis points downwards
     SUPER_JUMP_SPEED = -12
-    RUN_SPEED = 3.5    
+    RUN_SPEED = 4    
 
     
     def __init__(self):
@@ -27,6 +27,7 @@ class AnimatablePlayer(AnimatableObject):
         
     def run(self,facing_right,action_key = ActionKeys.RUN):
         
+        self.current_upward_speed = 0
         if facing_right:
             self.facing_right = True
             self.current_forward_speed = AnimatablePlayer.RUN_SPEED
@@ -43,6 +44,7 @@ class AnimatablePlayer(AnimatableObject):
     def land(self,action_key = ActionKeys.LAND):
         
         self.current_upward_speed = 0
+        self.current_forward_speed = 0
         self.set_current_animation_key(action_key)
         
     def apply_inertia(self,toward_right,deceleration_rate):
@@ -66,6 +68,12 @@ class AnimatablePlayer(AnimatableObject):
         self.current_forward_speed =0
         self.set_current_animation_key(action_key)
         
+    def cancel_move(self):
+        self.current_forward_speed =0     
+        
+    def cancel_jump(self):
+        if self.current_upward_speed < 0: 
+            self.current_upward_speed = 0 
             
     def fall(self,action_key = ActionKeys.FALL):
         
