@@ -11,19 +11,20 @@ class AnimatableObject(pygame.sprite.Sprite):
     
     class Events:
     
-        ANIMATION_FRAME_COMPLETED = 1
-        ANIMATION_SEQUENCE_COMPLETED = 2
+        ANIMATION_FRAME_COMPLETED = "ANIMATION_FRAME_COMPLETED"
+        ANIMATION_SEQUENCE_COMPLETED = "ANIMATION_SEQUENCE_COMPLETED"
             
     
     def __init__(self,w = 40,h = 60):
         
-        pygame.sprite.Sprite.__init__(self)
         # superclass constructor
+        pygame.sprite.Sprite.__init__(self)
+        
         
         # animation frame management
         self.animation_finished = False
         self.animation_time_elapsed = 0
-        self.prev_animation_frame_time = 0
+        self.animation_start_time = 0
         self.animation_frame_index = 0
         self.animation_set_key = 0        
         self.animation_sprites_right_side_dict= {}
@@ -32,6 +33,8 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.animation_mode = AnimatableObject.ANIMATION_MODE_CYCLE
         
         # Graphics
+        self.sprite_group = pygame.sprite.Group()
+        self.sprite_group.add(self)
         self.image = pygame.Surface([w,h])
         self.image.fill(Colors.RED)
         self.rect = self.image.get_rect()
@@ -64,7 +67,7 @@ class AnimatableObject(pygame.sprite.Sprite):
         
     def notify(self,event_key):
         
-        for key, handler in self.event_handlers.iteritems():
+        for handler in self.event_handlers[event_key]:
             handler()
             
         #endfor    
@@ -78,6 +81,8 @@ class AnimatableObject(pygame.sprite.Sprite):
     
         self.animation_sprites_right_side_dict[animation_set_key] = sprite_set_right_side
         self.animation_sprites_left_side_dict[animation_set_key] = sprite_set_left_side
+        
+        return True
         
     def set_current_animation_key(self,animation_set_key):
         """
@@ -96,6 +101,7 @@ class AnimatableObject(pygame.sprite.Sprite):
                 self.animation_set_key = animation_set_key;
                 self.animation_frame_index = 0
                 self.animation_time_elapsed = 0
+                self.animation_start_time = pygame.time.get_ticks()
                 self.animation_finished = False
             else:
                 False
@@ -109,7 +115,8 @@ class AnimatableObject(pygame.sprite.Sprite):
     def draw(self,screen):
                 
         self.animate_next_frame()
-        pygame.sprite.Sprite.draw(self,screen)
+        self.sprite_group.draw(screen)
+        #pygame.sprite.Sprite.draw(self,screen)
             
     def animate_next_frame(self):
         
@@ -120,9 +127,8 @@ class AnimatableObject(pygame.sprite.Sprite):
             sprite_set = self.animation_sprites_left_side_dict[self.animation_set_key]
             
         current_time = pygame.time.get_ticks()
-        self.animation_time_elapsed = current_time - self.prev_animation_frame_time
+        self.animation_time_elapsed = current_time - self.animation_start_time
         self.animation_frame_index = (self.animation_time_elapsed)//sprite_set.rate_change
-        self.prev_animation_frame_time = current_time
         
         """
         # debugging
@@ -143,16 +149,22 @@ class AnimatableObject(pygame.sprite.Sprite):
             # select last frame
             self.image = sprite_set.sprites[len(sprite_set.sprites)-1]
             
+            # reset animation start time
+            self.animation_start_time = current_time
+            
             # check mode
             if self.animation_mode == AnimatableObject.ANIMATION_MODE_CYCLE: # cycle through current sprite set
+                
                 self.animation_time_elapsed = 0
                 self.animation_finished = False                
                 
             elif self.animation_mode == AnimatableObject.ANIMATION_MODE_CONSUME:  # do not continue animating expired sequence
+                self.animation_time_elapsed = 0
                 self.animation_finished = True
                 
             #endif
             
+            #print "Notifying %s event"%(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
             self.notify(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
             
         else: 
@@ -174,6 +186,12 @@ class AnimatableObject(pygame.sprite.Sprite):
         
         self.rect.centerx = self.collision_sprite.rect.centerx
         self.rect.width = self.image.get_width()
+        
+    def action_progress_percentage(self):
+        
+        sprite_set = self.animation_sprites_right_side_dict[self.animation_set_key]
+        return float(self.animation_frame_index)/float(
+            len(sprite_set.sprites))
         
     def move_x(self,dx):        
         self.collision_sprite.rect.centerx +=dx
