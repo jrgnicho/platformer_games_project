@@ -80,7 +80,7 @@ class PlatformerGame:
         #endif
         
         # level setup
-            # create lever
+            # create levels
         platforms = [Platform(100, 200,100, 20),
                      Platform(80, 100,100, 20),
                      Platform(400, 300,100, 20),
