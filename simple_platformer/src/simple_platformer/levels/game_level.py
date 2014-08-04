@@ -62,7 +62,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                     
                 if event.key == pygame.K_UP:
                     
-                    print "JUMP commanded"
+                    #print "JUMP commanded"
                     self.execute(ActionKeys.JUMP) 
                     
                 #endif
@@ -71,7 +71,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                     
                 if event.key == pygame.K_UP:
                     self.execute(ActionKeys.CANCEL_JUMP) 
-                    print "CANCEL_JUMP commanded"
+                    #print "CANCEL_JUMP commanded"
                 #endif
                 
             #endif

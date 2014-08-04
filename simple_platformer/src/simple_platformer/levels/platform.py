@@ -1,6 +1,6 @@
 import pygame
 
-from simple_platformer.utilities import Vector2D, ScreenBounds
+from simple_platformer.utilities import ScreenBounds
 from simple_platformer.utilities import Colors, ScreenProperties
 
 class Platform(pygame.sprite.Sprite):

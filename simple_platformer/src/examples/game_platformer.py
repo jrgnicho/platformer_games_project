@@ -155,7 +155,7 @@ class GamePlatformer:
         
         sm.add_transition(land_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,GamePlatformer.StateKeys.STANDING)  
         sm.add_transition(land_state,ActionKeys.JUMP,GamePlatformer.StateKeys.JUMPING,
-                          lambda : self.player.action_progress_percentage()>0.2)  
+                          lambda : self.player.animation_set_progress_percentage()>0.2)  
         sm.add_transition(land_state,ActionKeys.PLATFORM_LOST,GamePlatformer.StateKeys.FALLING) 
         
         sm.add_state(exit_state)   

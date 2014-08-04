@@ -1,7 +1,6 @@
 import pygame
 
-from simple_platformer.utilities import Vector2D, ScreenBounds
-from simple_platformer.utilities import Colors, ScreenProperties
+from simple_platformer.utilities import *
 
 class AnimatableObject(pygame.sprite.Sprite):
     
@@ -187,7 +186,7 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.rect.centerx = self.collision_sprite.rect.centerx
         self.rect.width = self.image.get_width()
         
-    def action_progress_percentage(self):
+    def animation_set_progress_percentage(self):
         
         sprite_set = self.animation_sprites_right_side_dict[self.animation_set_key]
         return float(self.animation_frame_index)/float(
