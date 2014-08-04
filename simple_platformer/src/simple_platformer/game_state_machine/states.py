@@ -21,16 +21,11 @@ class State:
                        action_cb = lambda: sys.stdout.write("No action callback\n")):
                         # ,condition_cb = lambda: True):
         """
-        Adds transition rule to the state
+        Adds supported action to the state
         
         Inputs:
-        - action_key: action key for which this transition rule applies
-        - next_state_key: state to transition to after action callback is executed.
-        - condition_cb: callback that checks a condition and returns either True or False.  When True, the 
-            transition will proceed when invoked through the execute() method.  
-            If False then execute() will return reject the transition.
-            For instance, the callback could potentially check an interval threshold from <0,1> at which the transition
-            is permitted
+        - action_key: action key for the action that can be executed during this state
+        - action_cb: method that is invoked when this action is requested through the execute() method.
         """
         self.actions[action_key] = action_cb
         
@@ -57,7 +52,7 @@ class State:
             #condition_cb = action_tuple[1]
             return True
         else:
-            print "Action not supported"
+            print "State %s does not support %s action"%(self.key,action_key)
             return False
         
     def enter(self):
@@ -113,7 +108,9 @@ class StateMachine:
             
         else:       
             self.states_dict[state_obj.key] = state_obj
-            self.transitions[state_obj.key] = {action_key:[(next_state_key,condition_cb)]}    
+            self.transitions[state_obj.key] = {action_key:[(next_state_key,condition_cb)]}  
+            
+        print "Added transition rule : From %s state : %s action : To %s state"%(state_obj.key,action_key,next_state_key)  
             
         
     def execute(self,action_key,action_cb_args=()):
@@ -155,8 +152,8 @@ class StateMachine:
                         else: 
                             
                             # reverting upon failure
-                            self.active_state_key = active_state_obj.key                            
-                            print "Transition failed"
+                            #self.active_state_key = active_state_obj.key                            
+                            #print "Transition failed, reverted to state %s from state %s"%(self.active_state_key,state_key)
                             return False                 
                     
                         #endif
@@ -180,7 +177,7 @@ class StateMachine:
                     return True
                 else:
                 
-                    print "Transition for the %s action at the state %s not supported"%(action_key,self.active_state_key)
+                    #print "Transition for the %s action at the state %s not supported"%(action_key,self.active_state_key)
                     return False
                 #endif
                 
