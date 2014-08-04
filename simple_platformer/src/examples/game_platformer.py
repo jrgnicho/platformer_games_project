@@ -56,7 +56,7 @@ class GamePlatformer:
         
         self.player.collision_sprite.rect.x = 300
         self.player.collision_sprite.rect.y = 30
-        self.player.collision_sprite.rect.width = 40
+        self.player.collision_sprite.rect.width = 42
         self.player.collision_sprite.rect.height = 75
         
     def load_resources(self):
