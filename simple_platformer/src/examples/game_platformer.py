@@ -2,10 +2,11 @@
 
 import pygame
 from simple_platformer.levels import GameLevel, Platform
+from simple_platformer.animatable_object import AnimatableObject
 from simple_platformer.players import AnimatablePlayer
 from simple_platformer.utilities import *
+from simple_platformer.game_state_machine import *
 import rospkg
-from jinja2._stringdefs import No
 
 class GamePlatformer:
     
@@ -36,6 +37,27 @@ class GamePlatformer:
     def exit(self):
         
         self.proceed = False
+        
+    def create_level(self):
+        
+        # create lever
+        platforms = [Platform(100, 200,100, 20),
+                     Platform(80, 100,100, 20),
+                     Platform(400, 300,100, 20),
+                     Platform(450, 20,100, 20),
+                     Platform(500, 120,100, 20),
+                     Platform(450 + 80, 400 + 100,100, 20),
+                     Platform(450 + 400, 400 + 300,100, 20),
+                     Platform(450 + 450, 400 + 20,200, 20),
+                     Platform(450 + 500, 400 + 120,100, 20),
+                     Platform(0,-10,2000,20)] # floor
+        
+        self.level.add_platforms(platforms)
+        
+        self.player.collision_sprite.rect.x = 300
+        self.player.collision_sprite.rect.y = 30
+        self.player.collision_sprite.rect.width = 40
+        self.player.collision_sprite.rect.height = 75
         
     def load_resources(self):
         
@@ -88,10 +110,15 @@ class GamePlatformer:
         # jump state
         jump_state = self.create_base_game_state(GamePlatformer.StateKeys.JUMPING,
                                          AnimatablePlayer.RUN_SPEED, lambda: self.player.jump(), None)
+        jump_state.add_action(ActionKeys.CANCEL_MOVE,lambda : self.player.cancel_move())
+        jump_state.add_action(ActionKeys.CANCEL_JUMP,lambda : self.player.cancel_jump())
+        jump_state.add_action(ActionKeys.APPLY_GRAVITY,lambda : self.player.apply_gravity())
         
         # fall state
         fall_state = self.create_base_game_state(GamePlatformer.StateKeys.FALLING,
                                  AnimatablePlayer.RUN_SPEED, lambda: self.player.fall(), None)
+        fall_state.add_action(ActionKeys.CANCEL_MOVE,lambda : self.player.cancel_move())
+        fall_state.add_action(ActionKeys.APPLY_GRAVITY,lambda : self.player.apply_gravity())
         
         # land state
         land_state = State(GamePlatformer.StateKeys.LANDING)
@@ -105,20 +132,31 @@ class GamePlatformer:
         sm = self.level
         
         sm.add_transition(run_state,ActionKeys.STAND,GamePlatformer.StateKeys.STANDING)
+        sm.add_transition(run_state,ActionKeys.CANCEL_MOVE,GamePlatformer.StateKeys.STANDING)
         sm.add_transition(run_state,ActionKeys.JUMP,GamePlatformer.StateKeys.JUMPING)
         sm.add_transition(run_state,ActionKeys.FALL,GamePlatformer.StateKeys.FALLING)
+        sm.add_transition(run_state,ActionKeys.PLATFORM_LOST,GamePlatformer.StateKeys.FALLING)
         
         sm.add_transition(stand_state,ActionKeys.RUN,GamePlatformer.StateKeys.RUNNING)
         sm.add_transition(stand_state,ActionKeys.JUMP,GamePlatformer.StateKeys.JUMPING)
         sm.add_transition(stand_state,ActionKeys.FALL,GamePlatformer.StateKeys.FALLING)
+        sm.add_transition(stand_state,ActionKeys.PLATFORM_LOST,GamePlatformer.StateKeys.FALLING)
+        sm.add_transition(stand_state,ActionKeys.MOVE_LEFT,GamePlatformer.StateKeys.RUNNING)
+        sm.add_transition(stand_state,ActionKeys.MOVE_RIGHT,GamePlatformer.StateKeys.RUNNING)
         
         sm.add_transition(jump_state,ActionKeys.LAND,GamePlatformer.StateKeys.LANDING)
         sm.add_transition(jump_state,ActionKeys.FALL,GamePlatformer.StateKeys.FALLING)
+        sm.add_transition(jump_state,ActionKeys.COLLISION_BELOW,GamePlatformer.StateKeys.LANDING)
         sm.add_transition(jump_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,GamePlatformer.StateKeys.FALLING)
+        sm.add_transition(jump_state,ActionKeys.COLLISION_ABOVE,GamePlatformer.StateKeys.FALLING)
         
         sm.add_transition(fall_state,ActionKeys.LAND,GamePlatformer.StateKeys.LANDING)
+        sm.add_transition(fall_state,ActionKeys.COLLISION_BELOW,GamePlatformer.StateKeys.LANDING)
         
-        sm.add_transition(land_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,GamePlatformer.StateKeys.STANDING)   
+        sm.add_transition(land_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,GamePlatformer.StateKeys.STANDING)  
+        sm.add_transition(land_state,ActionKeys.JUMP,GamePlatformer.StateKeys.JUMPING,
+                          lambda : self.player.action_progress_percentage()>0.2)  
+        sm.add_transition(land_state,ActionKeys.PLATFORM_LOST,GamePlatformer.StateKeys.FALLING) 
         
         sm.add_state(exit_state)   
         
@@ -126,13 +164,13 @@ class GamePlatformer:
         
     def create_base_game_state(self,state_key,run_speed,entry_cb = None,exit_cb = None):
         
-        state = State(GamePlatformer.StateKeys.RUNNING)
+        state = State(state_key)
         state.set_entry_callback(entry_cb)
         state.set_exit_callback(exit_cb)
         
         state.add_action(ActionKeys.MOVE_LEFT,lambda : self.player.turn_left(-run_speed))
         state.add_action(ActionKeys.MOVE_RIGHT,lambda : self.player.turn_right(run_speed))
-        state.add_action(ActionKeys.APPLY_GRAVITY,lambda : self.player.apply_gravity())
+        #state.add_action(ActionKeys.APPLY_GRAVITY,lambda : self.player.apply_gravity())
         state.add_action(ActionKeys.STEP_GAME,lambda : True)
         
         self.level.add_transition(state,ActionKeys.EXIT_GAME,GamePlatformer.StateKeys.EXIT)
@@ -144,18 +182,16 @@ class GamePlatformer:
         
         if not self.load_resources():
             return False 
+        self.create_level()
+        self.create_transition_rules()
             
         return True
     
     def step_game(self):
         
         if (self.proceed and self.level.update()):
-            self.level.draw(self.screen)
-            
-            clock.tick(GameProperties.FRAME_RATE)            
-            #print "miliseconds elapse " + str(pygame.time.get_ticks())            
-            pygame.display.flip()
-            
+            self.level.draw(self.screen)            
+
             return True
         
         else:
@@ -167,15 +203,20 @@ class GamePlatformer:
         
         size = [ScreenProperties.SCREEN_WIDTH,ScreenProperties.SCREEN_HEIGHT]
         self.screen = pygame.display.set_mode(size)
-        pygame.display.set_caption("Slim shady")
+        pygame.display.set_caption("Slim shady")        
         
         if not self.setup():
             print "setup failed"
             pygame.quit()
             return
         
+        clock = pygame.time.Clock()
         while self.step_game():
-            None
+            
+            clock.tick(GameProperties.FRAME_RATE)            
+            #print "miliseconds elapse " + str(pygame.time.get_ticks())            
+            pygame.display.flip()
+       #endwhile     
             
         
         pygame.quit()
