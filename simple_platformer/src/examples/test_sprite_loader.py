@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import pygame
-from simple_platformer.levels import Level, Platform
-from simple_platformer.players import Player
 from simple_platformer.utilities import *
 import rospkg
 
