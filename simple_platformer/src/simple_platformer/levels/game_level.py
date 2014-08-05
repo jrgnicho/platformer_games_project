@@ -1,5 +1,6 @@
 import pygame
 from simple_platformer.players import AnimatablePlayer
+from simple_platformer.players import PlayerStateMachine
 from simple_platformer.game_state_machine import ActionKeys
 from simple_platformer.utilities import ScreenBounds
 from simple_platformer.utilities import Colors, ScreenProperties
@@ -16,7 +17,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         StateMachine.__init__(self)
         
         # level objects
-        self.player = None
+        self.player = None # placeholder for PlayerStateMachine object
         self.platforms = pygame.sprite.Group()
         self.enemys  = pygame.sprite.Group()        
         
@@ -24,7 +25,36 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         self.rect = pygame.Rect(0,0,w,h)  
         
         # level screen bounds
-        self.screen_bounds = ScreenBounds()        
+        self.screen_bounds = ScreenBounds()
+        
+    def setup(self):
+        
+        # setup player
+        if self.player == None:
+            print "Player has not been added, exiting"
+            return False
+        else:            
+            self.player.collision_sprite.rect.x = 300
+            self.player.collision_sprite.rect.y = 30
+            
+        #endif
+        
+        
+        # create lever
+        platforms = [Platform(100, 200,100, 20),
+                     Platform(80, 100,100, 20),
+                     Platform(400, 300,100, 20),
+                     Platform(450, 20,100, 20),
+                     Platform(500, 120,100, 20),
+                     Platform(450 + 80, 400 + 100,100, 20),
+                     Platform(450 + 400, 400 + 300,100, 20),
+                     Platform(450 + 450, 400 + 20,200, 20),
+                     Platform(450 + 500, 400 + 120,100, 20),
+                     Platform(0,-10,2000,20)] # floor
+        
+        self.add_platforms(platforms)
+        
+        return True
         
     def add_platforms(self,platforms):
         
@@ -49,28 +79,28 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         for event in pygame.event.get():
             
             if event.type  == pygame.QUIT:
-                self.execute(ActionKeys.EXIT_GAME) 
+                #self.player.execute(ActionKeys.EXIT_GAME) 
                 return False
             #endif
             
             if event.type == pygame.KEYDOWN:
                     
                 if event.key == pygame.K_ESCAPE:
-                    self.execute(ActionKeys.EXIT_GAME) 
+                    #self.player.execute(ActionKeys.EXIT_GAME) 
                     return False
                 #endif
                     
                 if event.key == pygame.K_UP:
                     
                     #print "JUMP commanded"
-                    self.execute(ActionKeys.JUMP) 
+                    self.player.execute(ActionKeys.JUMP) 
                     
                 #endif
                     
             if event.type == pygame.KEYUP:                
                     
                 if event.key == pygame.K_UP:
-                    self.execute(ActionKeys.CANCEL_JUMP) 
+                    self.player.execute(ActionKeys.CANCEL_JUMP) 
                     #print "CANCEL_JUMP commanded"
                 #endif
                 
@@ -81,15 +111,15 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         # check for pressed keys
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] :
-            self.execute(ActionKeys.MOVE_LEFT)  
+            self.player.execute(ActionKeys.MOVE_LEFT)  
         #endif          
             
         if keys[pygame.K_RIGHT]:
-            self.execute(ActionKeys.MOVE_RIGHT)  
+            self.player.execute(ActionKeys.MOVE_RIGHT)  
         #endif 
                     
         if (not keys[pygame.K_LEFT]) and ( not keys[pygame.K_RIGHT]):
-            self.execute(ActionKeys.CANCEL_MOVE)  
+            self.player.execute(ActionKeys.CANCEL_MOVE)  
         #endif 
             
         return True
@@ -102,7 +132,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
             - outputs: True if successful, False otherwise due to game exit condition or user input
         """
         # perform transition or execute action if supported by active state
-        self.execute(ActionKeys.STEP_GAME)                 
+        self.player.execute(ActionKeys.STEP_GAME)                 
         
         # check user input
         if not self.check_input():
@@ -112,7 +142,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         self.check_platform_support()
         
         # apply gravity
-        self.execute(ActionKeys.APPLY_GRAVITY)      
+        self.player.execute(ActionKeys.APPLY_GRAVITY)      
         
         # moving and checking collision
         self.player.collision_sprite.rect.centery += self.player.current_upward_speed 
@@ -170,7 +200,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         self.player.collision_sprite.rect.y -= GameLevel.PLATFORM_CHECK_STEP
         
         if len(platforms) == 0:
-            self.execute(ActionKeys.PLATFORM_LOST);
+            self.player.execute(ActionKeys.PLATFORM_LOST);
         
     def check_collisions_in_y(self):        
      
@@ -181,12 +211,12 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
             
             if self.player.collision_sprite.rect.centery < platform.rect.centery:
                 self.player.collision_sprite.rect.bottom = platform.rect.top
-                self.execute(ActionKeys.COLLISION_BELOW,[platform.rect.top])  
+                self.player.execute(ActionKeys.COLLISION_BELOW,[platform.rect.top])  
                               
             #elif self.player.collision_sprite.rect.top < platform.rect.bottom :
             else:
                 self.player.collision_sprite.rect.top = platform.rect.bottom
-                self.execute(ActionKeys.COLLISION_ABOVE,[platform.rect.bottom])
+                self.player.execute(ActionKeys.COLLISION_ABOVE,[platform.rect.bottom])
             #endif
         
         #endfor               
@@ -200,12 +230,12 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
             
             if self.player.collision_sprite.rect.centerx > platform.rect.centerx:
                 self.player.collision_sprite.rect.left = platform.rect.right
-                #self.execute(ActionKeys.RECTIFY_LEFT,[platform.rect.right])
+                #self.player.execute(ActionKeys.RECTIFY_LEFT,[platform.rect.right])
                 
             #elif self.player.collision_sprite.rect.right > platform.rect.left:
             else:
                 self.player.collision_sprite.rect.right = platform.rect.left
-                #self.execute(ActionKeys.RECTIFY_RIGHT,[platform.rect.left])
+                #self.player.execute(ActionKeys.RECTIFY_RIGHT,[platform.rect.left])
                 
             #endif          
             
