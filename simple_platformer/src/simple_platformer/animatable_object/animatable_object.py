@@ -6,7 +6,8 @@ class AnimatableObject(pygame.sprite.Sprite):
     
     # animation modes
     ANIMATION_MODE_CYCLE = 1
-    ANIMATION_MODE_CONSUME = 2
+    ANIMATION_MODE_CONSUME = 2    
+    ANIMATION_MODE_REPEAT_SINGLE = 3
     
     class Events:
     
@@ -30,6 +31,7 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.animation_sprites_left_side_dict= {}
         self.facing_right = True;
         self.animation_mode = AnimatableObject.ANIMATION_MODE_CYCLE
+        self.selected_frame_index = 0 # used on ANIMATION_MODE_REPEAT_SINGLE 
         
         # Graphics
         self.sprite_group = pygame.sprite.Group()
@@ -166,7 +168,7 @@ class AnimatableObject(pygame.sprite.Sprite):
             #print "Notifying %s event"%(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
             self.notify(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
             
-        else: 
+        else:            
             
             # select following frame           
             self.image = sprite_set.sprites[self.animation_frame_index]
