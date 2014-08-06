@@ -8,11 +8,13 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
     
         NONE=""
         STANDING="STANDING"
+        STANDING_ON_EDGE="STANDING_ON_EDGE"
         RUNNING="RUNNING"
         JUMPING="JUMPING"
         FALLING="FALLING"
         LANDING="LANDING"
         DASHING= "DASHING"
+        DASH_BREAKING= "DASH_BREAKING"
         MIDAIR_DASHING = "MIDAIR_DASHING"
         EXIT = "EXIT"
     
@@ -53,6 +55,13 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         # stand state
         stand_state = self.create_base_game_state(PlayerStateMachine.StateKeys.STANDING,
                                                  0, lambda: self.stand(), None)
+        
+        # stand edge state
+        stand_edge_state = self.create_base_game_state(PlayerStateMachine.StateKeys.STANDING_ON_EDGE,
+                                                 0, None, None)
+        stand_edge_state.set_entry_callback(lambda: (
+                                       self.set_current_animation_key(ActionKeys.STAND_EDGE),
+                                       self.set_forward_speed(0)))
         
         # jump state
         jump_state = self.create_base_game_state(PlayerStateMachine.StateKeys.JUMPING,
@@ -100,6 +109,15 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         sm.add_transition(stand_state,ActionKeys.MOVE_LEFT,PlayerStateMachine.StateKeys.RUNNING)
         sm.add_transition(stand_state,ActionKeys.MOVE_RIGHT,PlayerStateMachine.StateKeys.RUNNING)
         sm.add_transition(stand_state,ActionKeys.DASH,PlayerStateMachine.StateKeys.DASHING)
+        sm.add_transition(stand_state,ActionKeys.STAND_EDGE,PlayerStateMachine.StateKeys.STANDING_ON_EDGE)
+        
+        sm.add_transition(stand_edge_state,ActionKeys.RUN,PlayerStateMachine.StateKeys.RUNNING)
+        sm.add_transition(stand_edge_state,ActionKeys.JUMP,PlayerStateMachine.StateKeys.JUMPING)
+        sm.add_transition(stand_edge_state,ActionKeys.FALL,PlayerStateMachine.StateKeys.FALLING)
+        sm.add_transition(stand_edge_state,ActionKeys.PLATFORM_LOST,PlayerStateMachine.StateKeys.FALLING)
+        sm.add_transition(stand_edge_state,ActionKeys.MOVE_LEFT,PlayerStateMachine.StateKeys.RUNNING)
+        sm.add_transition(stand_edge_state,ActionKeys.MOVE_RIGHT,PlayerStateMachine.StateKeys.RUNNING)
+        sm.add_transition(stand_edge_state,ActionKeys.DASH,PlayerStateMachine.StateKeys.DASHING)
         
         sm.add_transition(jump_state,ActionKeys.LAND,PlayerStateMachine.StateKeys.LANDING)
         sm.add_transition(jump_state,ActionKeys.FALL,PlayerStateMachine.StateKeys.FALLING)
