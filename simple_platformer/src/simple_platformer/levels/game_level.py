@@ -148,10 +148,8 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         
         # check user input
         if not self.check_input():
-            return False
-        
-        # check for platform below
-        self.check_platform_support()
+            return False       
+
         
         # apply gravity
         self.player.execute(ActionKeys.APPLY_GRAVITY)      
@@ -162,6 +160,9 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         
         self.player.collision_sprite.rect.centerx += self.player.current_forward_speed 
         self.check_collisions_in_x() 
+        
+        # check for platform below
+        self.check_platform_support()
         
         # check screen and level bounds        
         self.check_level_bounds()
@@ -212,7 +213,48 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         self.player.collision_sprite.rect.y -= GameLevel.PLATFORM_CHECK_STEP
         
         if len(platforms) == 0:
-            self.player.execute(ActionKeys.PLATFORM_LOST);
+            self.player.execute(ActionKeys.PLATFORM_LOST)
+            
+        else:
+            
+            # check if near edge
+            for platform in platforms:
+                
+                # standing on left edge
+                distance  = abs(self.player.collision_sprite.rect.right - platform.rect.left)
+                w = self.player.collision_sprite.rect.width
+                max = w*AnimatablePlayer.STAND_DISTANCE_FROM_EDGE_THRESHOLD
+                min = w*AnimatablePlayer.FALL_DISTANCE_FROM_EDGE_THRESHOLD
+                
+                if distance < max and distance > min:
+                    self.player.execute(ActionKeys.STAND_EDGE)
+                    #print "Edge distance %f"%(float(distance)/float(w))
+                    break
+                    
+                elif distance <= min :
+                    self.player.execute(ActionKeys.PLATFORM_LOST)
+                    self.player.collision_sprite.rect.right = platform.rect.left
+                    break
+                
+                #endif
+                
+                # standing on right edge
+                distance = abs(platform.rect.right - self.player.collision_sprite.rect.left )
+                if distance < max and distance > min:# and distance < w*AnimatablePlayer.FALL_DISTANCE_FROM_EDGE_THRESHOLD:
+                    self.player.execute(ActionKeys.STAND_EDGE)
+                    #print "Edge distance %f"%(float(distance)/float(w))
+                    break
+                    
+                elif distance <= min:
+                    self.player.execute(ActionKeys.PLATFORM_LOST)
+                    self.player.collision_sprite.rect.left = platform.rect.right
+                    
+                    break
+                
+                #endif
+                
+          #endif  
+            
         
     def check_collisions_in_y(self):        
      
@@ -251,7 +293,9 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                 
             #endif          
             
-        #endfor  
+        #endfor 
+        
+         
         
     def check_screen_bounds(self):
         
