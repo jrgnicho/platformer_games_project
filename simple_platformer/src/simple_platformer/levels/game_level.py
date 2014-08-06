@@ -88,10 +88,16 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                 if event.key == pygame.K_ESCAPE:
                     #self.player.execute(ActionKeys.EXIT_GAME) 
                     return False
+                
+                #endif
+                
+                if event.key == pygame.K_KP0:
+                    print "DASH commanded"
+                    self.player.execute(ActionKeys.DASH) 
+                    
                 #endif
                     
-                if event.key == pygame.K_UP:
-                    
+                if event.key == pygame.K_UP:                    
                     #print "JUMP commanded"
                     self.player.execute(ActionKeys.JUMP) 
                     
@@ -102,6 +108,12 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                 if event.key == pygame.K_UP:
                     self.player.execute(ActionKeys.CANCEL_JUMP) 
                     #print "CANCEL_JUMP commanded"
+                    
+                #endif
+                
+                if event.key == pygame.K_KP0:
+                    self.player.execute(ActionKeys.CANCEL_DASH) 
+                    
                 #endif
                 
             #endif
