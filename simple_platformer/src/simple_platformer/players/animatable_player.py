@@ -8,7 +8,8 @@ class AnimatablePlayer(AnimatableObject):
     
     JUMP_SPEED = -10 # y axis points downwards
     SUPER_JUMP_SPEED = -12
-    RUN_SPEED = 4    
+    RUN_SPEED = 4
+    DASH_SPEED = 8    
 
     
     def __init__(self):
@@ -29,18 +30,33 @@ class AnimatablePlayer(AnimatableObject):
         self.current_upward_speed = AnimatablePlayer.JUMP_SPEED
         self.set_current_animation_key(action_key)
         
-    def run(self,facing_right,action_key = ActionKeys.RUN):
+    def run(self,action_key = ActionKeys.RUN):
         
         self.current_upward_speed = 0
-        if facing_right:
-            self.facing_right = True
+        if self.facing_right:
             self.current_forward_speed = AnimatablePlayer.RUN_SPEED
         else:
-            self.facing_right = False
             self.current_forward_speed = -AnimatablePlayer.RUN_SPEED   
         #endif
         
-        self.set_current_animation_key(action_key)         
+        self.set_current_animation_key(action_key)    
+        
+    def set_forward_speed(self,speed):
+        if self.facing_right:
+            self.current_forward_speed = speed
+        else:
+            self.current_forward_speed = -speed  
+            
+        #endif 
+        
+    def increment_forward_speed(self,speed): 
+        
+        if self.facing_right:
+            self.current_forward_speed += speed
+        else:
+            self.current_forward_speed -= speed  
+            
+        #endif   
             
     def apply_gravity(self,dy = GameProperties.GRAVITY_ACCELERATION):        
         self.current_upward_speed += dy
@@ -115,7 +131,9 @@ class AnimatablePlayer(AnimatableObject):
                                                     self.sprite_loader.sprite_sets[ActionKeys.LAND].invert_set()) and
             
             self.add_animation_sets(ActionKeys.ATTACK,self.sprite_loader.sprite_sets["ATTACK_SLASH"],
-                                                    self.sprite_loader.sprite_sets["ATTACK_SLASH"].invert_set())) :
+                                                    self.sprite_loader.sprite_sets["ATTACK_SLASH"].invert_set()) and
+            self.add_animation_sets(ActionKeys.DASH,self.sprite_loader.sprite_sets[ActionKeys.DASH],
+                                                    self.sprite_loader.sprite_sets[ActionKeys.DASH].invert_set()) ) :
             
             print "Added all sprite sets"
         else:

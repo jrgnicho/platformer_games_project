@@ -8,6 +8,7 @@ class ActionKeys:
     MOVE_DOWN = "MOVE_DOWN"
     CANCEL_JUMP = "CANCEL_JUMP"
     CANCEL_MOVE = "CANCEL_MOVE" # in x axis
+    CANCEL_DASH = "CANCEL_DASH"
     STAND = "STAND"    
     RUN = "RUN"
     JUMP = "JUMP"    
