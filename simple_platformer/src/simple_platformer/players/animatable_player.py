@@ -10,6 +10,8 @@ class AnimatablePlayer(AnimatableObject):
     SUPER_JUMP_SPEED = -12
     RUN_SPEED = 4
     DASH_SPEED = 8    
+    STAND_DISTANCE_FROM_EDGE_THRESHOLD = 0.80 # percentage of width
+    FALL_DISTANCE_FROM_EDGE_THRESHOLD = 0.40     # percentage of width
 
     
     def __init__(self):
@@ -102,9 +104,19 @@ class AnimatablePlayer(AnimatableObject):
         
     def setup(self,sprites_desc_file):
         
-        return self.load_sprites(sprites_desc_file)
+        action_keys = [ActionKeys.STAND,
+                       ActionKeys.RUN ,
+                       ActionKeys.JUMP,
+                       ActionKeys.FALL,
+                       ActionKeys.LAND,
+                       ActionKeys.STAND_EDGE,
+                       ActionKeys.DASH_BREAK,
+                       #ActionKeys.ATTACK,
+                       ActionKeys.DASH]
         
-    def load_sprites(self,sprites_desc_file):
+        return self.load_sprites(sprites_desc_file,action_keys)
+        
+    def load_sprites(self,sprites_desc_file,action_keys):
         
         if self.sprite_loader.load_sets(sprites_desc_file):
             print "Sprites successfully loaded"
@@ -114,29 +126,16 @@ class AnimatablePlayer(AnimatableObject):
         
         #endif
         
-        # adding animations to player
-        if (self.add_animation_sets(ActionKeys.RUN,self.sprite_loader.sprite_sets[ActionKeys.RUN],
-                                                    self.sprite_loader.sprite_sets[ActionKeys.RUN].invert_set()) and
+        for key in action_keys:
             
-            self.add_animation_sets(ActionKeys.STAND,self.sprite_loader.sprite_sets[ActionKeys.STAND],
-                                                    self.sprite_loader.sprite_sets[ActionKeys.STAND].invert_set()) and
+            if (not self.add_animation_sets(key,self.sprite_loader.sprite_sets[key],
+                                                    self.sprite_loader.sprite_sets[key].invert_set())) :
+                print "Error loading animation for action key %s"%(key)
+                return False
+            #endif
             
-            self.add_animation_sets(ActionKeys.JUMP,self.sprite_loader.sprite_sets[ActionKeys.JUMP],
-                                                    self.sprite_loader.sprite_sets[ActionKeys.JUMP].invert_set()) and
-            
-            self.add_animation_sets(ActionKeys.FALL,self.sprite_loader.sprite_sets[ActionKeys.FALL],
-                                                    self.sprite_loader.sprite_sets[ActionKeys.FALL].invert_set()) and
-            
-            self.add_animation_sets(ActionKeys.LAND,self.sprite_loader.sprite_sets[ActionKeys.LAND],
-                                                    self.sprite_loader.sprite_sets[ActionKeys.LAND].invert_set()) and
-            
-            self.add_animation_sets(ActionKeys.ATTACK,self.sprite_loader.sprite_sets["ATTACK_SLASH"],
-                                                    self.sprite_loader.sprite_sets["ATTACK_SLASH"].invert_set()) and
-            self.add_animation_sets(ActionKeys.DASH,self.sprite_loader.sprite_sets[ActionKeys.DASH],
-                                                    self.sprite_loader.sprite_sets[ActionKeys.DASH].invert_set()) ) :
-            
-            print "Added all sprite sets"
-        else:
-            return False
+        #endfor
         
+        print "Added all sprite sets"
+
         return True
