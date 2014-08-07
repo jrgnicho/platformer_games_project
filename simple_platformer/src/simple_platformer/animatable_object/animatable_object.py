@@ -7,7 +7,6 @@ class AnimatableObject(pygame.sprite.Sprite):
     # animation modes
     ANIMATION_MODE_CYCLE = 1
     ANIMATION_MODE_CONSUME = 2    
-    ANIMATION_MODE_REPEAT_SINGLE = 3
     
     class Events:
     
@@ -31,7 +30,7 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.animation_sprites_left_side_dict= {}
         self.facing_right = True;
         self.animation_mode = AnimatableObject.ANIMATION_MODE_CYCLE
-        self.selected_frame_index = 0 # used on ANIMATION_MODE_REPEAT_SINGLE 
+        self.animation_selected_frames = 0 # only the frames which indices are in this list will be animated 
         
         # Graphics
         self.sprite_group = pygame.sprite.Group()
@@ -85,7 +84,7 @@ class AnimatableObject(pygame.sprite.Sprite):
         
         return True
         
-    def set_current_animation_key(self,animation_set_key):
+    def set_current_animation_key(self,animation_set_key, selected_frames = None):
         """
             Replaces ongoing animation with the animation corresponding to animation set key.  If animation set is
             already selected no change will be made.
@@ -104,8 +103,29 @@ class AnimatableObject(pygame.sprite.Sprite):
                 self.animation_time_elapsed = 0
                 self.animation_start_time = pygame.time.get_ticks()
                 self.animation_finished = False
+                
+                # checking selected index array
+                if selected_frames == None:
+                    self.animation_selected_frames = range(0,len(self.animation_sprites_right_side_dict[self.animation_set_key].sprites))
+                    
+                else:
+                    self.animation_selected_frames = selected_frames
+                    
+                #endif
+                    
             else:
+                
+                print TerminalColorCodes.FAIL +  "Animation set for key %s not found"%(key)
                 False
+        else:
+            
+            # checking selected index array
+            if selected_frames == None:
+                self.animation_selected_frames = range(0,len(self.animation_sprites_right_side_dict[self.animation_set_key].sprites))
+                
+            else:
+                self.animation_selected_frames = selected_frames
+            
             
             #endif
         
@@ -129,7 +149,8 @@ class AnimatableObject(pygame.sprite.Sprite):
             
         current_time = pygame.time.get_ticks()
         self.animation_time_elapsed = current_time - self.animation_start_time
-        self.animation_frame_index = (self.animation_time_elapsed)//sprite_set.rate_change
+        frame_index_position = (self.animation_time_elapsed)//sprite_set.rate_change
+        
         
         """
         # debugging
@@ -145,10 +166,11 @@ class AnimatableObject(pygame.sprite.Sprite):
             
         
         # check if current sprite set has been fully animated
-        if self.animation_frame_index >= len(sprite_set.sprites):
+        if frame_index_position >= len(self.animation_selected_frames):
             
             # select last frame
-            self.image = sprite_set.sprites[len(sprite_set.sprites)-1]
+            last_frame_index = self.animation_selected_frames[-1]
+            self.image = sprite_set.sprites[last_frame_index]
             
             # reset animation start time
             self.animation_start_time = current_time
@@ -168,7 +190,9 @@ class AnimatableObject(pygame.sprite.Sprite):
             #print "Notifying %s event"%(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
             self.notify(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
             
-        else:            
+        else: 
+            
+            self.animation_frame_index = self.animation_selected_frames[frame_index_position]         
             
             # select following frame           
             self.image = sprite_set.sprites[self.animation_frame_index]
