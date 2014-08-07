@@ -227,7 +227,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                 min = w*AnimatablePlayer.FALL_DISTANCE_FROM_EDGE_THRESHOLD
                 
                 if distance < max and distance > min:
-                    self.player.execute(ActionKeys.STAND_EDGE)
+                    self.player.execute(ActionKeys.LEFT_EDGE_NEAR)
                     #print "Edge distance %f"%(float(distance)/float(w))
                     break
                     
@@ -241,7 +241,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                 # standing on right edge
                 distance = abs(platform.rect.right - self.player.collision_sprite.rect.left )
                 if distance < max and distance > min:# and distance < w*AnimatablePlayer.FALL_DISTANCE_FROM_EDGE_THRESHOLD:
-                    self.player.execute(ActionKeys.STAND_EDGE)
+                    self.player.execute(ActionKeys.RIGHT_EDGE_NEAR)
                     #print "Edge distance %f"%(float(distance)/float(w))
                     break
                     
