@@ -9,7 +9,8 @@ class AnimatablePlayer(AnimatableObject):
     JUMP_SPEED = -10 # y axis points downwards
     SUPER_JUMP_SPEED = -12
     RUN_SPEED = 4
-    DASH_SPEED = 8    
+    DASH_SPEED = 8
+    DASH_BREAKING_SPEED = 1    
     STAND_DISTANCE_FROM_EDGE_THRESHOLD = 0.80 # percentage of width
     FALL_DISTANCE_FROM_EDGE_THRESHOLD = 0.40     # percentage of width
 
