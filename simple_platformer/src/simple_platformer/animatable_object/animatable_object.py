@@ -212,11 +212,22 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.rect.centerx = self.collision_sprite.rect.centerx
         self.rect.width = self.image.get_width()
         
+        #self.print_current_animation_details("RUN")
+        
+    def print_current_animation_details(self, action_key):
+        
+        if action_key == self.animation_set_key:
+        
+            print "Animation key: %s, frame index: %i, selected frames: %s"%(
+                                                                             self.animation_set_key,
+                                                                             self.animation_frame_index,
+                                                                             str(self.animation_selected_frames))
+        
     def animation_set_progress_percentage(self):
         
-        sprite_set = self.animation_sprites_right_side_dict[self.animation_set_key]
+        #sprite_set = self.animation_sprites_right_side_dict[self.animation_set_key]
         return float(self.animation_frame_index)/float(
-            len(sprite_set.sprites))
+            len(self.animation_selected_frames))
         
     def move_x(self,dx):        
         self.collision_sprite.rect.centerx +=dx

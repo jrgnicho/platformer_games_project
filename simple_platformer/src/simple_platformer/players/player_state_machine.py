@@ -56,8 +56,6 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         dash_state.add_action(ActionKeys.STEP_GAME,
                               lambda:self.set_inertia(AnimatablePlayer.RUN_SPEED
                                                         if self.animation_set_progress_percentage()>0.4 else 0))
-        #dash_state.set_exit_callback(lambda:self.set_inertia(AnimatablePlayer.RUN_SPEED
-        #                                                if self.animation_set_progress_percentage()>0.4 else 0))
         
         # dash breaking 
         dash_breaking_state = State(PlayerStateMachine.StateKeys.DASH_BREAKING)
@@ -70,9 +68,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         
         
         # stand state
-        stand_state = self.create_base_game_state(PlayerStateMachine.StateKeys.STANDING,
-                                                 0, lambda: (self.stand(),
-                                                             self.set_inertia(0)), None)
+        stand_state = self.create_base_game_state(PlayerStateMachine.StateKeys.STANDING,0,lambda: self.stand())
         
         
         

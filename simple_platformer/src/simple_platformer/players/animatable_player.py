@@ -56,7 +56,7 @@ class AnimatablePlayer(AnimatableObject):
         if self.facing_right:
             self.current_inertia = inertia
         else:
-            self.current_inertia = -inertia 
+            self.current_inertia = -inertia             
          
         
     def set_forward_speed(self,speed):
@@ -81,12 +81,10 @@ class AnimatablePlayer(AnimatableObject):
         
         if self.facing_right and self.current_inertia < 0:
             
-            print "facing right with inertia %f"%(self.current_inertia)
             return True
         
         if (not self.facing_right) and self.current_inertia >0:
             
-            print "facing left with inertia %f"%(self.current_inertia)
             return True
         
         #print "current inertia %f"%(self.current_inertia)
