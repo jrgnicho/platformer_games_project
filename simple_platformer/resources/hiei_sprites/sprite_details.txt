@@ -2,10 +2,7 @@ key file	colums rows rate(miliseconds) scalex scale y
 STAND hiei_stand_part1_0-0.png 1 1 200 SX1.5 SY1.5
 STAND hiei_stand_part2_0-2.png 3 1 200 SX1.5 SY1.5
 RUN hiei_run_0-7.png 8 1 80 SX1.5 SY1.5
-ATTACK_SLASH hiei_attack_slash_part1_0-0.png 1 1 100 SX1.5 SY1.5
-ATTACK_SLASH hiei_attack_slash_part2_0-0.png 1 1 100 SX1.5 SY1.5
-ATTACK_SLASH hiei_attack_slash_part3_0-1.png 2 1 100 SX1.5 SY1.5
-ATTACK_SLASH hiei_attack_slash_part4_0-0.png 1 1 100 SX1.5 SY1.5
+ATTACK_SLASH hiei_attack_slash_0-4.png 5 1 100 SX1.5 SY1.5
 JUMP hiei_jump_ascend_0-4.png 5 1 300 SX1.5 SY1.5
 FALL hiei_jump_midair_0-1.png 2 1 300 SX1.5 SY1.5
 LAND hiei_jump_land_0-2.png 3 1 100 SX1.5 SY1.5
@@ -25,3 +22,8 @@ STAND_EDGE stand_at_the_edge_part1_0-0.png 1 1 120 SX1.5 SY1.5
 STAND_EDGE stand_at_the_edge_part2_0-0.png 1 1 120 SX1.5 SY1.5
 STAND_EDGE stand_at_the_edge_part3_0-0.png 1 1 120 SX1.5 SY1.5
 STAND_EDGE stand_at_the_edge_part4_0-0.png 1 1 120 SX1.5 SY1.5
+ATTACK_Y_UP hiei_attack_y_up_0-6.png 7 1 100 SX1.5 SY1.5
+ATTACK_JUMP_B hiei_attack_jump_b_part1_0-0.png 1 1 100 SX1.5 SY1.5
+ATTACK_JUMP_B hiei_attack_jump_b_part2_0-0.png 1 1 100 SX1.5 SY1.5
+ATTACK_JUMP_B hiei_attack_jump_b_part3_0-0.png 1 1 100 SX1.5 SY1.5
+ATTACK_JUMP_B hiei_attack_jump_b_part4_0-1.png 2 1 100 SX1.5 SY1.5
