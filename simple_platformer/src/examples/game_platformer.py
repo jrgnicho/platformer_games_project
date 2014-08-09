@@ -32,8 +32,11 @@ class GamePlatformer:
     def load_resources(self):
         
         rospack = rospkg.RosPack()
-        desc_file = rospack.get_path('simple_platformer') + '/resources/hiei_sprites/sprite_details.txt'       
-        return self.player.setup(desc_file)
+        desc_file = rospack.get_path('simple_platformer') + '/resources/hiei_sprites/sprite_details.txt'     
+        background_file = rospack.get_path('simple_platformer') + '/resources/backgrounds/cplusplus_programming_background_960x800.jpg'
+        
+        
+        return self.level.load_background(background_file) and self.player.setup(desc_file)
           
     def setup(self):
         

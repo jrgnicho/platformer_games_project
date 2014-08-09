@@ -27,6 +27,77 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         # level screen bounds
         self.screen_bounds = ScreenBounds()
         
+        # background
+        self.background = None
+        
+    def load_background(self,file_name):
+        
+        self.background = pygame.image.load(file_name).convert()
+        self.background.set_colorkey(Colors.WHITE)  
+        self.background = self.scale_background(self.background) 
+        background_rect = self.background.get_rect().copy()    
+        
+        # background scrolling members
+        Gx = 0.5 * (ScreenProperties.SCREEN_WIDTH - self.screen_bounds.rect.width)  
+        Gy = 0.5 * (ScreenProperties.SCREEN_HEIGHT - self.screen_bounds.rect.height)
+        
+        # change ratio in x
+        dx = float(background_rect.width - ScreenProperties.SCREEN_WIDTH)/float(self.rect.width - self.screen_bounds.rect.width)
+        
+        # change ratio in y
+        dy = float(background_rect.height - ScreenProperties.SCREEN_HEIGHT)/float(self.rect.height - self.screen_bounds.rect.height)
+        
+        # creating interpolation function for computing background position as a function of level position
+        self.interp_background_position = lambda lx,ly : (float(lx - Gx)*dx,float(ly- Gy)*dy)      
+
+        
+        return True
+    
+    def scale_background(self,img):
+        """
+        Scales the background image so that its size is between that of the screen and the level 
+        where screen < background < level       
+        
+        """
+        rect = img.get_rect().copy()
+        sx = 1
+        sy = 1
+        s = 1
+        w = rect.width
+        h = rect.height
+        if rect.width < ScreenProperties.SCREEN_WIDTH:
+            
+            sx = 0.6*float(self.rect.width)/float(w)            
+        #endif
+        
+        if rect.height < ScreenProperties.SCREEN_HEIGHT:
+            
+            sy = 0.6*float(self.rect.height)/float(h)
+        #endif
+            
+        # use largest scale    
+        if sx > sy:            
+            s = sx
+            
+        else:            
+            s = sy
+            
+        #endif
+        
+        scaled_image = img
+        if s != 1:
+            w = int(s*w)
+            h = int(s*h)
+            
+            scaled_image = pygame.transform.smoothscale(img,(w,h))                    
+            print "Scaled background from size %i x %i to %i x %i"%(rect.width,rect.height,w,h)
+            
+        else:
+            print "Using default background size of %i x %i"%(rect.width,rect.height)
+        
+        #endif
+        
+        return scaled_image    
         
     def setup(self):
         
@@ -179,8 +250,13 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         
     def draw(self,screen):        
         
-        # draw background
+        # draw background        
         screen.fill(Colors.BLUE)
+        if self.background != None:
+            
+            (x,y) = self.interp_background_position(self.rect.x,self.rect.y)
+            screen.blit(self.background,(int(x),int(y)))
+            
 
         # draw objects
         self.platforms.draw(screen)
@@ -188,6 +264,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         
         # draw player
         self.player.draw(screen)
+        
         
         
     def scroll(self,dx,dy):
