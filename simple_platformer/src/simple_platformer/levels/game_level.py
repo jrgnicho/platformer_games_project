@@ -27,6 +27,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         # level screen bounds
         self.screen_bounds = ScreenBounds()
         
+        
     def setup(self):
         
         # setup player
@@ -152,13 +153,14 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
 
         
         # apply gravity
-        self.player.execute(ActionKeys.APPLY_GRAVITY)      
+        self.player.execute(ActionKeys.APPLY_GRAVITY)   
+        self.player.execute(ActionKeys.APPLY_INERTIA)   
         
         # moving and checking collision
-        self.player.collision_sprite.rect.centery += self.player.current_upward_speed 
+        self.player.collision_sprite.rect.centery += self.player.compute_change_in_y() 
         self.check_collisions_in_y() 
         
-        self.player.collision_sprite.rect.centerx += self.player.current_forward_speed 
+        self.player.collision_sprite.rect.centerx += self.player.compute_change_in_x() 
         self.check_collisions_in_x() 
         
         # check for platform below
@@ -192,7 +194,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         """ Shifts the world and its objects by incr """
         """ inputs:"""
         """     - incr: Vector2D() value in world coordinates """
-        
+                
         self.rect.x += dx
         self.rect.y -= dy
         

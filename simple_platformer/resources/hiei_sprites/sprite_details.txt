@@ -18,7 +18,10 @@ MIDAIR_DASH hiei_midair_dash_part2_0-0.png 1 1 100 SX1.5 SY1.5
 MIDAIR_DASH hiei_midair_dash_part3_0-0.png 1 1 100 SX1.5 SY1.5
 MIDAIR_DASH hiei_midair_dash_part4_0-0.png 1 1 100 SX1.5 SY1.5
 MIDAIR_DASH hiei_midair_dash_part4_0-0.png 1 1 100 SX1.5 SY1.5
-DASH_BREAK dash_break_part1_0-0.png 1 1 100 SX1.5 SY1.5
-DASH_BREAK dash_break_part2_0-3.png 4 1 100 SX1.5 SY1.5
-DASH_BREAK dash_break_part3_0-0.png 1 1 100 SX1.5 SY1.5
-STAND_EDGE stand_at_the_edge_0-0.png 1 1 100 SX1.5 SY1.5
+DASH_BREAK dash_break_part1_0-0.png 1 1 60 SX1.5 SY1.5
+DASH_BREAK dash_break_part2_0-3.png 4 1 60 SX1.5 SY1.5
+DASH_BREAK dash_break_part3_0-0.png 1 1 60 SX1.5 SY1.5
+STAND_EDGE stand_at_the_edge_part1_0-0.png 1 1 120 SX1.5 SY1.5
+STAND_EDGE stand_at_the_edge_part2_0-0.png 1 1 120 SX1.5 SY1.5
+STAND_EDGE stand_at_the_edge_part3_0-0.png 1 1 120 SX1.5 SY1.5
+STAND_EDGE stand_at_the_edge_part4_0-0.png 1 1 120 SX1.5 SY1.5

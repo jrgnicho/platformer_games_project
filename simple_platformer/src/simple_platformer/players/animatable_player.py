@@ -10,7 +10,7 @@ class AnimatablePlayer(AnimatableObject):
     SUPER_JUMP_SPEED = -12
     RUN_SPEED = 4
     DASH_SPEED = 8
-    DASH_BREAKING_SPEED = 1    
+    DASH_BREAKING_SPEED = 1        
     STAND_DISTANCE_FROM_EDGE_THRESHOLD = 0.80 # percentage of width
     FALL_DISTANCE_FROM_EDGE_THRESHOLD = 0.40     # percentage of width
 
@@ -20,12 +20,20 @@ class AnimatablePlayer(AnimatableObject):
         # superclass constructor
         AnimatableObject.__init__(self)
         
-        # jump speed
+        # movement variables 
         self.current_upward_speed = 0
-        self.current_forward_speed = 0     
+        self.current_forward_speed = 0   
+        self.current_inertia = 0  #"amount of resistance to change in velocity"
+        self.mass = 1
         
+        # position change
+        self.dx = 0
+        self.dy = 0
+                
         # utility class for loading sprites        
-        self.sprite_loader = SpriteLoader()      
+        self.sprite_loader = SpriteLoader() 
+        
+        
 
         
     def jump(self,action_key = ActionKeys.JUMP):
@@ -42,7 +50,14 @@ class AnimatablePlayer(AnimatableObject):
             self.current_forward_speed = -AnimatablePlayer.RUN_SPEED   
         #endif
         
-        self.set_current_animation_key(action_key)    
+        self.set_current_animation_key(action_key)   
+        
+    def set_inertia(self,inertia):
+        if self.facing_right:
+            self.current_inertia = inertia
+        else:
+            self.current_inertia = -inertia 
+         
         
     def set_forward_speed(self,speed):
         if self.facing_right:
@@ -60,9 +75,55 @@ class AnimatablePlayer(AnimatableObject):
             self.current_forward_speed -= speed  
             
         #endif   
+        
+    def has_inertial_resistance(self):      
+        
+        
+        if self.facing_right and self.current_inertia < 0:
             
-    def apply_gravity(self,dy = GameProperties.GRAVITY_ACCELERATION):        
-        self.current_upward_speed += dy
+            print "facing right with inertia %f"%(self.current_inertia)
+            return True
+        
+        if (not self.facing_right) and self.current_inertia >0:
+            
+            print "facing left with inertia %f"%(self.current_inertia)
+            return True
+        
+        #print "current inertia %f"%(self.current_inertia)
+        
+        return False       
+        
+            
+    def apply_gravity(self,g = GameProperties.GRAVITY_ACCELERATION):    
+            
+        self.current_upward_speed += g
+        self.dy = self.current_upward_speed
+        
+    def apply_inertia(self,inertia_reduction = GameProperties.INERTIA_REDUCTION):
+        
+        if self.current_inertia != 0:
+        
+            self.current_forward_speed = self.current_inertia
+            if self.current_inertia>0 :
+                self.current_inertia-=inertia_reduction
+                
+                if self.current_inertia < 0:
+                    self.current_inertia = 0
+                    
+            elif self.current_inertia < 0 :
+                
+                self.current_inertia+=inertia_reduction
+                
+                if self.current_inertia > 0:
+                    self.current_inertia = 0
+                    
+                #endif
+                
+            #endif
+            
+                    
+        #endif
+                
             
     def land(self,action_key = ActionKeys.LAND):
         
@@ -70,14 +131,15 @@ class AnimatablePlayer(AnimatableObject):
         self.current_forward_speed = 0
         self.set_current_animation_key(action_key)
         
-    def apply_inertia(self,toward_right,deceleration_rate):
+                
+    def compute_change_in_x(self):
+               
+        return self.current_forward_speed
+    
+    def compute_change_in_y(self):
         
-        if facing_right:
-            self.facing_right = True
-            self.current_forward_speed +=deceleration_rate
-        else:
-            self.facing_right = False
-            self.current_forward_speed -=deceleration_rate
+        return self.current_upward_speed        
+        
             
     def turn_right(self,dx):        
         self.facing_right = True
