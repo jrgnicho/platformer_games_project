@@ -38,8 +38,11 @@ if __name__ == "__main__":
     sp.image = pygame.Surface([40,60])
     sp.image.fill(Colors.RED)
     sp.rect = sp.image.get_rect()
-    sp.rect.x = ScreenProperties.SCREEN_WIDTH*0.5
-    sp.rect.y = ScreenProperties.SCREEN_HEIGHT*0.5
+    sp.rect.centerx = ScreenProperties.SCREEN_WIDTH*0.5
+    sp.rect.centery = ScreenProperties.SCREEN_HEIGHT*0.5
+    
+    # copy of rectange
+    rect2 = sp.rect.copy()
     
     active_sprites = pygame.sprite.Group()
     #active_sprites.add(background)
@@ -109,6 +112,14 @@ if __name__ == "__main__":
             sp.image = sprite_set.sprites[sprite_index]
             
         #endif
+        
+        # updating rectangle position and size
+        sp.rect.y = rect2.y
+        sp.rect.y += rect2.height - sp.image.get_height()
+        sp.rect.height = sp.image.get_height()
+        
+        sp.rect.centerx = rect2.centerx
+        sp.rect.width = sp.image.get_width()
              
         active_sprites.update()
         screen.blit(background.image,(0,0))
