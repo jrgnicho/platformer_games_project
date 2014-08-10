@@ -225,7 +225,6 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         
         # apply gravity
         self.player.execute(ActionKeys.APPLY_GRAVITY)   
-        self.player.execute(ActionKeys.APPLY_INERTIA)   
         
         # moving and checking collision
         self.player.collision_sprite.rect.centery += self.player.compute_change_in_y() 

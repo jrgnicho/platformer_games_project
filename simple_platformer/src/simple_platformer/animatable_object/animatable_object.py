@@ -31,6 +31,7 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.facing_right = True;
         self.animation_mode = AnimatableObject.ANIMATION_MODE_CYCLE
         self.animation_selected_frames = 0 # only the frames which indices are in this list will be animated 
+        self.animation_cycles_counter = 0 # number of times the current animation sequence has been cycled through
         
         # Graphics
         self.sprite_group = pygame.sprite.Group()
@@ -103,6 +104,7 @@ class AnimatableObject(pygame.sprite.Sprite):
                 self.animation_time_elapsed = 0
                 self.animation_start_time = pygame.time.get_ticks()
                 self.animation_finished = False
+                self.animation_cycles_counter = 0
                 
                 # checking selected index array
                 if selected_frames == None:
@@ -188,6 +190,7 @@ class AnimatableObject(pygame.sprite.Sprite):
             #endif
             
             #print "Notifying %s event"%(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
+            self.animation_cycles_counter +=1
             self.notify(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
             
         else: 
@@ -210,7 +213,8 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.rect.height = self.image.get_height()
         
         self.rect.centerx = self.collision_sprite.rect.centerx
-        self.rect.width = self.image.get_width()
+        self.rect.width = self.image.get_width()       
+        
         
         #self.print_current_animation_details("RUN")
         

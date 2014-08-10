@@ -9,8 +9,7 @@ class AnimatablePlayer(AnimatableObject):
     JUMP_SPEED = -10 # y axis points downwards
     SUPER_JUMP_SPEED = -12
     RUN_SPEED = 4
-    DASH_SPEED = 8
-    DASH_BREAKING_SPEED = 1        
+    DASH_SPEED = 8       
     STAND_DISTANCE_FROM_EDGE_THRESHOLD = 0.80 # percentage of width
     FALL_DISTANCE_FROM_EDGE_THRESHOLD = 0.40     # percentage of width
 
@@ -74,23 +73,10 @@ class AnimatablePlayer(AnimatableObject):
         else:
             self.current_forward_speed -= speed  
             
-        #endif   
-        
-    def has_inertial_resistance(self):      
-        
-        
-        if self.facing_right and self.current_inertia < 0:
-            
-            return True
-        
-        if (not self.facing_right) and self.current_inertia >0:
-            
-            return True
-        
-        #print "current inertia %f"%(self.current_inertia)
-        
-        return False       
-        
+        #endif 
+    def set_upward_speed(self,s):
+        self.current_upward_speed = s  
+
             
     def apply_gravity(self,g = GameProperties.GRAVITY_ACCELERATION):    
             
@@ -102,14 +88,18 @@ class AnimatablePlayer(AnimatableObject):
         if self.current_inertia != 0:
         
             self.current_forward_speed = self.current_inertia
+            
             if self.current_inertia>0 :
-                self.current_inertia-=inertia_reduction
+                                
+                # reduce inertia
+                self.current_inertia-=inertia_reduction            
                 
                 if self.current_inertia < 0:
                     self.current_inertia = 0
                     
             elif self.current_inertia < 0 :
-                
+                                
+                # reduce inertia
                 self.current_inertia+=inertia_reduction
                 
                 if self.current_inertia > 0:
@@ -173,7 +163,8 @@ class AnimatablePlayer(AnimatableObject):
                        ActionKeys.STAND_EDGE,
                        ActionKeys.DASH_BREAK,
                        #ActionKeys.ATTACK,
-                       ActionKeys.DASH]
+                       ActionKeys.DASH,
+                       ActionKeys.MIDAIR_DASH]
         
         return self.load_sprites(sprites_desc_file,action_keys)
         
