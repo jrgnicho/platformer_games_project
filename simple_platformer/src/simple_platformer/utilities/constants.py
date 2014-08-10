@@ -20,7 +20,7 @@ class GameProperties:
     
     FRAME_RATE = 60
     GRAVITY_ACCELERATION = 0.35 # pixels per second square
-    INERTIA_REDUCTION = 0.2
+    INERTIA_REDUCTION = 0.14
     
 class TerminalColorCodes:
     

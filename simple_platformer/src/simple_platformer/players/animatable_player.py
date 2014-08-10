@@ -9,9 +9,11 @@ class AnimatablePlayer(AnimatableObject):
     JUMP_SPEED = -10 # y axis points downwards
     SUPER_JUMP_SPEED = -12
     RUN_SPEED = 4
-    DASH_SPEED = 8       
+    DASH_SPEED = 8    
+    MAX_CHANGE_X = 8   
     STAND_DISTANCE_FROM_EDGE_THRESHOLD = 0.80 # percentage of width
     FALL_DISTANCE_FROM_EDGE_THRESHOLD = 0.40     # percentage of width
+    MIDAIR_DASHES_ALLOWED = 1
 
     
     def __init__(self):
@@ -20,17 +22,17 @@ class AnimatablePlayer(AnimatableObject):
         AnimatableObject.__init__(self)
         
         # movement variables 
+        self.max_x_change = self.MAX_CHANGE_X
         self.current_upward_speed = 0
         self.current_forward_speed = 0   
         self.current_inertia = 0  #"amount of resistance to change in velocity"
         self.mass = 1
-        
-        # position change
-        self.dx = 0
-        self.dy = 0
-                
+                        
         # utility class for loading sprites        
         self.sprite_loader = SpriteLoader() 
+        
+        # midair dashing
+        self.midair_dash_countdown = 1
         
         
 
@@ -40,16 +42,36 @@ class AnimatablePlayer(AnimatableObject):
         self.current_upward_speed = AnimatablePlayer.JUMP_SPEED
         self.set_current_animation_key(action_key)
         
-    def run(self,action_key = ActionKeys.RUN):
+    def run(self,speed,action_key = ActionKeys.RUN):
         
-        self.current_upward_speed = 0
-        if self.facing_right:
-            self.current_forward_speed = AnimatablePlayer.RUN_SPEED
-        else:
-            self.current_forward_speed = -AnimatablePlayer.RUN_SPEED   
+        if self.facing_right and self.current_inertia > 0:
+            self.current_inertia = 0
         #endif
         
-        self.set_current_animation_key(action_key)   
+        if (not self.facing_right) and self.current_inertia <0:
+            self.current_inertia = 0
+        #endif
+            
+        self.set_current_animation_key(action_key),
+        self.set_forward_speed(speed)         
+        
+    def dash(self,speed,action_key = ActionKeys.DASH): 
+        
+       self.set_current_animation_key(action_key),
+       self.set_forward_speed(speed)
+       
+    def dash_break(self,inertia, action_key = ActionKeys.DASH_BREAK):
+        
+        self.set_inertia(inertia)
+        self.set_forward_speed(0),
+        self.set_current_animation_key(action_key)
+       
+    def midair_dash(self,speed,action_key = ActionKeys.MIDAIR_DASH):
+        
+       self.set_current_animation_key(action_key),
+       self.set_forward_speed(speed)
+       self.set_upward_speed(0)
+       self.midair_dash_countdown -=1
         
     def set_inertia(self,inertia):
         if self.facing_right:
@@ -80,49 +102,52 @@ class AnimatablePlayer(AnimatableObject):
             
     def apply_gravity(self,g = GameProperties.GRAVITY_ACCELERATION):    
             
-        self.current_upward_speed += g
-        self.dy = self.current_upward_speed
-        
-    def apply_inertia(self,inertia_reduction = GameProperties.INERTIA_REDUCTION):
-        
-        if self.current_inertia != 0:
-        
-            self.current_forward_speed = self.current_inertia
-            
-            if self.current_inertia>0 :
-                                
-                # reduce inertia
-                self.current_inertia-=inertia_reduction            
-                
-                if self.current_inertia < 0:
-                    self.current_inertia = 0
-                    
-            elif self.current_inertia < 0 :
-                                
-                # reduce inertia
-                self.current_inertia+=inertia_reduction
-                
-                if self.current_inertia > 0:
-                    self.current_inertia = 0
-                    
-                #endif
-                
-            #endif
-            
-                    
-        #endif
+        self.current_upward_speed += g   
                 
             
     def land(self,action_key = ActionKeys.LAND):
         
+        self.midair_dash_countdown = AnimatablePlayer.MIDAIR_DASHES_ALLOWED
         self.current_upward_speed = 0
         self.current_forward_speed = 0
         self.set_current_animation_key(action_key)
         
+    def consume_inertia_residual(self,inertia_reduction = GameProperties.INERTIA_REDUCTION):
+        
+        if self.current_inertia>0 :
+                            
+            # reduce inertia
+            self.current_inertia-=inertia_reduction            
+            
+            if self.current_inertia < 0:
+                self.current_inertia = 0
+                
+        elif self.current_inertia < 0 :
+                            
+            # reduce inertia
+            self.current_inertia+=inertia_reduction
+            
+            if self.current_inertia > 0:
+                self.current_inertia = 0
+                
+            #endif
+            
+        #endif
+        
                 
     def compute_change_in_x(self):
+        
+        dx = self.current_forward_speed + self.current_inertia
+        self.consume_inertia_residual()
+        
+        if dx > self.max_x_change:
+            dx = self.max_x_change
+        elif dx < -self.max_x_change:
+            dx = -self.max_x_change
+            
+        #endif
                
-        return self.current_forward_speed
+        return dx
     
     def compute_change_in_y(self):
         

@@ -239,13 +239,11 @@ class AnimatableObject(pygame.sprite.Sprite):
     def move_y(self,dy):
         self.collision_sprite.rect.centery +=dy
     
-    def turn_right(self,x):        
+    def face_right(self):        
         self.facing_right = True
-        self.collision_sprite.rect.x +=dx
         
-    def turn_left(self,x):        
+    def face_left(self):        
         self.facing_right = False
-        self.collision_sprite.rect.x -=dx
         
     def set_bb_bottom(self,bt):        
         self.collision_sprite.rect.bottom = bt

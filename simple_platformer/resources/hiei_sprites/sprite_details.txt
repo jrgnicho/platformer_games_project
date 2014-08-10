@@ -10,11 +10,11 @@ FULL_JUMP hiei_jump_full_0-7.png 8 1 100 SX1.5 SY1.5
 LONG_JUMP hiei_jump_higher_part1_0-1.png 2 1 120 SX1.5 SY1.5
 LONG_JUMP hiei_jump_higher_part2_0-5.png 6 1 120 SX1.5 SY1.5
 DASH hiei_dash_0-2.png 3 1 120 SX1.5 SY1.5
-MIDAIR_DASH hiei_midair_dash_part1_0-1.png 2 1 100 SX1.5 SY1.5
-MIDAIR_DASH hiei_midair_dash_part2_0-0.png 1 1 100 SX1.5 SY1.5
-MIDAIR_DASH hiei_midair_dash_part3_0-0.png 1 1 100 SX1.5 SY1.5
-MIDAIR_DASH hiei_midair_dash_part4_0-0.png 1 1 100 SX1.5 SY1.5
-MIDAIR_DASH hiei_midair_dash_part4_0-0.png 1 1 100 SX1.5 SY1.5
+MIDAIR_DASH hiei_midair_dash_part1_0-1.png 2 1 80 SX1.5 SY1.5
+MIDAIR_DASH hiei_midair_dash_part2_0-0.png 1 1 80 SX1.5 SY1.5
+MIDAIR_DASH hiei_midair_dash_part3_0-0.png 1 1 80 SX1.5 SY1.5
+MIDAIR_DASH hiei_midair_dash_part4_0-0.png 1 1 80 SX1.5 SY1.5
+MIDAIR_DASH hiei_midair_dash_part4_0-0.png 1 1 80 SX1.5 SY1.5
 DASH_BREAK dash_break_part1_0-0.png 1 1 60 SX1.5 SY1.5
 DASH_BREAK dash_break_part2_0-3.png 4 1 60 SX1.5 SY1.5
 DASH_BREAK dash_break_part3_0-0.png 1 1 60 SX1.5 SY1.5
