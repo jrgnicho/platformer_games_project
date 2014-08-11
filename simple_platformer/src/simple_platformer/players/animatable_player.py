@@ -53,7 +53,11 @@ class AnimatablePlayer(AnimatableObject):
         #endif
             
         self.set_current_animation_key(action_key),
-        self.set_forward_speed(speed)         
+        self.set_forward_speed(speed)  
+        
+    def hang(self,wall_rect):
+        
+        print "unimplemented"       
         
     def dash(self,speed,action_key = ActionKeys.DASH): 
         
@@ -108,9 +112,17 @@ class AnimatablePlayer(AnimatableObject):
     def land(self,action_key = ActionKeys.LAND):
         
         self.midair_dash_countdown = AnimatablePlayer.MIDAIR_DASHES_ALLOWED
+        
+        self.set_current_animation_key(action_key)
+        
+        if (self.current_upward_speed + self.current_inertia) < 0 and self.current_inertia > 0:
+            self.current_inertia = 0
+        elif (self.current_upward_speed + self.current_inertia) > 0 and self.current_inertia < 0:
+            self.current_inertia = 0
+        #endif
+        
         self.current_upward_speed = 0
         self.current_forward_speed = 0
-        self.set_current_animation_key(action_key)
         
     def consume_inertia_residual(self,inertia_reduction = GameProperties.INERTIA_REDUCTION):
         
