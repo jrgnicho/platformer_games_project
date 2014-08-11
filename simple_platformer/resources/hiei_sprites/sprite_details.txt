@@ -27,3 +27,4 @@ ATTACK_JUMP_B hiei_attack_jump_b_part1_0-0.png 1 1 100 SX1.5 SY1.5
 ATTACK_JUMP_B hiei_attack_jump_b_part2_0-0.png 1 1 100 SX1.5 SY1.5
 ATTACK_JUMP_B hiei_attack_jump_b_part3_0-0.png 1 1 100 SX1.5 SY1.5
 ATTACK_JUMP_B hiei_attack_jump_b_part4_0-1.png 2 1 100 SX1.5 SY1.5
+HANGING hiei_hanging_0-3.png 4 1 110 SX1.5 SY1.5
