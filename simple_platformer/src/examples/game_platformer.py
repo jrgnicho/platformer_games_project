@@ -64,7 +64,7 @@ class GamePlatformer:
         
         size = [ScreenProperties.SCREEN_WIDTH,ScreenProperties.SCREEN_HEIGHT]
         self.screen = pygame.display.set_mode(size)
-        pygame.display.set_caption("Slim shady")        
+        pygame.display.set_caption("Slim shady [x: jump , z: dash, <-: left, ->: right")        
         
         if not self.setup():
             print "setup failed"
