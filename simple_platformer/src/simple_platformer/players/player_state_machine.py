@@ -89,7 +89,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                                          AnimatablePlayer.RUN_SPEED, lambda: self.jump(), None)
         jump_state.add_action(ActionKeys.CANCEL_MOVE,lambda : self.cancel_move())
         jump_state.add_action(ActionKeys.CANCEL_JUMP,lambda : self.cancel_jump())
-        jump_state.add_action(ActionKeys.APPLY_GRAVITY,lambda : self.apply_gravity())        
+        jump_state.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.apply_gravity(g))        
         jump_state.add_action(ActionKeys.APPLY_INERTIA,lambda : self.apply_inertia())
         
         
@@ -97,7 +97,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         fall_state = self.create_base_game_state(PlayerStateMachine.StateKeys.FALLING,
                                  AnimatablePlayer.RUN_SPEED, lambda: self.fall(), None)
         fall_state.add_action(ActionKeys.CANCEL_MOVE,lambda : self.cancel_move())
-        fall_state.add_action(ActionKeys.APPLY_GRAVITY,lambda : self.apply_gravity())
+        fall_state.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.apply_gravity(g))
         fall_state.add_action(ActionKeys.APPLY_INERTIA,lambda : self.apply_inertia())
         
         # land state
