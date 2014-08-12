@@ -3,17 +3,9 @@ from simple_platformer.animatable_object import AnimatableObject
 from simple_platformer.game_state_machine import ActionKeys
 from simple_platformer.utilities import GameProperties
 from simple_platformer.utilities import SpriteLoader
+from simple_platformer.players import PlayerProperties
 
 class AnimatablePlayer(AnimatableObject):
-    
-    JUMP_SPEED = -10 # y axis points downwards
-    SUPER_JUMP_SPEED = -12
-    RUN_SPEED = 4
-    DASH_SPEED = 8    
-    MAX_CHANGE_X = 8   
-    STAND_DISTANCE_FROM_EDGE_THRESHOLD = 0.80 # percentage of width
-    FALL_DISTANCE_FROM_EDGE_THRESHOLD = 0.40     # percentage of width
-    MIDAIR_DASHES_ALLOWED = 1
 
     
     def __init__(self):
@@ -21,12 +13,13 @@ class AnimatablePlayer(AnimatableObject):
         # superclass constructor
         AnimatableObject.__init__(self)
         
-        # movement variables 
-        self.max_x_change = self.MAX_CHANGE_X
+        # player properties
+        self.player_properties = PlayerProperties()
+        
+        # movement 
         self.current_upward_speed = 0
         self.current_forward_speed = 0   
         self.current_inertia = 0  #"amount of resistance to change in velocity"
-        self.mass = 1
                         
         # utility class for loading sprites        
         self.sprite_loader = SpriteLoader() 
@@ -39,10 +32,10 @@ class AnimatablePlayer(AnimatableObject):
         
     def jump(self,action_key = ActionKeys.JUMP):
         
-        self.current_upward_speed = AnimatablePlayer.JUMP_SPEED
+        self.current_upward_speed = self.player_properties.jump_speed
         self.set_current_animation_key(action_key)
         
-    def run(self,speed,action_key = ActionKeys.RUN):
+    def run(self,action_key = ActionKeys.RUN):
         
         if self.facing_right and self.current_inertia > 0:
             self.current_inertia = 0
@@ -53,16 +46,16 @@ class AnimatablePlayer(AnimatableObject):
         #endif
             
         self.set_current_animation_key(action_key),
-        self.set_forward_speed(speed)  
+        self.set_forward_speed(self.player_properties.run_speed)  
         
     def hang(self,wall_rect):
         
         print "unimplemented"       
         
-    def dash(self,speed,action_key = ActionKeys.DASH): 
+    def dash(self,action_key = ActionKeys.DASH): 
         
        self.set_current_animation_key(action_key),
-       self.set_forward_speed(speed)
+       self.set_forward_speed(self.player_properties.dash_speed)
        
     def dash_break(self,inertia, action_key = ActionKeys.DASH_BREAK):
         
@@ -70,10 +63,10 @@ class AnimatablePlayer(AnimatableObject):
         self.set_forward_speed(0),
         self.set_current_animation_key(action_key)
        
-    def midair_dash(self,speed,action_key = ActionKeys.MIDAIR_DASH):
+    def midair_dash(self,action_key = ActionKeys.MIDAIR_DASH):
         
        self.set_current_animation_key(action_key),
-       self.set_forward_speed(speed)
+       self.set_forward_speed(self.player_properties.dash_speed)
        self.set_upward_speed(0)
        self.midair_dash_countdown -=1
         
@@ -111,7 +104,7 @@ class AnimatablePlayer(AnimatableObject):
             
     def land(self,action_key = ActionKeys.LAND):
         
-        self.midair_dash_countdown = AnimatablePlayer.MIDAIR_DASHES_ALLOWED
+        self.midair_dash_countdown = self.player_properties.max_midair_dashes
         
         self.set_current_animation_key(action_key)
         
@@ -124,12 +117,12 @@ class AnimatablePlayer(AnimatableObject):
         self.current_upward_speed = 0
         self.current_forward_speed = 0
         
-    def consume_inertia_residual(self,inertia_reduction = GameProperties.INERTIA_REDUCTION):
+    def consume_inertia_residual(self):
         
         if self.current_inertia>0 :
                             
             # reduce inertia
-            self.current_inertia-=inertia_reduction            
+            self.current_inertia-=self.player_properties.inertial_reduction           
             
             if self.current_inertia < 0:
                 self.current_inertia = 0
@@ -137,7 +130,7 @@ class AnimatablePlayer(AnimatableObject):
         elif self.current_inertia < 0 :
                             
             # reduce inertia
-            self.current_inertia+=inertia_reduction
+            self.current_inertia+=self.player_properties.inertial_reduction  
             
             if self.current_inertia > 0:
                 self.current_inertia = 0
@@ -152,10 +145,10 @@ class AnimatablePlayer(AnimatableObject):
         dx = self.current_forward_speed + self.current_inertia
         self.consume_inertia_residual()
         
-        if dx > self.max_x_change:
-            dx = self.max_x_change
-        elif dx < -self.max_x_change:
-            dx = -self.max_x_change
+        if dx > self.player_properties.max_x_position_change:
+            dx = self.player_properties.max_x_position_change
+        elif dx < -self.player_properties.max_x_position_change:
+            dx = -self.player_properties.max_x_position_change
             
         #endif
                

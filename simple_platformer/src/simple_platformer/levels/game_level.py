@@ -302,8 +302,8 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                 # standing on left edge
                 distance  = abs(self.player.collision_sprite.rect.right - platform.rect.left)
                 w = self.player.collision_sprite.rect.width
-                max = w*AnimatablePlayer.STAND_DISTANCE_FROM_EDGE_THRESHOLD
-                min = w*AnimatablePlayer.FALL_DISTANCE_FROM_EDGE_THRESHOLD
+                max = w*self.player.player_properties.max_distance_from_edge
+                min = w*self.player.player_properties.min_distance_from_edge
                 
                 if distance < max and distance > min:
                     self.player.execute(ActionKeys.LEFT_EDGE_NEAR)
@@ -319,7 +319,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                 
                 # standing on right edge
                 distance = abs(platform.rect.right - self.player.collision_sprite.rect.left )
-                if distance < max and distance > min:# and distance < w*AnimatablePlayer.FALL_DISTANCE_FROM_EDGE_THRESHOLD:
+                if distance < max and distance > min:
                     self.player.execute(ActionKeys.RIGHT_EDGE_NEAR)
                     #print "Edge distance %f"%(float(distance)/float(w))
                     break
@@ -346,7 +346,6 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                 self.player.collision_sprite.rect.bottom = platform.rect.top
                 self.player.execute(ActionKeys.COLLISION_BELOW,[platform.rect.top])  
                               
-            #elif self.player.collision_sprite.rect.top < platform.rect.bottom :
             else:
                 self.player.collision_sprite.rect.top = platform.rect.bottom
                 self.player.execute(ActionKeys.COLLISION_ABOVE,[platform.rect.bottom])
@@ -365,7 +364,6 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                 self.player.collision_sprite.rect.left = platform.rect.right
                 #self.player.execute(ActionKeys.RECTIFY_LEFT,[platform.rect.right])
                 
-            #elif self.player.collision_sprite.rect.right > platform.rect.left:
             else:
                 self.player.collision_sprite.rect.right = platform.rect.left
                 #self.player.execute(ActionKeys.RECTIFY_RIGHT,[platform.rect.left])

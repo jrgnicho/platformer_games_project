@@ -1,5 +1,6 @@
 from simple_platformer.animatable_object import AnimatableObject
 from simple_platformer.players import AnimatablePlayer
+from simple_platformer.players import PlayerProperties
 from simple_platformer.game_state_machine import *
 
 class PlayerStateMachine(AnimatablePlayer,StateMachine):
@@ -44,26 +45,26 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         
         # run state
         run_state = self.create_base_game_state(PlayerStateMachine.StateKeys.RUNNING,
-                                                 AnimatablePlayer.RUN_SPEED, lambda: self.run(AnimatablePlayer.RUN_SPEED), None)
+                                                 self.player_properties.run_speed, lambda: self.run(), None)
         
         # dash state
         dash_state = State(PlayerStateMachine.StateKeys.DASHING)
-        dash_state.set_entry_callback(lambda: self.dash(AnimatablePlayer.DASH_SPEED))
-        dash_state.set_exit_callback(lambda: self.set_inertia(0.8*AnimatablePlayer.DASH_SPEED 
+        dash_state.set_entry_callback(lambda: self.dash())
+        dash_state.set_exit_callback(lambda: self.set_inertia(0.8*self.player_properties.dash_speed 
                                                               if self.animation_set_progress_percentage()>0.3 else 0))
         
         # dash state
         midair_dash_state = State(PlayerStateMachine.StateKeys.MIDAIR_DASHING)
-        midair_dash_state.set_exit_callback(lambda: self.set_inertia(AnimatablePlayer.DASH_SPEED * 
+        midair_dash_state.set_exit_callback(lambda: self.set_inertia(self.player_properties.dash_speed * 
                                                                      self.animation_set_progress_percentage()))
-        midair_dash_state.set_entry_callback(lambda: self.midair_dash(AnimatablePlayer.DASH_SPEED))
-        #midair_dash_state.set_exit_callback(lambda: self.set_inertia(AnimatablePlayer.DASH_SPEED if 
+        midair_dash_state.set_entry_callback(lambda: self.midair_dash())
+        #midair_dash_state.set_exit_callback(lambda: self.set_inertia(self.player_properties.dash_speed if 
         #                                                             self.animation_set_progress_percentage()>0.2 else
-        #                                                             0.5*AnimatablePlayer.DASH_SPEED))
+        #                                                             0.5*self.player_properties.dash_speed))
         
         # dash breaking 
         dash_breaking_state = State(PlayerStateMachine.StateKeys.DASH_BREAKING)
-        dash_breaking_state.set_entry_callback(lambda:self.dash_break( AnimatablePlayer.RUN_SPEED))
+        dash_breaking_state.set_entry_callback(lambda:self.dash_break( self.player_properties.run_speed))
         dash_breaking_state.set_exit_callback(lambda: self.set_inertia(0))
         dash_breaking_state.add_action(ActionKeys.ACTION_SEQUENCE_EXPIRED,
                                     lambda : self.set_current_animation_key(ActionKeys.DASH_BREAK,[-1])) #last frame
@@ -86,7 +87,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         
         # jump state
         jump_state = self.create_base_game_state(PlayerStateMachine.StateKeys.JUMPING,
-                                         AnimatablePlayer.RUN_SPEED, lambda: self.jump(), None)
+                                         self.player_properties.run_speed, lambda: self.jump(), None)
         jump_state.add_action(ActionKeys.CANCEL_MOVE,lambda : self.cancel_move())
         jump_state.add_action(ActionKeys.CANCEL_JUMP,lambda : self.cancel_jump())
         jump_state.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.apply_gravity(g))        
@@ -95,7 +96,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         
         # fall state
         fall_state = self.create_base_game_state(PlayerStateMachine.StateKeys.FALLING,
-                                 AnimatablePlayer.RUN_SPEED, lambda: self.fall(), None)
+                                 self.player_properties.run_speed, lambda: self.fall(), None)
         fall_state.add_action(ActionKeys.CANCEL_MOVE,lambda : self.cancel_move())
         fall_state.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.apply_gravity(g))
         fall_state.add_action(ActionKeys.APPLY_INERTIA,lambda : self.apply_inertia())
