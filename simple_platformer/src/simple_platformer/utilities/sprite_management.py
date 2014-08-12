@@ -4,7 +4,7 @@ from pygame.sprite import Sprite
 import simple_platformer.utilities
 from simple_platformer.utilities import *
 
-class SpriteSet():
+class SpriteSet(object):
     
     def __init__(self):
         

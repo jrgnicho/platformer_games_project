@@ -1,6 +1,6 @@
 import sys
     
-class State:
+class State(object):
     
     def __init__(self,state_key,entry_cb = None,exit_cb = None):
         
@@ -65,7 +65,7 @@ class State:
         if self.exit_callback != None:
             self.exit_callback()
         
-class StateMachine:
+class StateMachine(object):
     
     def __init__(self):
         

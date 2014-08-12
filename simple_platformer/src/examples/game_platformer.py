@@ -9,7 +9,7 @@ from simple_platformer.utilities import *
 from simple_platformer.game_state_machine import *
 import rospkg
 
-class GamePlatformer:
+class GamePlatformer(object):
     
     def __init__(self):        
         
