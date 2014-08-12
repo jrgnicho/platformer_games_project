@@ -2,6 +2,7 @@ import pygame
 from simple_platformer.players import AnimatablePlayer
 from simple_platformer.players import PlayerStateMachine
 from simple_platformer.game_state_machine import ActionKeys
+from simple_platformer.utilities import GameProperties
 from simple_platformer.utilities import ScreenBounds
 from simple_platformer.utilities import Colors, ScreenProperties
 from simple_platformer.levels import Platform
@@ -224,7 +225,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
 
         
         # apply gravity
-        self.player.execute(ActionKeys.APPLY_GRAVITY)   
+        self.player.execute(ActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])   
         
         # moving and checking collision
         self.player.collision_sprite.rect.centery += self.player.compute_change_in_y() 
