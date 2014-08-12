@@ -15,13 +15,9 @@ MIDAIR_DASH hiei_midair_dash_part2_0-0.png 1 1 80 SX1.5 SY1.5
 MIDAIR_DASH hiei_midair_dash_part3_0-0.png 1 1 80 SX1.5 SY1.5
 MIDAIR_DASH hiei_midair_dash_part4_0-0.png 1 1 80 SX1.5 SY1.5
 MIDAIR_DASH hiei_midair_dash_part4_0-0.png 1 1 80 SX1.5 SY1.5
-DASH_BREAK dash_break_part1_0-0.png 1 1 60 SX1.5 SY1.5
-DASH_BREAK dash_break_part2_0-3.png 4 1 60 SX1.5 SY1.5
-DASH_BREAK dash_break_part3_0-0.png 1 1 60 SX1.5 SY1.5
-STAND_EDGE stand_at_the_edge_part1_0-0.png 1 1 120 SX1.5 SY1.5
-STAND_EDGE stand_at_the_edge_part2_0-0.png 1 1 120 SX1.5 SY1.5
-STAND_EDGE stand_at_the_edge_part3_0-0.png 1 1 120 SX1.5 SY1.5
-STAND_EDGE stand_at_the_edge_part4_0-0.png 1 1 120 SX1.5 SY1.5
+DASH_BREAK hiei_dash_break_part1_0-0.png 1 1 60 SX1.5 SY1.5
+DASH_BREAK hiei_dash_break_part2_0-5.png 6 1 60 SX1.5 SY1.5
+STAND_EDGE hiei_standing_on_edge_0-3.png 4 1 100 SX1.5 SY1.5
 ATTACK_Y_UP hiei_attack_y_up_0-6.png 7 1 100 SX1.5 SY1.5
 ATTACK_JUMP_B hiei_attack_jump_b_part1_0-0.png 1 1 100 SX1.5 SY1.5
 ATTACK_JUMP_B hiei_attack_jump_b_part2_0-0.png 1 1 100 SX1.5 SY1.5
