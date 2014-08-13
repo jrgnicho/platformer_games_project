@@ -120,11 +120,19 @@ class StateMachine(object):
             transition_dict = self.transitions[self.active_state_key]
             
             # check if valid transition
-            if transition_dict.has_key(action_key):
+            if transition_dict.has_key(action_key):               
+
+                
+                # execute action on active state
+                active_state_obj = self.states_dict[self.active_state_key]               
+                if active_state_obj.has_action(action_key):
+                    active_state_obj.execute(action_key,action_cb_args)
+                
+                #endif
                 
                 # go through each rule defined for this action and return true on the first one that validates
-                action_list = transition_dict[action_key]                
-                active_state_obj = self.states_dict[self.active_state_key]
+                action_list = transition_dict[action_key]  
+                
                 for action_tuple in action_list:
                     
                     state_key = action_tuple[0]
@@ -169,11 +177,11 @@ class StateMachine(object):
                 
                 
                 # no condition validated, execute action on active state
-                if (active_state_obj.has_action(action_key) and 
-                    active_state_obj.execute(action_key,action_cb_args)):
+                #if (active_state_obj.has_action(action_key) and 
+                #    active_state_obj.execute(action_key,action_cb_args)):
                     
                     # executed supported action under current state
-                    return True
+                #    return True
                 
                 #endif
                 
