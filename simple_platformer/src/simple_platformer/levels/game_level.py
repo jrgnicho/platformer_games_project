@@ -311,9 +311,11 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                     break
                     
                 elif distance <= min :
+                    
                     self.player.execute(ActionKeys.PLATFORM_LOST)
                     self.player.collision_sprite.rect.right = platform.rect.left
                     break
+                
                 
                 #endif
                 

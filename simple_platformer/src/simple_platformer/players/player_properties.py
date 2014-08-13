@@ -1,4 +1,10 @@
+from pygame import Rect
+
 class PlayerProperties(object):
+    
+    # size
+    COLLISION_WIDTH = 40
+    COLLISION_HEIGH = 60
     
     # Movement Defaults
     JUMP_SPEED = -10 # y axis points downwards
@@ -11,10 +17,14 @@ class PlayerProperties(object):
     
     # Environment thresholds
     MAX_DISTANCE_FROM_EDGE = 0.80 # percentage of width
-    MIN_DISTANCE_FROM_EDGE = 0.40 # percentage of width
+    MIN_DISTANCE_FROM_EDGE = 0.10 # percentage of width
+    
+    HANG_RADIUS = 10 # radius of circle use to check if an edge is near for hanging during fall
     
     def __init__(self):
         
+        self.collision_width = PlayerProperties.COLLISION_WIDTH
+        self.collision_height = PlayerProperties.COLLISION_HEIGH
         self.jump_speed = PlayerProperties.JUMP_SPEED
         self.super_jump_speed = PlayerProperties.SUPER_JUMP_SPEED
         self.run_speed = PlayerProperties.RUN_SPEED
@@ -24,3 +34,4 @@ class PlayerProperties(object):
         self.inertial_reduction = PlayerProperties.INERTIA_REDUCTION
         self.max_distance_from_edge = PlayerProperties.MAX_DISTANCE_FROM_EDGE
         self.min_distance_from_edge = PlayerProperties.MIN_DISTANCE_FROM_EDGE
+        self.hang_radius = PlayerProperties.HANG_RADIUS

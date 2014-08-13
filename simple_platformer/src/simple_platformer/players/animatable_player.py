@@ -27,6 +27,25 @@ class AnimatablePlayer(AnimatableObject):
         # midair dashing
         self.midair_dash_countdown = 1
         
+        # collision detection objects
+        self.collision_sprite.rect = pygame.Rect(0,0,self.player_properties.collision_width,
+                                                 self.player_properties.collision_height)      
+        
+        self.hang_sprite = pygame.sprite.Sprite()
+        self.hang_sprite.rect =  pygame.Rect(0,0,self.player_properties.hang_radius,
+                                                 self.player_properties.hang_radius) 
+        self.hang_sprite.radius = self.player_properties.hang_radius
+        
+    def get_hang_sprite(self):
+        
+        if self.facing_right:
+            self.hang_sprite.rect.centerx = self.collision_sprite.rect.right
+            self.hang_sprite.rect.centery = self.collision_sprite.rect.top
+        else :
+            self.hang_sprite.rect.centerx = self.collision_sprite.rect.left
+            self.hang_sprite.rect.centery = self.collision_sprite.rect.top
+        
+        return self.hang_sprite
         
 
         
@@ -36,14 +55,6 @@ class AnimatablePlayer(AnimatableObject):
         self.set_current_animation_key(action_key)
         
     def run(self,action_key = ActionKeys.RUN):
-        
-        if self.facing_right and self.current_inertia > 0:
-            self.current_inertia = 0
-        #endif
-        
-        if (not self.facing_right) and self.current_inertia <0:
-            self.current_inertia = 0
-        #endif
             
         self.set_current_animation_key(action_key),
         self.set_forward_speed(self.player_properties.run_speed)  
@@ -149,7 +160,7 @@ class AnimatablePlayer(AnimatableObject):
             dx = self.player_properties.max_x_position_change
         elif dx < -self.player_properties.max_x_position_change:
             dx = -self.player_properties.max_x_position_change
-            
+                        
         #endif
                
         return dx

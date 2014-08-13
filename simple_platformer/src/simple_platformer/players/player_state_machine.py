@@ -44,8 +44,17 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
     def create_transition_rules(self):
         
         # run state
+        def run_entry():
+            self.run()
+            self.player_properties.max_x_position_change = self.player_properties.run_speed
+            
+        def run_exit():
+            self.player_properties.max_x_position_change = self.player_properties.dash_speed 
+            print self.player_properties.max_x_position_change 
+        
         run_state = self.create_base_game_state(PlayerStateMachine.StateKeys.RUNNING,
-                                                 self.player_properties.run_speed, lambda: self.run(), None)
+                                                 self.player_properties.run_speed, run_entry,run_exit)
+        
         
         # dash state
         dash_state = State(PlayerStateMachine.StateKeys.DASHING)
@@ -68,11 +77,13 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         dash_breaking_state.set_exit_callback(lambda: self.set_inertia(0))
         dash_breaking_state.add_action(ActionKeys.ACTION_SEQUENCE_EXPIRED,
                                     lambda : self.set_current_animation_key(ActionKeys.DASH_BREAK,[-1])) #last frame
-        #dash_breaking_state.add_action(ActionKeys.STEP_GAME,lambda : self.apply_inertia())
         
         
         # stand state
-        stand_state = self.create_base_game_state(PlayerStateMachine.StateKeys.STANDING,0,lambda: self.stand())
+        def stand_entry():
+            self.stand()
+            self.set_inertia(0)
+        stand_state = self.create_base_game_state(PlayerStateMachine.StateKeys.STANDING,0,stand_entry)
         
         
         
@@ -90,8 +101,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                                          self.player_properties.run_speed, lambda: self.jump(), None)
         jump_state.add_action(ActionKeys.CANCEL_MOVE,lambda : self.cancel_move())
         jump_state.add_action(ActionKeys.CANCEL_JUMP,lambda : self.cancel_jump())
-        jump_state.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.apply_gravity(g))        
-        jump_state.add_action(ActionKeys.APPLY_INERTIA,lambda : self.apply_inertia())
+        jump_state.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.apply_gravity(g))     
         
         
         # fall state
@@ -99,12 +109,10 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                                  self.player_properties.run_speed, lambda: self.fall(), None)
         fall_state.add_action(ActionKeys.CANCEL_MOVE,lambda : self.cancel_move())
         fall_state.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.apply_gravity(g))
-        fall_state.add_action(ActionKeys.APPLY_INERTIA,lambda : self.apply_inertia())
         
         # land state
         land_state = State(PlayerStateMachine.StateKeys.LANDING)
-        land_state.set_entry_callback(lambda : self.land()) 
-        land_state.add_action(ActionKeys.APPLY_INERTIA,lambda : self.apply_inertia())       
+        land_state.set_entry_callback(lambda : self.land())     
 
         
         # transitions
@@ -114,6 +122,10 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         sm.add_transition(run_state,ActionKeys.JUMP,PlayerStateMachine.StateKeys.JUMPING)
         sm.add_transition(run_state,ActionKeys.PLATFORM_LOST,PlayerStateMachine.StateKeys.FALLING)
         sm.add_transition(run_state,ActionKeys.DASH,PlayerStateMachine.StateKeys.DASHING)
+        sm.add_transition(run_state,ActionKeys.MOVE_LEFT,PlayerStateMachine.StateKeys.DASH_BREAKING,
+                          lambda: self.current_inertia > 0)
+        sm.add_transition(run_state,ActionKeys.MOVE_RIGHT,PlayerStateMachine.StateKeys.DASH_BREAKING,
+                          lambda: self.current_inertia < 0)
         
         
         sm.add_transition(dash_state,ActionKeys.CANCEL_DASH,PlayerStateMachine.StateKeys.DASH_BREAKING,
