@@ -50,7 +50,6 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
             
         def run_exit():
             self.player_properties.max_x_position_change = self.player_properties.dash_speed 
-            print self.player_properties.max_x_position_change 
         
         run_state = self.create_base_game_state(PlayerStateMachine.StateKeys.RUNNING,
                                                  self.player_properties.run_speed, run_entry,run_exit)
@@ -83,7 +82,9 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         def stand_entry():
             self.stand()
             self.set_inertia(0)
-        stand_state = self.create_base_game_state(PlayerStateMachine.StateKeys.STANDING,0,stand_entry)
+        
+        stand_state = State(PlayerStateMachine.StateKeys.STANDING)
+        stand_state.set_entry_callback(stand_entry)
         
         
         
