@@ -17,6 +17,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         DASHING= "DASHING"
         DASH_BREAKING= "DASH_BREAKING"
         MIDAIR_DASHING = "MIDAIR_DASHING"
+        HANGING = "HANGING"
         EXIT = "EXIT"
     
     def __init__(self):
@@ -100,20 +101,84 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         # jump state
         jump_state = self.create_base_game_state(PlayerStateMachine.StateKeys.JUMPING,
                                          self.player_properties.run_speed, lambda: self.jump(), None)
-        jump_state.add_action(ActionKeys.CANCEL_MOVE,lambda : self.cancel_move())
+        jump_state.add_action(ActionKeys.CANCEL_MOVE,lambda : self.set_forward_speed(0))
         jump_state.add_action(ActionKeys.CANCEL_JUMP,lambda : self.cancel_jump())
-        jump_state.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.apply_gravity(g))     
+        jump_state.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.apply_gravity(g))    
+        jump_state.add_action(ActionKeys.COLLISION_RIGHT_WALL,lambda left: self.set_inertia(0))
+        jump_state.add_action(ActionKeys.COLLISION_LEFT_WALL,lambda right: self.set_inertia(0)) 
         
         
         # fall state
-        fall_state = self.create_base_game_state(PlayerStateMachine.StateKeys.FALLING,
-                                 self.player_properties.run_speed, lambda: self.fall(), None)
-        fall_state.add_action(ActionKeys.CANCEL_MOVE,lambda : self.cancel_move())
-        fall_state.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.apply_gravity(g))
+        class FallState(State):
+            
+            def __init__(self,player):
+                
+                State.__init__(self,PlayerStateMachine.StateKeys.FALLING)
+                
+                self.player = player
+                
+                self.add_action(ActionKeys.CANCEL_MOVE,
+                                lambda : self.player.set_forward_speed(0))
+                self.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.player.apply_gravity(g))
+                self.add_action(ActionKeys.MOVE_LEFT,lambda : self.player.turn_left(-self.player.player_properties.run_speed))
+                self.add_action(ActionKeys.MOVE_RIGHT,lambda : self.player.turn_right(self.player.player_properties.run_speed))
+                self.add_action(ActionKeys.COLLISION_RIGHT_WALL,lambda left: self.player.set_inertia(0))
+                self.add_action(ActionKeys.COLLISION_LEFT_WALL,lambda right: self.player.set_inertia(0))
+            
+            def enter(self):
+                
+                self.player.fall()
+                
+        fall_state = FallState(self)
         
         # land state
         land_state = State(PlayerStateMachine.StateKeys.LANDING)
         land_state.set_entry_callback(lambda : self.land())     
+        
+        # hanging state
+        class HangingState(State):
+            
+            def __init__(self,player):
+                
+                State.__init__(self,PlayerStateMachine.StateKeys.HANGING)
+                
+                self.player = player
+                self.plaform_rect = None
+                
+                self.add_action(ActionKeys.LEFT_EDGE_NEAR,self.cling_to_rect)
+                self.add_action(ActionKeys.RIGHT_EDGE_NEAR,self.cling_to_rect)
+                self.add_action(ActionKeys.ACTION_SEQUENCE_EXPIRED,
+                                    lambda : self.player.set_current_animation_key(ActionKeys.HANG,[-1])) 
+                
+                
+            def cling_to_rect(self,rect = None):
+                
+                if self.plaform_rect != rect:
+                    self.plaform_rect = rect
+                    
+                    if self.player.facing_right:
+                        self.player.collision_sprite.rect.right = self.plaform_rect.left - self.player.player_properties.hang_distance_from_side
+                    else:
+                        self.player.collision_sprite.rect.left = self.plaform_rect.right + self.player.player_properties.hang_distance_from_side
+                    
+                    #endif
+                        
+                    self.player.collision_sprite.rect.top = self.plaform_rect.top + self.player.player_properties.hang_distance_from_top
+                    
+                print "Hanging at top point %i"%(self.player.collision_sprite.rect.top)
+                
+            def enter(self):
+                self.player.set_current_animation_key(ActionKeys.HANG)
+                self.player.set_forward_speed(0)
+                self.player.set_upward_speed(0)
+                self.player.set_inertia(0)
+                
+            def exit(self):
+                self.plaform_rect = None
+        
+        hanging_state = HangingState(self)
+                
+                    
 
         
         # transitions
@@ -176,11 +241,20 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         sm.add_transition(jump_state,ActionKeys.COLLISION_BELOW,PlayerStateMachine.StateKeys.LANDING)
         sm.add_transition(jump_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,PlayerStateMachine.StateKeys.FALLING)
         sm.add_transition(jump_state,ActionKeys.COLLISION_ABOVE,PlayerStateMachine.StateKeys.FALLING)
+        sm.add_transition(jump_state,ActionKeys.RIGHT_EDGE_NEAR,PlayerStateMachine.StateKeys.HANGING,
+                          lambda: (not self.facing_right) and (self.current_upward_speed > 0))
+        sm.add_transition(jump_state,ActionKeys.LEFT_EDGE_NEAR,PlayerStateMachine.StateKeys.HANGING,
+                          lambda: self.facing_right and (self.current_upward_speed > 0))
         
         sm.add_transition(fall_state,ActionKeys.DASH,PlayerStateMachine.StateKeys.MIDAIR_DASHING,
                           lambda: self.midair_dash_countdown > 0)
         sm.add_transition(fall_state,ActionKeys.LAND,PlayerStateMachine.StateKeys.LANDING)
         sm.add_transition(fall_state,ActionKeys.COLLISION_BELOW,PlayerStateMachine.StateKeys.LANDING)
+        sm.add_transition(fall_state,ActionKeys.RIGHT_EDGE_NEAR,PlayerStateMachine.StateKeys.HANGING,lambda: not self.facing_right)
+        sm.add_transition(fall_state,ActionKeys.LEFT_EDGE_NEAR,PlayerStateMachine.StateKeys.HANGING,lambda: self.facing_right)
+        
+        sm.add_transition(hanging_state,ActionKeys.JUMP,PlayerStateMachine.StateKeys.JUMPING,
+                          lambda : self.animation_set_progress_percentage()>0.2) 
         
         
         sm.add_transition(land_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,PlayerStateMachine.StateKeys.STANDING)  
