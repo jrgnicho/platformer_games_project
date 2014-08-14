@@ -230,7 +230,8 @@ class AnimatableObject(pygame.sprite.Sprite):
     def animation_set_progress_percentage(self):
         
         #sprite_set = self.animation_sprites_right_side_dict[self.animation_set_key]
-        return float(self.animation_frame_index)/float(
+        index = self.animation_selected_frames.index(self.animation_frame_index)
+        return float(index+1)/float(
             len(self.animation_selected_frames))
         
     def move_x(self,dx):        
