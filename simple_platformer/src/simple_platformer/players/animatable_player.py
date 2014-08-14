@@ -32,8 +32,8 @@ class AnimatablePlayer(AnimatableObject):
                                                  self.player_properties.collision_height)      
         
         self.hang_sprite = pygame.sprite.Sprite()
-        self.hang_sprite.rect =  pygame.Rect(0,0,self.player_properties.hang_radius,
-                                                 self.player_properties.hang_radius) 
+        self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player_properties.hang_radius,
+                                                 2*self.player_properties.hang_radius) 
         self.hang_sprite.radius = self.player_properties.hang_radius
         
     def get_hang_sprite(self):
@@ -181,9 +181,7 @@ class AnimatablePlayer(AnimatableObject):
     def stand(self,action_key = ActionKeys.STAND):
         self.current_forward_speed =0
         self.set_current_animation_key(action_key)
-        
-    def cancel_move(self):
-        self.current_forward_speed =0     
+          
         
     def cancel_jump(self):
         if self.current_upward_speed < 0: 
@@ -191,7 +189,9 @@ class AnimatablePlayer(AnimatableObject):
             
     def fall(self,action_key = ActionKeys.FALL):
         
-        self.current_upward_speed = 0
+        if self.current_upward_speed < 0:
+            self.current_upward_speed = 0
+            
         self.set_current_animation_key(action_key)
         
     def setup(self,sprites_desc_file):
@@ -204,6 +204,7 @@ class AnimatablePlayer(AnimatableObject):
                        ActionKeys.STAND_EDGE,
                        ActionKeys.DASH_BREAK,
                        #ActionKeys.ATTACK,
+                       ActionKeys.HANG,
                        ActionKeys.DASH,
                        ActionKeys.MIDAIR_DASH]
         
