@@ -19,7 +19,9 @@ class PlayerProperties(object):
     MAX_DISTANCE_FROM_EDGE = 0.80 # percentage of width
     MIN_DISTANCE_FROM_EDGE = 0.10 # percentage of width
     
-    HANG_RADIUS = 10 # radius of circle use to check if an edge is near for hanging during fall
+    HANG_RADIUS = 5 # radius of circle use to check if an edge is near for hanging during fall
+    HANG_DISTANCE_FROM_TOP = 12 # Used to set the distance from the top of the hanging platform to the top of the collision sprite
+    HANG_DISTANCE_FROM_SIDE = 0
     
     def __init__(self):
         
@@ -35,3 +37,5 @@ class PlayerProperties(object):
         self.max_distance_from_edge = PlayerProperties.MAX_DISTANCE_FROM_EDGE
         self.min_distance_from_edge = PlayerProperties.MIN_DISTANCE_FROM_EDGE
         self.hang_radius = PlayerProperties.HANG_RADIUS
+        self.hang_distance_from_top = PlayerProperties.HANG_DISTANCE_FROM_TOP
+        self.hang_distance_from_side = PlayerProperties.HANG_DISTANCE_FROM_SIDE
