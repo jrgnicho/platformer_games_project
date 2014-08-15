@@ -291,6 +291,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         platforms = pygame.sprite.spritecollide(self.player.collision_sprite,self.platforms,False)
         self.player.collision_sprite.rect.y -= GameLevel.PLATFORM_CHECK_STEP
         
+        ps = self.player.collision_sprite
         if len(platforms) == 0:
             self.player.execute(ActionKeys.PLATFORM_LOST)
             
@@ -300,8 +301,12 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                         
             for platform in near_platforms:
                 
+                # must be below platform top
+                if (ps.rect.top < platform.rect.top):
+                    continue
+                    
                 # check points
-                if hang_sprite.rect.collidepoint(platform.rect.topleft):
+                if hang_sprite.rect.collidepoint(platform.rect.topleft) :
                     self.player.execute(ActionKeys.LEFT_EDGE_NEAR,[platform.rect])
                     #print "Found left hang point %s near hang sprite"%(str(platform.rect.topleft))
                     break
@@ -327,7 +332,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                 min = w*self.player.player_properties.min_distance_from_edge
                 
                 if distance < max and distance > min:
-                    self.player.execute(ActionKeys.LEFT_EDGE_NEAR,[platform.rect])
+                    self.player.execute(ActionKeys.PLATFORM_LEFT_END_NEAR,[platform.rect])
                     #print "Edge distance %f"%(float(distance)/float(w))
                     break
                     
@@ -343,7 +348,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                 # standing on right edge
                 distance = abs(platform.rect.right - self.player.collision_sprite.rect.left )
                 if distance < max and distance > min:
-                    self.player.execute(ActionKeys.RIGHT_EDGE_NEAR,[platform.rect])
+                    self.player.execute(ActionKeys.PLATFORM_RIGHT_END_NEAR,[platform.rect])
                     #print "Edge distance %f"%(float(distance)/float(w))
                     break
                     

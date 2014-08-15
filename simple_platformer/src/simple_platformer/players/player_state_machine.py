@@ -62,14 +62,11 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         dash_state.set_exit_callback(lambda: self.set_inertia(0.8*self.player_properties.dash_speed 
                                                               if self.animation_set_progress_percentage()>0.3 else 0))
         
-        # dash state
+        # midair dash state
         midair_dash_state = State(PlayerStateMachine.StateKeys.MIDAIR_DASHING)
         midair_dash_state.set_exit_callback(lambda: self.set_inertia(self.player_properties.dash_speed * 
                                                                      self.animation_set_progress_percentage()))
         midair_dash_state.set_entry_callback(lambda: self.midair_dash())
-        #midair_dash_state.set_exit_callback(lambda: self.set_inertia(self.player_properties.dash_speed if 
-        #                                                             self.animation_set_progress_percentage()>0.2 else
-        #                                                             0.5*self.player_properties.dash_speed))
         
         # dash breaking 
         dash_breaking_state = State(PlayerStateMachine.StateKeys.DASH_BREAKING)
@@ -165,7 +162,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                         
                     self.player.collision_sprite.rect.top = self.plaform_rect.top + self.player.player_properties.hang_distance_from_top
                     
-                print "Hanging at top point %i"%(self.player.collision_sprite.rect.top)
+                #print "Hanging at top point %i"%(self.player.collision_sprite.rect.top)
                 
             def enter(self):
                 self.player.set_current_animation_key(ActionKeys.HANG)
@@ -222,9 +219,9 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         sm.add_transition(stand_state,ActionKeys.MOVE_LEFT,PlayerStateMachine.StateKeys.RUNNING)
         sm.add_transition(stand_state,ActionKeys.MOVE_RIGHT,PlayerStateMachine.StateKeys.RUNNING)
         sm.add_transition(stand_state,ActionKeys.DASH,PlayerStateMachine.StateKeys.DASHING)
-        sm.add_transition(stand_state,ActionKeys.LEFT_EDGE_NEAR,PlayerStateMachine.StateKeys.STANDING_ON_EDGE,
+        sm.add_transition(stand_state,ActionKeys.PLATFORM_LEFT_END_NEAR,PlayerStateMachine.StateKeys.STANDING_ON_EDGE,
                           lambda: not self.facing_right)
-        sm.add_transition(stand_state,ActionKeys.RIGHT_EDGE_NEAR,PlayerStateMachine.StateKeys.STANDING_ON_EDGE,
+        sm.add_transition(stand_state,ActionKeys.PLATFORM_RIGHT_END_NEAR,PlayerStateMachine.StateKeys.STANDING_ON_EDGE,
                           lambda: self.facing_right)
         
         
@@ -255,6 +252,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         
         sm.add_transition(hanging_state,ActionKeys.JUMP,PlayerStateMachine.StateKeys.JUMPING,
                           lambda : self.animation_set_progress_percentage()>0.2) 
+        #sm.add_transition(hanging_state,ActionKeys.COLLISION_BELOW,PlayerStateMachine.StateKeys.STANDING) 
         
         
         sm.add_transition(land_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,PlayerStateMachine.StateKeys.STANDING)  
