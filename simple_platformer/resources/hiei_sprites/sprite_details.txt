@@ -1,4 +1,5 @@
 key file	colums rows rate(miliseconds) scalex scale y
+CLIMB hiei_climb_0-7.png 8 1 90 SX1.5 SY1.5
 STAND hiei_stand_part1_0-0.png 1 1 200 SX1.5 SY1.5
 STAND hiei_stand_part2_0-2.png 3 1 200 SX1.5 SY1.5
 RUN hiei_run_0-7.png 8 1 80 SX1.5 SY1.5

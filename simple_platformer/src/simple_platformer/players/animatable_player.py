@@ -53,6 +53,7 @@ class AnimatablePlayer(AnimatableObject):
         
         self.current_upward_speed = self.player_properties.jump_speed
         self.set_current_animation_key(action_key)
+        self.midair_dash_countdown = self.player_properties.max_midair_dashes
         
     def run(self,action_key = ActionKeys.RUN):
             
@@ -206,6 +207,7 @@ class AnimatablePlayer(AnimatableObject):
                        #ActionKeys.ATTACK,
                        ActionKeys.HANG,
                        ActionKeys.DASH,
+                       ActionKeys.CLIMB,
                        ActionKeys.MIDAIR_DASH]
         
         return self.load_sprites(sprites_desc_file,action_keys)

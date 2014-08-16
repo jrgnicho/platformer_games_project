@@ -23,6 +23,9 @@ class PlayerProperties(object):
     HANG_DISTANCE_FROM_TOP = 12 # Used to set the distance from the top of the hanging platform to the top of the collision sprite
     HANG_DISTANCE_FROM_SIDE = 0
     
+    CLIMB_DISTANCE_FROM_TOP = -16
+    CLIMB_DISTANCE_FROM_SIDE = 0
+    
     def __init__(self):
         
         self.collision_width = PlayerProperties.COLLISION_WIDTH
@@ -34,8 +37,13 @@ class PlayerProperties(object):
         self.max_x_position_change = PlayerProperties.MAX_X_POSITION_CHANGE
         self.max_midair_dashes = PlayerProperties.MAX_MIDAIR_DASHES
         self.inertial_reduction = PlayerProperties.INERTIA_REDUCTION
+        
         self.max_distance_from_edge = PlayerProperties.MAX_DISTANCE_FROM_EDGE
         self.min_distance_from_edge = PlayerProperties.MIN_DISTANCE_FROM_EDGE
+        
         self.hang_radius = PlayerProperties.HANG_RADIUS
         self.hang_distance_from_top = PlayerProperties.HANG_DISTANCE_FROM_TOP
         self.hang_distance_from_side = PlayerProperties.HANG_DISTANCE_FROM_SIDE
+        
+        self.climb_distance_from_top = PlayerProperties.CLIMB_DISTANCE_FROM_TOP
+        self.climb_distance_from_side = PlayerProperties.CLIMB_DISTANCE_FROM_SIDE

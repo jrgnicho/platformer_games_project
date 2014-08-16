@@ -165,8 +165,12 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                 #endif
                 
                 if event.key == pygame.K_z:
-                    print "DASH commanded"
                     self.player.execute(ActionKeys.DASH) 
+                    
+                #endif
+                
+                if event.key == pygame.K_UP:
+                    self.player.execute(ActionKeys.MOVE_UP) 
                     
                 #endif
                     

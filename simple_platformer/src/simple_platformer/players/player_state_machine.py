@@ -18,6 +18,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         DASH_BREAKING= "DASH_BREAKING"
         MIDAIR_DASHING = "MIDAIR_DASHING"
         HANGING = "HANGING"
+        CLIMBING = "CLIMBING"
         EXIT = "EXIT"
     
     def __init__(self):
@@ -140,27 +141,27 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 State.__init__(self,PlayerStateMachine.StateKeys.HANGING)
                 
                 self.player = player
-                self.plaform_rect = None
+                self.platform_rect = None
                 
-                self.add_action(ActionKeys.LEFT_EDGE_NEAR,self.cling_to_rect)
-                self.add_action(ActionKeys.RIGHT_EDGE_NEAR,self.cling_to_rect)
+                self.add_action(ActionKeys.LEFT_EDGE_NEAR,self.hang)
+                self.add_action(ActionKeys.RIGHT_EDGE_NEAR,self.hang)
                 self.add_action(ActionKeys.ACTION_SEQUENCE_EXPIRED,
                                     lambda : self.player.set_current_animation_key(ActionKeys.HANG,[-1])) 
                 
                 
-            def cling_to_rect(self,rect = None):
+            def hang(self,rect = None):
                 
-                if self.plaform_rect != rect:
-                    self.plaform_rect = rect
+                if self.platform_rect != rect:
+                    self.platform_rect = rect
                     
                     if self.player.facing_right:
-                        self.player.collision_sprite.rect.right = self.plaform_rect.left - self.player.player_properties.hang_distance_from_side
+                        self.player.collision_sprite.rect.right = self.platform_rect.left - self.player.player_properties.hang_distance_from_side
                     else:
-                        self.player.collision_sprite.rect.left = self.plaform_rect.right + self.player.player_properties.hang_distance_from_side
+                        self.player.collision_sprite.rect.left = self.platform_rect.right + self.player.player_properties.hang_distance_from_side
                     
                     #endif
                         
-                    self.player.collision_sprite.rect.top = self.plaform_rect.top + self.player.player_properties.hang_distance_from_top
+                    self.player.collision_sprite.rect.top = self.platform_rect.top + self.player.player_properties.hang_distance_from_top
                     
                 #print "Hanging at top point %i"%(self.player.collision_sprite.rect.top)
                 
@@ -171,11 +172,70 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 self.player.set_inertia(0)
                 
             def exit(self):
-                self.plaform_rect = None
+                self.player.hanging_platform_rect = self.platform_rect
+                self.platform_rect = None
         
         hanging_state = HangingState(self)
+        
+        
+        class ClimbingState(State):
+            
+            def __init__(self,player):
                 
+                State.__init__(self,PlayerStateMachine.StateKeys.CLIMBING)
+                self.player = player
+                self.platform_rect = None
+                self.climb_path =[]
+                
+                self.add_action(ActionKeys.STEP_GAME,self.climb)
+                
+            def enter(self):
+                self.player.set_current_animation_key(ActionKeys.CLIMB)
+                self.player.set_forward_speed(0)
+                self.player.set_upward_speed(0)
+                self.player.set_inertia(0)
+                
+                self.platform_rect = self.player.hanging_platform_rect
+                
+                # setting initial posiiont
+                if self.player.facing_right:
+                    self.player.collision_sprite.rect.right = self.platform_rect.left - self.player.player_properties.climb_distance_from_side
+                else:
+                    self.player.collision_sprite.rect.left = self.platform_rect.right + self.player.player_properties.climb_distance_from_side
+                
+                #endif
                     
+                self.player.collision_sprite.rect.top = self.platform_rect.top + self.player.player_properties.climb_distance_from_top 
+                
+                # calculating distances
+                ply_rect = self.player.collision_sprite.rect
+                plt_rect = self.platform_rect
+                
+                dx = ply_rect.left - plt_rect.left if self.player.facing_right else ply_rect.right - plt_rect.right
+                dy = ply_rect.bottom - plt_rect.top
+                self.start_pos = ply_rect.center
+                self.climb_path =[(0,0),
+                                  (0,0),
+                                  (0,-dy/3.0),
+                                  (0,-2*dy/3.0),
+                                  (0,-dy),
+                                  (-dx/2.0,-dy),
+                                  (-dx,-dy),
+                                  (-dx,-dy),
+                                  (-dx,-dy)]
+                
+            def climb(self):
+                
+                if self.player.facing_right:
+                    self.player.collision_sprite.rect.right = self.platform_rect.left + self.climb_path[self.player.animation_frame_index][0]
+                    
+                else:
+                    self.player.collision_sprite.rect.left = self.platform_rect.right + self.climb_path[self.player.animation_frame_index][0]
+                
+                self.player.collision_sprite.rect.top= self.platform_rect.top + self.climb_path[self.player.animation_frame_index][1]
+                
+        climbing_state = ClimbingState(self)
+                            
 
         
         # transitions
@@ -252,7 +312,11 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         
         sm.add_transition(hanging_state,ActionKeys.JUMP,PlayerStateMachine.StateKeys.JUMPING,
                           lambda : self.animation_set_progress_percentage()>0.2) 
+        sm.add_transition(hanging_state,ActionKeys.MOVE_UP,PlayerStateMachine.StateKeys.CLIMBING,
+                          lambda : self.animation_set_progress_percentage()>=1) 
         #sm.add_transition(hanging_state,ActionKeys.COLLISION_BELOW,PlayerStateMachine.StateKeys.STANDING) 
+        
+        sm.add_transition(climbing_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,PlayerStateMachine.StateKeys.STANDING) 
         
         
         sm.add_transition(land_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,PlayerStateMachine.StateKeys.STANDING)  
