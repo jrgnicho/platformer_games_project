@@ -23,7 +23,7 @@ class PlayerProperties(object):
     HANG_DISTANCE_FROM_TOP = 12 # Used to set the distance from the top of the hanging platform to the top of the collision sprite
     HANG_DISTANCE_FROM_SIDE = 0
     
-    CLIMB_DISTANCE_FROM_TOP = -16
+    CLIMB_DISTANCE_FROM_TOP = -5
     CLIMB_DISTANCE_FROM_SIDE = 0
     
     def __init__(self):

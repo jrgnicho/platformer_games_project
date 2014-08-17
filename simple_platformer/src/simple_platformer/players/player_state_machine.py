@@ -264,42 +264,47 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 
                 self.platform_rect = self.player.hanging_platform_rect
                 
-                # setting initial position
-                if self.player.facing_right:
-                    self.player.collision_sprite.rect.right = self.platform_rect.left - self.player.player_properties.climb_distance_from_side
-                else:
-                    self.player.collision_sprite.rect.left = self.platform_rect.right + self.player.player_properties.climb_distance_from_side
-                
-                #endif
-                    
-                self.player.collision_sprite.rect.top = self.platform_rect.top + self.player.player_properties.climb_distance_from_top 
-                
-                # calculating distances
+
                 ply_rect = self.player.collision_sprite.rect
                 plt_rect = self.platform_rect
                 
-                dx = ply_rect.left - plt_rect.left if self.player.facing_right else ply_rect.right - plt_rect.right
-                dy = ply_rect.bottom - plt_rect.top
-                self.start_pos = ply_rect.center
+                # saving initial position relative to platform
+                self.startx = self.player.player_properties.climb_distance_from_side + ply_rect.width
+                self.startx = (-self.startx ) if self.player.facing_right else (self.startx)
+                
+                # start y value of rect bottom
+                self.starty =  self.player.player_properties.climb_distance_from_top +ply_rect.height                
+
+                # calculating distances
+                dx = -self.startx
+                dy = -self.starty
+                #self.start_pos = ply_rect.center
+                
+                # creating path
                 self.climb_path =[(0,0),
                                   (0,0),
-                                  (0,-dy/3.0),
-                                  (0,-2*dy/3.0),
-                                  (0,-dy),
-                                  (-dx/2.0,-dy),
-                                  (-dx,-dy),
-                                  (-dx,-dy),
-                                  (-dx,-dy)]
+                                  (0,dy/3.0),
+                                  (0,2*dy/3.0),
+                                  (0,dy),
+                                  (dx/2.0,dy),
+                                  (dx,dy),
+                                  (dx,dy),
+                                  (dx,dy)]
                 
             def climb(self):
                 
+                dx = 0
+                dy = 0
                 if self.player.facing_right:
-                    self.player.collision_sprite.rect.right = self.platform_rect.left + self.climb_path[self.player.animation_frame_index][0]
+                    dx = self.platform_rect.left + self.startx +  self.climb_path[self.player.animation_frame_index][0]
+                    self.player.collision_sprite.rect.left = dx
                     
                 else:
-                    self.player.collision_sprite.rect.left = self.platform_rect.right + self.climb_path[self.player.animation_frame_index][0]
+                    dx = self.platform_rect.right + self.startx + self.climb_path[self.player.animation_frame_index][0]
+                    self.player.collision_sprite.rect.right = dx
                 
-                self.player.collision_sprite.rect.top= self.platform_rect.top + self.climb_path[self.player.animation_frame_index][1]
+                dy = self.platform_rect.top + self.starty + self.climb_path[self.player.animation_frame_index][1]
+                self.player.collision_sprite.rect.bottom= dy
                 
         climbing_state = ClimbingState(self)
                             
