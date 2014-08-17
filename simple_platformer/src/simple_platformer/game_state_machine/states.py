@@ -52,7 +52,7 @@ class State(object):
             #condition_cb = action_tuple[1]
             return True
         else:
-            print "State %s does not support %s action"%(self.key,action_key)
+            #print "State %s does not support %s action"%(self.key,action_key)
             return False
         
     def enter(self):
@@ -152,10 +152,15 @@ class StateMachine(object):
                         # setting next state as active
                         self.active_state_key = state_key
                         
+                        print "Transition from state [%s] : through action [%s] : to state [%s]"%(active_state_obj.key,
+                                                                          action_key,
+                                                                          self.active_state_key)
+                        
                         # calling state enter routine
                         if next_state_obj.execute(action_key,action_cb_args):
                             
                             # transition succeeded
+
                             return True
                         
                         else: 
