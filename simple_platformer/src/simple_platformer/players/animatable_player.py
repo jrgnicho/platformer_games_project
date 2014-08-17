@@ -45,24 +45,7 @@ class AnimatablePlayer(AnimatableObject):
             self.hang_sprite.rect.centerx = self.collision_sprite.rect.left
             self.hang_sprite.rect.centery = self.collision_sprite.rect.top
         
-        return self.hang_sprite
-        
-
-        
-    def jump(self,action_key = ActionKeys.JUMP):
-        
-        self.current_upward_speed = self.player_properties.jump_speed
-        self.set_current_animation_key(action_key)
-        self.midair_dash_countdown = self.player_properties.max_midair_dashes
-        
-    def run(self,action_key = ActionKeys.RUN):
-            
-        self.set_current_animation_key(action_key),
-        self.set_forward_speed(self.player_properties.run_speed)  
-        
-    def hang(self,wall_rect):
-        
-        print "unimplemented"       
+        return self.hang_sprite     
         
     def dash(self,action_key = ActionKeys.DASH): 
         
@@ -112,22 +95,7 @@ class AnimatablePlayer(AnimatableObject):
     def apply_gravity(self,g = GameProperties.GRAVITY_ACCELERATION):    
             
         self.current_upward_speed += g   
-                
-            
-    def land(self,action_key = ActionKeys.LAND):
         
-        self.midair_dash_countdown = self.player_properties.max_midair_dashes
-        
-        self.set_current_animation_key(action_key)
-        
-        if (self.current_upward_speed + self.current_inertia) < 0 and self.current_inertia > 0:
-            self.current_inertia = 0
-        elif (self.current_upward_speed + self.current_inertia) > 0 and self.current_inertia < 0:
-            self.current_inertia = 0
-        #endif
-        
-        self.current_upward_speed = 0
-        self.current_forward_speed = 0
         
     def consume_inertia_residual(self):
         
@@ -177,23 +145,8 @@ class AnimatablePlayer(AnimatableObject):
         
     def turn_left(self,dx):        
         self.facing_right = False
-        self.current_forward_speed = dx
+        self.current_forward_speed = dx          
             
-    def stand(self,action_key = ActionKeys.STAND):
-        self.current_forward_speed =0
-        self.set_current_animation_key(action_key)
-          
-        
-    def cancel_jump(self):
-        if self.current_upward_speed < 0: 
-            self.current_upward_speed = 0 
-            
-    def fall(self,action_key = ActionKeys.FALL):
-        
-        if self.current_upward_speed < 0:
-            self.current_upward_speed = 0
-            
-        self.set_current_animation_key(action_key)
         
     def setup(self,sprites_desc_file):
         

@@ -46,15 +46,28 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
     def create_transition_rules(self):
         
         # run state
-        def run_entry():
-            self.run()
-            self.player_properties.max_x_position_change = self.player_properties.run_speed
+        class RunningState(State):
             
-        def run_exit():
-            self.player_properties.max_x_position_change = self.player_properties.dash_speed 
-        
-        run_state = self.create_base_game_state(PlayerStateMachine.StateKeys.RUNNING,
-                                                 self.player_properties.run_speed, run_entry,run_exit)
+            def __init__(self,player):
+                
+                State.__init__(self,PlayerStateMachine.StateKeys.RUNNING)
+                
+                self.player = player
+                self.speed = self.player.player_properties.run_speed
+                
+                self.add_action(ActionKeys.MOVE_LEFT,lambda : self.player.turn_left(-self.speed))
+                self.add_action(ActionKeys.MOVE_RIGHT,lambda : self.player.turn_right(self.speed))
+                
+            
+            def enter(self):
+                
+                self.player.player_properties.max_x_position_change = self.speed            
+                self.player.set_current_animation_key(ActionKeys.RUN),
+                self.player.set_forward_speed(self.speed)  
+                
+            def exit(self):
+                self.player.player_properties.max_x_position_change = self.player.player_properties.dash_speed         
+        run_state = RunningState(self)
         
         
         # dash state
@@ -77,15 +90,22 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                                     lambda : self.set_current_animation_key(ActionKeys.DASH_BREAK,[-1])) #last frame
         
         
-        # stand state
-        def stand_entry():
-            self.stand()
-            self.set_inertia(0)
+        # stand state        
+        class StandState(State):
+            
+            def __init__(self,player):
+                
+                State.__init__(self,PlayerStateMachine.StateKeys.STANDING)
+                self.player = player
+                
+            def enter(self):
+                
+                self.player.set_forward_speed(0)
+                self.player.set_current_animation_key(ActionKeys.STAND)
+                self.player.set_inertia(0)
+                self.player.midair_dash_countdown = self.player.player_properties.max_midair_dashes
         
-        stand_state = State(PlayerStateMachine.StateKeys.STANDING)
-        stand_state.set_entry_callback(stand_entry)
-        
-        
+        stand_state = StandState(self)
         
         # stand edge state
         stand_edge_state = self.create_base_game_state(PlayerStateMachine.StateKeys.STANDING_ON_EDGE,
@@ -95,15 +115,36 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                                        self.set_forward_speed(0)))
         stand_edge_state.add_action(ActionKeys.ACTION_SEQUENCE_EXPIRED,
                                     lambda : self.set_current_animation_key(ActionKeys.STAND_EDGE,[-1])) #last frame
-        
+
         # jump state
-        jump_state = self.create_base_game_state(PlayerStateMachine.StateKeys.JUMPING,
-                                         self.player_properties.run_speed, lambda: self.jump(), None)
-        jump_state.add_action(ActionKeys.CANCEL_MOVE,lambda : self.set_forward_speed(0))
-        jump_state.add_action(ActionKeys.CANCEL_JUMP,lambda : self.cancel_jump())
-        jump_state.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.apply_gravity(g))    
-        jump_state.add_action(ActionKeys.COLLISION_RIGHT_WALL,lambda left: self.set_inertia(0))
-        jump_state.add_action(ActionKeys.COLLISION_LEFT_WALL,lambda right: self.set_inertia(0)) 
+        class JumpState(State):
+            
+            def __init__(self,player):
+                
+                State.__init__(self,PlayerStateMachine.StateKeys.JUMPING)
+                
+                self.player = player
+                self.speed = self.player.player_properties.run_speed
+                
+                self.add_action(ActionKeys.MOVE_LEFT,lambda : self.player.turn_left(-self.speed))
+                self.add_action(ActionKeys.MOVE_RIGHT,lambda : self.player.turn_right(self.speed))                
+                self.add_action(ActionKeys.CANCEL_MOVE,lambda : self.player.set_forward_speed(0))
+                self.add_action(ActionKeys.CANCEL_JUMP,lambda : self.cancel_jump())
+                self.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.player.apply_gravity(g))    
+                self.add_action(ActionKeys.COLLISION_RIGHT_WALL,lambda left: self.player.set_inertia(0))
+                self.add_action(ActionKeys.COLLISION_LEFT_WALL,lambda right: self.player.set_inertia(0)) 
+                
+            def cancel_jump(self):
+                
+                if self.player.current_upward_speed < 0: 
+                    self.player.current_upward_speed = 0 
+            
+            def enter(self):
+                self.player.set_upward_speed(self.player.player_properties.jump_speed)
+                self.player.set_current_animation_key(ActionKeys.JUMP)
+                self.player.midair_dash_countdown = self.player.player_properties.max_midair_dashes        
+        
+        jump_state = JumpState(self)
         
         
         # fall state
@@ -125,13 +166,38 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
             
             def enter(self):
                 
-                self.player.fall()
+                if self.player.current_upward_speed < 0:
+                    self.player.current_upward_speed = 0
+            
+                self.player.set_current_animation_key(ActionKeys.FALL)
                 
         fall_state = FallState(self)
+          
         
         # land state
-        land_state = State(PlayerStateMachine.StateKeys.LANDING)
-        land_state.set_entry_callback(lambda : self.land())     
+        class LandState(State):
+            
+            def __init__(self,player):
+                
+                State.__init__(self,PlayerStateMachine.StateKeys.LANDING)
+                self.player = player
+                
+            def enter(self):                
+        
+                self.player.midair_dash_countdown = self.player.player_properties.max_midair_dashes
+                
+                self.player.set_current_animation_key(ActionKeys.LAND)
+                
+                if (self.player.current_upward_speed + self.player.current_inertia) < 0 and self.player.current_inertia > 0:
+                    self.player.current_inertia = 0
+                elif (self.player.current_upward_speed + self.player.current_inertia) > 0 and self.player.current_inertia < 0:
+                    self.player.current_inertia = 0
+                #endif
+                
+                self.player.current_upward_speed = 0
+                self.player.current_forward_speed = 0
+                
+        land_state = LandState(self)
         
         # hanging state
         class HangingState(State):
@@ -178,6 +244,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         hanging_state = HangingState(self)
         
         
+        # climbing state
         class ClimbingState(State):
             
             def __init__(self,player):
@@ -197,7 +264,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 
                 self.platform_rect = self.player.hanging_platform_rect
                 
-                # setting initial posiiont
+                # setting initial position
                 if self.player.facing_right:
                     self.player.collision_sprite.rect.right = self.platform_rect.left - self.player.player_properties.climb_distance_from_side
                 else:
