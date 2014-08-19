@@ -1,6 +1,6 @@
 from game_assets.properties import MotionModes
+from game_assets.properties import LifeSpanModes
 from pygame import Rect
-from pygame.tests.base_test import pygame_quit
 
 class HitProperties(object):
     

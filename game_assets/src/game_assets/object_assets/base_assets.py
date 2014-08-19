@@ -3,6 +3,7 @@ import os
 from pygame.sprite import Sprite
 from pygame.sprite import Group
 from game_assets.properties import HitProperties
+from game_assets.properties import LayerDrawPriorityTypes
 
 class AnimationAssets(object):
     
@@ -11,6 +12,7 @@ class AnimationAssets(object):
         self.sprites_left = []
         self.sprites_right = []
         self.frame_rate = 0
+        self.layer_drawing_priority = LayerDrawPriorityTypes.PLAYER_LAYER
         
         
 class CollisionSpriteGroup(pygame.sprite.Sprite):
