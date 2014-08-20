@@ -14,6 +14,7 @@ class PlayerActionAssets(object):
     
     def __init__(self):
         
+        self.asset_set = ''
         self.key = 'NONE'
         self.animation = AnimationAssets()
         self.collision = CollisionSpriteGroup()
@@ -24,6 +25,7 @@ class AttackActionAssets(object):
     
     def __init__(self):
         
+        self.asset_set = ''
         self.key= 'NONE'
         self.animation = AnimationAssets()
         self.collision_hits = AttackCollisionAssets()

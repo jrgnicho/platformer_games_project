@@ -3,7 +3,8 @@ import os
 from pygame.sprite import Sprite
 from pygame.sprite import Group
 from game_assets.properties import HitProperties
-from game_assets.properties import LayerDrawPriorityTypes
+from game_assets.properties import DrawLayerPriorities
+from game_assets.properties import CollisionBitMasks as CM
 
 class AnimationAssets(object):
     
@@ -12,7 +13,7 @@ class AnimationAssets(object):
         self.sprites_left = []
         self.sprites_right = []
         self.frame_rate = 0
-        self.layer_drawing_priority = LayerDrawPriorityTypes.PLAYER_LAYER
+        self.layer_drawing_priority = DrawLayerPriorities.PLAYER_LAYER
         
         
 class CollisionSpriteGroup(pygame.sprite.Sprite):
@@ -29,6 +30,8 @@ class CollisionSpriteGroup(pygame.sprite.Sprite):
         # bounding rectangle for all the sprites in this 
         self.sprites = pygame.sprite.Group()
         self.rect = pygame.Rect(0,0,0,0) # bounding rectangle for all the rectangles in this group
+        self.collision_type_mask =CM.PLAYER
+        self.collision_with_mask = CM.PLATFORMS | CM.POWERUPS | CM.ENEMIES
 
     def get_rect(self):
         return self.__rect

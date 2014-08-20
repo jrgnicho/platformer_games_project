@@ -10,7 +10,7 @@ class MotionModes(object):
     PATH = 'PATH'
     PURSUIT = 'PURSUIT'
     
-class LayerDrawPriorityTypes(object):
+class DrawLayerPriorities(object):
     
     DEFAULT = 0
     LEVEL_BACKGROUND = 0,
@@ -21,6 +21,18 @@ class LayerDrawPriorityTypes(object):
     PLAYER_REAR_EFFECTS_LAYER = 3
     PLAYER_LAYER = 4  # player images
     PLAYER_FRONT_EFFECTS_LAYER = 5 # player effects in front
+    
+class CollisionBitMasks(object):
+    
+    NO_COLLISION = int('00000000',2)
+    PLATFORMS = int('00000001',2)
+    POWERUPS = int('00000010',2)
+    SCREEN_BOUNDS = int('00000100',2)
+    LEVEL_BOUNDS = int('00001000',2)
+    ENEMIES = int('00010000',2)
+    PLAYER = int('00010000',2) 
+    ATTACK = int('00100000',2)
+    
     
     
 class LifeSpanModes(object):
