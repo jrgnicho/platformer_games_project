@@ -26,10 +26,9 @@ def create_asset_collection_xml():
     rect = pygame.Rect(0,0,10,20)
     for i in range(0,4):
         
-        sp = pygame.sprite.Sprite()
-        sp.rect = rect.copy();
-        sp.rect.x+=i*num_rects
-        action_assets.collision.sprites.add(sp)
+        r = rect.copy();
+        r.x+=i*num_rects
+        action_assets.collision.rectangles.append(r)
 
     #endfor
     

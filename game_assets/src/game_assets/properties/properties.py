@@ -27,7 +27,7 @@ class LifeSpanProperties(object):
         self.health = 0
         self.life_span_mode = LifeSpanModes.HEALTH_DEPLETION
         self.time_limit = 0 # time in miliseconds
-        self.range_rect = pygame.Rect(0,0,0,0)
+        self.range_rect = Rect(0,0,0,0)
         self.activation_frame_index = 0 # the attack emerges when the spawning object's (usually player)
                                         # image frame with this index is being played
         

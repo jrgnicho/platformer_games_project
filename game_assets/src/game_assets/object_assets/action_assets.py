@@ -1,7 +1,8 @@
 from pygame import Rect
 from pygame.sprite import Sprite
 from game_assets.object_assets import AnimationAssets
-from game_assets.object_assets import AttackCollisionAssets
+from game_assets.object_assets import CollisionAssets
+from game_assets.object_assets import HitAssets
 from game_assets.properties import AttackTypes
 from game_assets.properties import MotionProperties
 from game_assets.properties import LifeSpanProperties
@@ -17,8 +18,9 @@ class PlayerActionAssets(object):
         self.asset_set = ''
         self.key = 'NONE'
         self.animation = AnimationAssets()
-        self.collision = CollisionSpriteGroup()
+        self.collision = CollisionAssets()
         self.attack_keys = [] # keys to attacks that this action can spawn
+        self.extra_attributes = {}
         
         
 class AttackActionAssets(object):
@@ -28,7 +30,7 @@ class AttackActionAssets(object):
         self.asset_set = ''
         self.key= 'NONE'
         self.animation = AnimationAssets()
-        self.collision_hits = AttackCollisionAssets()
+        self.hits = [] # list of HitAssets
         self.attack_keys = []
         self.attack_type = AttackTypes.SUBORDINATE  
                
@@ -37,3 +39,6 @@ class AttackActionAssets(object):
         
         # life span properties
         self.life_span_properties = LifeSpanProperties()
+        
+        # extras
+        self.extra_attributes = {}
