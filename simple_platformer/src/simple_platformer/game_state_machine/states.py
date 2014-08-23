@@ -72,7 +72,9 @@ class StateMachine(object):
         self.states_dict={}
         self.active_state_key = None
         self.transitions={}
-        self.enter = self.execute  # will be called when used as a sub state machine
+        self.action_queue = [] # list of an action, arguments tuple 
+        self.enter = self.execute  # will be called when used as a sub state machine        
+
         
     def add_state(self,state_obj):
         
@@ -111,7 +113,7 @@ class StateMachine(object):
             self.transitions[state_obj.key] = {action_key:[(next_state_key,condition_cb)]}  
             
         print "Added transition rule : From %s state : %s action : To %s state"%(state_obj.key,action_key,next_state_key)  
-            
+           
         
     def execute(self,action_key,action_cb_args=()):
         

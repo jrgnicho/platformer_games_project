@@ -297,74 +297,8 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         
         ps = self.player.collision_sprite
         if len(platforms) == 0:
-            self.player.execute(ActionKeys.PLATFORM_LOST)
-            
-            # check for reachable edges
-            hang_sprite = self.player.get_hang_sprite()
-            near_platforms = pygame.sprite.spritecollide(hang_sprite,self.platforms,False)
-                        
-            for platform in near_platforms:
-                
-                # must be below platform top
-                if (ps.rect.top < platform.rect.top):
-                    continue
-                    
-                # check points
-                if hang_sprite.rect.collidepoint(platform.rect.topleft) :
-                    self.player.execute(ActionKeys.LEFT_EDGE_NEAR,[platform.rect])
-                    #print "Found left hang point %s near hang sprite"%(str(platform.rect.topleft))
-                    break
-                    
-                elif hang_sprite.rect.collidepoint(platform.rect.topright):
-                    self.player.execute(ActionKeys.RIGHT_EDGE_NEAR,[platform.rect])
-                    #print "Found right hang point %s near hang sprite"%(str(platform.rect.topright))
-                    break
-                
-                #endif
-                
-            #endfor            
-            
-        else:
-            
-            # check if near edge
-            for platform in platforms:
-                
-                # standing on left edge
-                distance  = abs(self.player.collision_sprite.rect.right - platform.rect.left)
-                w = self.player.collision_sprite.rect.width
-                max = w*self.player.player_properties.max_distance_from_edge
-                min = w*self.player.player_properties.min_distance_from_edge
-                
-                if distance < max and distance > min:
-                    self.player.execute(ActionKeys.PLATFORM_LEFT_END_NEAR,[platform.rect])
-                    #print "Edge distance %f"%(float(distance)/float(w))
-                    break
-                    
-                elif distance <= min :
-                    
-                    self.player.execute(ActionKeys.PLATFORM_LOST)
-                    self.player.collision_sprite.rect.right = platform.rect.left
-                    break
-                
-                
-                #endif
-                
-                # standing on right edge
-                distance = abs(platform.rect.right - self.player.collision_sprite.rect.left )
-                if distance < max and distance > min:
-                    self.player.execute(ActionKeys.PLATFORM_RIGHT_END_NEAR,[platform.rect])
-                    #print "Edge distance %f"%(float(distance)/float(w))
-                    break
-                    
-                elif distance <= min:
-                    self.player.execute(ActionKeys.PLATFORM_LOST)
-                    self.player.collision_sprite.rect.left = platform.rect.right
-                    
-                    break
-                
-                #endif
-                
-          #endif  
+            self.player.execute(ActionKeys.PLATFORM_LOST)                   
+        #endif  
             
         
     def check_collisions_in_y(self):        
@@ -384,7 +318,17 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
                 self.player.execute(ActionKeys.COLLISION_ABOVE,[platform.rect.bottom])
             #endif
     
-        #endfor            
+        #endfor    
+        
+        # checking range collision sprites
+        pr = self.player.collision_sprite.rect
+        for rs in iter(self.player.range_collision_group):
+            rs.rect.center = pr.center
+            platforms = pygame.sprite.spritecollide(rs,self.platforms,False)
+            if len(platforms) > 0:
+                self.player.execute(ActionKeys.PLATFORMS_IN_RANGE,[platforms])   
+
+                
                 
     def check_collisions_in_x(self): 
             
@@ -395,15 +339,24 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
             
             if self.player.collision_sprite.rect.centerx > platform.rect.centerx:
                 self.player.collision_sprite.rect.left = platform.rect.right
-                self.player.execute(ActionKeys.COLLISION_LEFT_WALL,[platform.rect.right])
+                self.player.execute(ActionKeys.COLLISION_LEFT_WALL,[platform])
                 
             else:
                 self.player.collision_sprite.rect.right = platform.rect.left
-                self.player.execute(ActionKeys.COLLISION_RIGHT_WALL,[platform.rect.left])
+                self.player.execute(ActionKeys.COLLISION_RIGHT_WALL,[platform])
                 
             #endif          
             
         #endfor 
+        
+        # checking range collision sprites
+        pr = self.player.collision_sprite.rect
+        for rs in iter(self.player.range_collision_group):
+            rs.rect.center = pr.center
+            platforms = pygame.sprite.spritecollide(rs,self.platforms,False)
+            if len(platforms) > 0:
+                self.player.execute(ActionKeys.PLATFORMS_IN_RANGE,[platforms])
+                
         
          
         

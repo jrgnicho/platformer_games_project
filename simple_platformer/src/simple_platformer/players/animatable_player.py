@@ -29,23 +29,11 @@ class AnimatablePlayer(AnimatableObject):
         
         # collision detection objects
         self.collision_sprite.rect = pygame.Rect(0,0,self.player_properties.collision_width,
-                                                 self.player_properties.collision_height)      
+                                                 self.player_properties.collision_height)  
         
-        self.hang_sprite = pygame.sprite.Sprite()
-        self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player_properties.hang_radius,
-                                                 2*self.player_properties.hang_radius) 
-        self.hang_sprite.radius = self.player_properties.hang_radius
-        
-    def get_hang_sprite(self):
-        
-        if self.facing_right:
-            self.hang_sprite.rect.centerx = self.collision_sprite.rect.right
-            self.hang_sprite.rect.centery = self.collision_sprite.rect.top
-        else :
-            self.hang_sprite.rect.centerx = self.collision_sprite.rect.left
-            self.hang_sprite.rect.centery = self.collision_sprite.rect.top
-        
-        return self.hang_sprite     
+        self.range_collision_group = pygame.sprite.Group()    
+        self.near_platforms = pygame.sprite.Group()
+          
         
     def dash(self,action_key = ActionKeys.DASH): 
         
