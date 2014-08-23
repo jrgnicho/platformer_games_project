@@ -106,11 +106,13 @@ class StateMachine(object):
                 action_list = [(next_state_key,condition_cb)]
                 transition_dict[action_key] = action_list
                 
-                
+            #endif    
             
         else:       
             self.states_dict[state_obj.key] = state_obj
             self.transitions[state_obj.key] = {action_key:[(next_state_key,condition_cb)]}  
+        
+        #endif
             
         print "Added transition rule : From %s state : %s action : To %s state"%(state_obj.key,action_key,next_state_key)  
            
@@ -180,18 +182,7 @@ class StateMachine(object):
                 
                     #endif
                     
-                #endfor
-                
-                
-                # no condition validated, execute action on active state
-                #if (active_state_obj.has_action(action_key) and 
-                #    active_state_obj.execute(action_key,action_cb_args)):
-                    
-                    # executed supported action under current state
-                #    return True
-                
-                #endif
-                
+                #endfor                
                 
             else:
                 
