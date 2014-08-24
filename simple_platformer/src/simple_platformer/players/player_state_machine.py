@@ -243,7 +243,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 # must be below platform top                
                 self.edge_in_reach = False   
                 for platform in platforms:
-                    if (ps.rect.top > platform.rect.top):
+                    if (ps.rect.top < platform.rect.bottom):
                         
                         if self.player.facing_right and hs.rect.collidepoint(platform.rect.topleft) :                            
                             self.edge_in_reach = True  
