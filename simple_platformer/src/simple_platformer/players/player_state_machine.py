@@ -98,7 +98,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 
                 State.__init__(self,PlayerStateMachine.StateKeys.STANDING)
                 self.player = player
-                self.is_near_edge = False
+                self.is_standing_on_edge = False
                 self.is_beyond_edge = False
                 
                 # creating range rectangle
@@ -115,7 +115,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 self.player.set_inertia(0)
                 self.player.midair_dash_countdown = self.player.player_properties.max_midair_dashes
                 self.player.range_collision_group.add(self.range_sprite) 
-                self.is_near_edge = False
+                self.is_standing_on_edge = False
                 self.is_beyond_edge = False
                 
             def exit(self):
@@ -126,32 +126,36 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 
                             
                 # check if near edge
+                ps = self.player.collision_sprite
                 for platform in platforms:
                     
-                    if platform.rect.top < self.player.collision_sprite.rect.top:
+                    if platform.rect.top < ps.rect.top:
                         continue
-                    #endif
+                    #endif                    
                     
-                    w = self.player.collision_sprite.rect.width
+                    w = ps.rect.width
                     max = w*self.player.player_properties.max_distance_from_edge
                     min = w*self.player.player_properties.min_distance_from_edge
                     
+                    # finding side of platform
+                    on_platform_right = ps.rect.centerx > platform.rect.centerx
+                    
                     # standing on left edge
-                    distance  = abs(platform.rect.right - self.player.collision_sprite.rect.left ) \
-                    if self.player.facing_right else abs(self.player.collision_sprite.rect.right - platform.rect.left)
+                    distance  = abs(platform.rect.right - ps.rect.left ) \
+                    if on_platform_right else abs(ps.rect.right - platform.rect.left)
 
                     
                     if distance < max and distance > min:
-                        self.is_near_edge = True
+                        self.is_standing_on_edge = (on_platform_right == self.player.facing_right)
                         break
                         
                     elif distance <= min :                        
                         self.is_beyond_edge = True
                         
-                        if self.player.facing_right:
-                            self.player.collision_sprite.rect.left = platform.rect.right
+                        if on_platform_right:
+                            ps.rect.left = platform.rect.right
                         else:
-                            self.player.collision_sprite.rect.right = platform.rect.left
+                            ps.rect.right = platform.rect.left
                             
                         #endif    
                             
@@ -182,6 +186,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 self.player = player
                 self.speed = self.player.player_properties.run_speed
                 
+                self.has_landed = False
                 self.edge_in_reach = False                   
                 self.hang_sprite = pygame.sprite.Sprite()
                 self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player.player_properties.hang_radius,
@@ -198,6 +203,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 self.add_action(ActionKeys.CANCEL_MOVE,lambda : self.player.set_forward_speed(0))
                 self.add_action(ActionKeys.CANCEL_JUMP,lambda : self.cancel_jump())
                 self.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.player.apply_gravity(g))    
+                self.add_action(ActionKeys.COLLISION_BELOW,self.check_landing)
                 self.add_action(ActionKeys.COLLISION_RIGHT_WALL,lambda platform : self.player.set_inertia(0))
                 self.add_action(ActionKeys.COLLISION_LEFT_WALL,lambda platform : self.player.set_inertia(0)) 
                 self.add_action(ActionKeys.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms))  
@@ -216,7 +222,34 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 
             def exit(self):
                 self.player.range_collision_group.remove(self.range_sprite)                
-                self.edge_in_reach = False   
+                self.edge_in_reach = False  
+                self.has_landed = False
+                
+            def check_landing(self,platform):
+                
+                # check if near edge
+                ps = self.player.collision_sprite                
+                w = ps.rect.width
+                min = w*0.5
+                
+                # finding side of platform
+                on_platform_right = ps.rect.centerx > platform.rect.centerx
+                
+                # standing on left edge
+                distance  = abs(platform.rect.right - ps.rect.left ) \
+                if on_platform_right else abs(ps.rect.right - platform.rect.left)
+                
+                self.has_landed = True                
+                if distance < min:                
+                    if on_platform_right:
+                        ps.rect.right = platform.rect.right+min
+                        
+                    else:
+                        ps.rect.left = platform.rect.left-min
+                    
+                    #endif                    
+                #endif
+                    
                 
             def get_hang_sprite(self):
         
@@ -243,7 +276,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 # must be below platform top                
                 self.edge_in_reach = False   
                 for platform in platforms:
-                    if (ps.rect.top < platform.rect.bottom):
+                    if (ps.rect.bottom > platform.rect.bottom):
                         
                         if self.player.facing_right and hs.rect.collidepoint(platform.rect.topleft) :                            
                             self.edge_in_reach = True  
@@ -276,6 +309,8 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 
                 self.player = player
                 
+                self.edge_in_reach = False  
+                self.has_landed = False  
                 self.hang_sprite = pygame.sprite.Sprite()
                 self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player.player_properties.hang_radius,
                                                          2*self.player.player_properties.hang_radius) 
@@ -289,11 +324,12 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 self.add_action(ActionKeys.APPLY_GRAVITY,lambda g: self.player.apply_gravity(g))
                 self.add_action(ActionKeys.MOVE_LEFT,lambda : self.player.turn_left(-self.player.player_properties.run_speed))
                 self.add_action(ActionKeys.MOVE_RIGHT,lambda : self.player.turn_right(self.player.player_properties.run_speed))
+                self.add_action(ActionKeys.COLLISION_BELOW,self.check_landing)
                 self.add_action(ActionKeys.COLLISION_RIGHT_WALL,lambda platform : self.player.set_inertia(0))
                 self.add_action(ActionKeys.COLLISION_LEFT_WALL,lambda platform : self.player.set_inertia(0)) 
                 self.add_action(ActionKeys.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms))   
                 
-                self.edge_in_reach = False            
+        
             
             def enter(self):
                 
@@ -306,6 +342,37 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
             def exit(self):
                 self.player.range_collision_group.remove(self.range_sprite)
                 self.edge_in_reach = False 
+                self.has_landed = False
+                
+            def check_landing(self,platform):
+                
+                # check if near edge
+                ps = self.player.collision_sprite                
+                w = ps.rect.width
+                min = w*0.5
+                
+                # finding side of platform
+                on_platform_right = ps.rect.centerx > platform.rect.centerx
+                
+                # standing on left edge
+                distance  = abs(platform.rect.right - ps.rect.left ) \
+                if on_platform_right else abs(ps.rect.right - platform.rect.left)
+
+                
+                
+                self.has_landed = True
+                
+                if distance < min:                    
+                    if on_platform_right:
+                        ps.rect.right = platform.rect.right+min
+                        
+                    else:
+                        ps.rect.left = platform.rect.left-min
+                    
+                    #endif
+                    
+                #endif
+                    
                 
             def get_hang_sprite(self):        
         
@@ -328,7 +395,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 # must be below platform top
                 self.edge_in_reach = False 
                 for platform in platforms:
-                    if (ps.rect.top > platform.rect.top):
+                    if (ps.rect.bottom > platform.rect.bottom):
                         
                         if self.player.facing_right and hs.rect.collidepoint(platform.rect.topleft) :
                             self.edge_in_reach = True
@@ -541,7 +608,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         sm.add_transition(stand_state,ActionKeys.MOVE_RIGHT,PlayerStateMachine.StateKeys.RUNNING)
         sm.add_transition(stand_state,ActionKeys.DASH,PlayerStateMachine.StateKeys.DASHING)
         sm.add_transition(stand_state,ActionKeys.PLATFORMS_IN_RANGE,PlayerStateMachine.StateKeys.STANDING_ON_EDGE,
-                          lambda: stand_state.is_near_edge)
+                          lambda: stand_state.is_standing_on_edge)
         sm.add_transition(stand_state,ActionKeys.PLATFORMS_IN_RANGE,PlayerStateMachine.StateKeys.FALLING,
                   lambda: stand_state.is_beyond_edge)
         
@@ -556,7 +623,8 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         sm.add_transition(jump_state,ActionKeys.DASH,PlayerStateMachine.StateKeys.MIDAIR_DASHING,
                           lambda: self.midair_dash_countdown > 0)
         sm.add_transition(jump_state,ActionKeys.LAND,PlayerStateMachine.StateKeys.LANDING)
-        sm.add_transition(jump_state,ActionKeys.COLLISION_BELOW,PlayerStateMachine.StateKeys.LANDING)
+        sm.add_transition(jump_state,ActionKeys.COLLISION_BELOW,PlayerStateMachine.StateKeys.LANDING,
+                          lambda : jump_state.has_landed)
         sm.add_transition(jump_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,PlayerStateMachine.StateKeys.FALLING)
         sm.add_transition(jump_state,ActionKeys.COLLISION_ABOVE,PlayerStateMachine.StateKeys.FALLING)
         sm.add_transition(jump_state,ActionKeys.PLATFORMS_IN_RANGE,PlayerStateMachine.StateKeys.HANGING,
@@ -565,7 +633,8 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         sm.add_transition(fall_state,ActionKeys.DASH,PlayerStateMachine.StateKeys.MIDAIR_DASHING,
                           lambda: self.midair_dash_countdown > 0)
         sm.add_transition(fall_state,ActionKeys.LAND,PlayerStateMachine.StateKeys.LANDING)
-        sm.add_transition(fall_state,ActionKeys.COLLISION_BELOW,PlayerStateMachine.StateKeys.LANDING)
+        sm.add_transition(fall_state,ActionKeys.COLLISION_BELOW,PlayerStateMachine.StateKeys.LANDING,
+                          lambda : fall_state.has_landed)
         sm.add_transition(fall_state,ActionKeys.PLATFORMS_IN_RANGE,PlayerStateMachine.StateKeys.HANGING,
                           lambda : fall_state.edge_in_reach)
         
