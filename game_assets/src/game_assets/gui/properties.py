@@ -4,7 +4,7 @@ class GUIProperties(object):
     class Constants(object):
         
         WINDOW_WIDTH = 800
-        WINDOW_HEIGHT = 600
+        WINDOW_HEIGHT = 800
         
         
     class Fonts(object):
@@ -15,6 +15,7 @@ class GUIProperties(object):
         SET_LABEL_FRAME = ('Helvetica',12,'normal')
         SET_SELECTION_LABEL = ('Helvetica',14,'normal')
         SET_COMBO_BOX = ('Symbol',14,'normal')
+        SET_BUTTON = ('Times',14,'normal')
         
     
     class Names(object):
@@ -25,5 +26,5 @@ class GUIProperties(object):
         MAIN_NB_COLLECTION_FRAME= "Collection"
         COLLECTION_FRAME_LABEL = "Collection Name"
         COLLECTION_NB_SET_FRAME = 'Set'
-        COLLECTION_NB_PLAYER_ACTION_FRAME = 'Player Actions'
-        COLLECTION_NB_ATTACK_ACTION_FRAME = 'Attack Actions'  
+        SET_NB_ACTION_FRAME = 'Action'
+        SET_NB_ATTACK_FRAME = 'Attack'  
