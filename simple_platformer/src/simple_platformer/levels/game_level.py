@@ -311,11 +311,11 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
             
             if self.player.collision_sprite.rect.centery < platform.rect.centery:
                 self.player.collision_sprite.rect.bottom = platform.rect.top
-                self.player.execute(ActionKeys.COLLISION_BELOW,[platform.rect.top])  
+                self.player.execute(ActionKeys.COLLISION_BELOW,[platform])  
                               
             else:
                 self.player.collision_sprite.rect.top = platform.rect.bottom
-                self.player.execute(ActionKeys.COLLISION_ABOVE,[platform.rect.bottom])
+                self.player.execute(ActionKeys.COLLISION_ABOVE,[platform])
             #endif
     
         #endfor    
