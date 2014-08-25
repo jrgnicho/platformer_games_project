@@ -7,7 +7,23 @@ from game_assets.properties import AttackTypes
 from game_assets.properties import MotionProperties
 from game_assets.properties import LifeSpanProperties
 
-class PlayerActionAssets(object):
+class AttackAssets(object):
+    
+    def __init__(self):
+
+        self.hits = [] # list of HitAssets
+        self.attack_type = AttackTypes.SUBORDINATE  
+               
+        # motion properties
+        self.motion_properties = MotionProperties()
+        
+        # life span properties
+        self.life_span_properties = LifeSpanProperties()
+        
+        # extras
+        self.extra_attributes = {}
+
+class ActionAssets(object):
     """
     This class contains the necessary assets to control a player's object's animations an perform
     collision detection checks corresponding to this action
@@ -19,26 +35,8 @@ class PlayerActionAssets(object):
         self.key = 'NONE'
         self.animation = AnimationAssets()
         self.collision = CollisionAssets()
-        self.attack_keys = [] # keys to attacks that this action can spawn
+        self.attack_keys = [] # keys to other attacks that this action can spawn
         self.extra_attributes = {}
+        self.attack = AttackAssets()
         
         
-class AttackActionAssets(object):
-    
-    def __init__(self):
-        
-        self.asset_set = ''
-        self.key= 'NONE'
-        self.animation = AnimationAssets()
-        self.hits = [] # list of HitAssets
-        self.attack_keys = []
-        self.attack_type = AttackTypes.SUBORDINATE  
-               
-        # motion properties
-        self.motion_properties = MotionProperties()
-        
-        # life span properties
-        self.life_span_properties = LifeSpanProperties()
-        
-        # extras
-        self.extra_attributes = {}

@@ -5,5 +5,4 @@ class AssetSet(object):
     def __init__(self):
         
         self.name = 'Default'
-        self.player_actions = {}
-        self.attact_actions = {}
+        self.actions_assets_dict = {}
