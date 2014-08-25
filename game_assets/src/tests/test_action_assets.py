@@ -2,23 +2,22 @@
 
 import pygame
 from game_assets.object_assets import *
-from game_assets.object_assets import PlayerActionAssets
-from game_assets.object_assets import AttackActionAssets
+from game_assets.object_assets import ActionAssets
 from game_assets.object_assets import AssetSet
 from game_assets.serialization import AssetCollectionXml
 
 def create_action_asset():
     
-    player_assets = PlayerActionAssets()
-    print 'Default player action assets object %s'%(str(player_assets))
+    player_assets = ActionAssets()
+    print 'Default action assets object %s'%(str(player_assets))
     
-    attack_assets = AttackActionAssets()
-    print 'Default attack action assets object %s'%(str(attack_assets))
+    attack_assets = AttackAssets()
+    print 'Default attack assets object %s'%(str(attack_assets))
     
 def create_asset_collection_xml():
     
     asset_set = AssetSet()
-    action_assets = PlayerActionAssets()
+    action_assets = ActionAssets()
     collection_writer = AssetCollectionXml()
     
     # first rectangle
@@ -33,7 +32,7 @@ def create_asset_collection_xml():
     #endfor
     
     # adding action asset to set
-    asset_set.player_actions['TEST_ACTION'] = action_assets
+    asset_set.actions_assets_dict['TEST_ACTION'] = action_assets
     
     # saving to xml
     collection_writer.save([asset_set],'test_asset_collection.xml')   
