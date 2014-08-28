@@ -26,5 +26,6 @@ class GUIProperties(object):
         MAIN_NB_COLLECTION_FRAME= "Collection"
         COLLECTION_FRAME_LABEL = "Collection Name"
         COLLECTION_NB_SET_FRAME = 'Set'
-        SET_NB_ACTION_FRAME = 'Action'
-        SET_NB_ATTACK_FRAME = 'Attack'  
+        ACTION_NB_ANIMATION_FRAME = 'Animation'
+        ACTION_NB_COLLISION_FRAME = 'Collision'
+        ACTION_NB_ATTACK_FRAME = 'Attack'  

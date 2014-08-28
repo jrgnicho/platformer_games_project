@@ -3,6 +3,113 @@ import tkFont
 import ttk
 from game_assets.gui.properties import *
 
+class SpriteSheetWidget(ttk.Frame):
+    
+    def __init__(self,parent):
+        
+        ttk.Frame.__init__(self, parent)
+        ttk.file_path = ''
+        
+        self.setup()
+        
+    def setup(self):
+        
+        WN = GUIProperties.Names
+        C = GUIProperties.Constants
+        F = GUIProperties.Fonts
+        
+        self.configure(borderwidth = 2)
+        
+        # image file controls
+        self.open_image_button = ttk.Button(self,text = 'Open File')
+        self.file_path_label = ttk.Label(self,text = 'Image Path')
+        self.path_label = ttk.Label(self, text = '/',font = F.COLLECTION_INFO,
+                                    background = "#fff",relief = 'sunken',padding = (2,4))
+        
+        # image breakdown
+        self.columns_label = ttk.Label(self,text = 'cols')
+        self.columns_spin = tk.Spinbox(self,from_ = 0,to = 0)
+        self.rows_label = ttk.Label(self,text = 'rows')
+        self.rows_spin = tk.Spinbox(self,from_ = 0,to = 0)
+        self.size_label = ttk.Label(self,text = 'size')
+        self.size_info_label = ttk.Label(self,font = F.COLLECTION_INFO,
+                                    background = "#fff",relief = 'sunken',text = '0x0')
+        
+        # image display
+        self.sprite_canvas = tk.Canvas(self,width = 200,height = 100)
+        
+        self.open_image_button.grid(column = 0,row = 0,padx = 4,pady = 2)
+        self.file_path_label.grid(column = 1,row = 0,padx = 2,pady = 2)
+        self.path_label.grid(column = 2,row = 0,columnspan = 4, padx = 2,pady = 2)
+        
+        self.columns_label.grid(column = 0,row = 1,padx = 2,pady = 2)
+        self.columns_spin.grid(column = 1,row = 1,padx = 2,pady = 2)
+        self.rows_label.grid(column = 2,row = 1,padx = 2,pady = 2)
+        self.rows_spin.grid(column = 3,row = 1,padx = 2,pady = 2)   
+        self.size_label.grid(column = 4,row = 1,padx = 2,pady = 2)
+        self.size_info_label.grid(column = 5,row = 1,padx = 2,pady = 2)
+        
+        self.sprite_canvas.grid(column = 0,row = 2,columnspan = 6,rowspan = 2)   
+        
+class AnimationWidget(ttk.Frame):
+    
+    def __init__(self,parent):
+        
+        ttk.Frame.__init__(self, parent)     
+        self.setup()
+        
+    def setup(self):
+        
+        WN = GUIProperties.Names
+        C = GUIProperties.Constants
+        F = GUIProperties.Fonts        
+        w = C.WINDOW_WIDTH
+        h = int(C.WINDOW_HEIGHT*0.8)
+        sframew = int(0.8*w)
+        sframeh = int(0.4*h)
+        
+        # creating notebook
+        self.left_right_nb = ttk.Notebook(self,width = w, height = h)
+        self.right_frame = ttk.Frame(self.left_right_nb)
+        self.left_frame = ttk.Frame(self.left_right_nb)
+        self.right_sprites_frame = self.create_scrollable_frame(self.right_frame,sframew,sframeh)
+        self.left_sprites_frame = self.create_scrollable_frame(self.left_frame,sframew,sframeh)
+        
+        
+        
+        # creating sprite sheet widgets
+        num_sprite_widgets = 3
+        for i in range(0,3):
+             
+            sw = SpriteSheetWidget(self.right_sprites_frame)
+            sw.pack(fill = tk.X)
+             
+        #endfor
+        self.right_sprites_frame.configure(width = sframew,height = sframeh)
+        
+        
+        self.left_right_nb.add(self.right_frame,text = 'Right')
+        self.left_right_nb.add(self.left_frame,text = 'Left')
+        self.right_sprites_frame.pack(fill = tk.BOTH)
+        self.left_sprites_frame.pack(fill = tk.BOTH)
+        
+        self.left_right_nb.pack()        
+        
+        
+    def create_scrollable_frame(self,parent,width,height):
+        
+        canvas = tk.Canvas(parent,width = width, height = height)
+        scrollable_frame = ttk.Frame(canvas,width = width, height = height)
+        scrollbar = ttk.Scrollbar(parent,orient = tk.VERTICAL,command = canvas.yview)
+        canvas.configure(yscrollcommand = scrollbar.set)
+        canvas.create_window((0,0),window = scrollable_frame)
+        
+        canvas.grid(column = 0,row = 0,sticky = (tk.N,tk.W,tk.E,tk.W))
+        scrollbar.grid(column = 1,row = 0,sticky = (tk.N,tk.S))
+        return scrollable_frame
+        
+        
+
 class SelectionWidget(ttk.Frame):
     
     def __init__(self,parent,combo_label_text,choices = [],select_cb = None,add_cb = None,delete_cb = None):
@@ -42,7 +149,7 @@ class SelectionWidget(ttk.Frame):
         self.rename_button.pack(side = tk.LEFT,padx = 4,pady = 4)
         self.delete_button.pack(side = tk.LEFT,padx = 4,pady = 4)
         
-        self.pack(expand = True,fill = tk.BOTH)     
+        #self.pack(expand = True,fill = tk.BOTH)     
         
 class ActionsEditWidget(ttk.Frame):
     
@@ -67,10 +174,12 @@ class ActionsEditWidget(ttk.Frame):
         self.action_nb = ttk.Notebook(self,width = w,height = h)        
         
         # action frames (player, attack)
-        self.action_frame = ttk.Frame(self.action_nb) 
+        self.animation_frame = AnimationWidget(self.action_nb)
+        self.collision_frame = ttk.Frame(self.action_nb)
         self.attack_frame = ttk.Frame(self.action_nb)        
-        self.action_nb.add(self.action_frame,text= WN.SET_NB_ACTION_FRAME)
-        self.action_nb.add(self.attack_frame,text= WN.SET_NB_ATTACK_FRAME)
+        self.action_nb.add(self.animation_frame,text= WN.ACTION_NB_ANIMATION_FRAME)
+        self.action_nb.add(self.collision_frame,text= WN.ACTION_NB_COLLISION_FRAME)
+        self.action_nb.add(self.attack_frame,text= WN.ACTION_NB_ATTACK_FRAME)
         
         self.selection_widget.pack(side = tk.TOP,expand = True,padx = 4,pady = 4,fill=tk.X)
         self.action_nb.pack(side = tk.BOTTOM,expand = True,padx = 4,pady = 4)
@@ -103,7 +212,8 @@ class AssetSetWidget(ttk.Frame):
         self.editing_frame = ttk.LabelFrame(self,borderwidth = 2,text= 'Actions') 
         
         self.set_items = {'set1':object(),'set2':object(),'set3':object()}
-        self.management_widget = SelectionWidget(self.selection_frame,'Select Set',self.set_items.keys())        
+        self.management_widget = SelectionWidget(self.selection_frame,'Select Set',self.set_items.keys())  
+        self.management_widget.pack(expand = True,fill = tk.BOTH)      
         
         # action editing widgets
         self.action_items = {'action1':object(),'action2':object(),'action3':object(),'action4':object()}

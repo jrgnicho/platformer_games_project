@@ -20,8 +20,8 @@ class AnimationAssets(object):
     
     def __init__(self):
     
-        self.sprites_left = SpritesAsset()
-        self.sprites_right = SpritesAsset()
+        self.sprites_left = [SpritesAsset()]
+        self.sprites_right = [SpritesAsset()]
         self.frame_rate = 0
         self.layer_drawing_priority = DrawLayerPriorities.PLAYER_LAYER
         
