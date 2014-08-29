@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{ee32810f-dcb7-4784-87ca-3ce6acf1470d}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>game_assets\src\asset_creator_gui.py</StartupFile>
+    <SearchPath>game_assets\;simple_platformer\</SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <ItemGroup>
+    <Content Include="game_assets\CMakeLists.txt" />
+    <Compile Include="game_assets\setup.py" />
+    <Content Include="simple_platformer\CMakeLists.txt" />
+    <Compile Include="game_assets\src\game_assets\gui\animation_widgets.py" />
+    <Compile Include="game_assets\src\game_assets\gui\general_widgets.py" />
+    <Compile Include="simple_platformer\setup.py" />
+    <Compile Include="game_assets\src\asset_creator_gui.py" />
+    <Compile Include="game_assets\src\game_assets\__init__.py" />
+    <Compile Include="game_assets\src\tests\test_action_assets.py" />
+    <Compile Include="game_assets\src\tests\test_draw_on_tkcanvas.py" />
+    <Compile Include="game_assets\src\tests\test_tkpygame.py" />
+    <Compile Include="game_assets\src\tests\__init__.py" />
+    <Compile Include="game_assets\src\game_assets\gui\asset_creator_tool.py" />
+    <Compile Include="game_assets\src\game_assets\gui\__init__.py" />
+    <Compile Include="game_assets\src\game_assets\object_assets\action_assets.py" />
+    <Compile Include="game_assets\src\game_assets\object_assets\asset_containers.py" />
+    <Compile Include="game_assets\src\game_assets\object_assets\base_assets.py" />
+    <Compile Include="game_assets\src\game_assets\object_assets\__init__.py" />
+    <Compile Include="game_assets\src\game_assets\properties\constants.py" />
+    <Compile Include="game_assets\src\game_assets\properties\properties.py" />
+    <Compile Include="game_assets\src\game_assets\properties\__init__.py" />
+    <Compile Include="game_assets\src\game_assets\serialization\asset_collection_xml.py" />
+    <Compile Include="game_assets\src\game_assets\serialization\__init__.py" />
+    <Compile Include="game_assets\src\game_assets\unsorted\collision_groups.py" />
+    <Content Include="simple_platformer\resources\backgrounds\cplusplus_programming_background_960x800.jpg" />
+    <Content Include="simple_platformer\resources\hiei_sprites\sprite_details.txt" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_1656x2424.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_attack_jump_b_part1_0-0.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_attack_jump_b_part2_0-0.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_attack_jump_b_part3_0-0.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_attack_jump_b_part4_0-1.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_attack_slash_0-4.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_attack_y_up_0-6.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_climb_0-7.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_dash_0-2.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_dash_break_part1_0-0.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_dash_break_part2_0-5.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_hanging_0-3.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_hanging_wide_0-3.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_jump_ascend_0-4.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_jump_full_0-7.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_jump_higher_part1_0-1.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_jump_higher_part2_0-5.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_jump_land_0-2.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_jump_midair_0-1.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_midair_dash_part1_0-1.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_midair_dash_part2_0-0.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_midair_dash_part3_0-0.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_midair_dash_part4_0-0.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_run_0-7.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_standing_on_edge_0-3.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_stand_0-3.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_stand_part1_0-0.png" />
+    <Content Include="simple_platformer\resources\hiei_sprites\hiei_stand_part2_0-2.png" />
+    <Compile Include="simple_platformer\src\deprecated\action_rules.py" />
+    <Compile Include="simple_platformer\src\deprecated\animated_platform_scroller.py" />
+    <Compile Include="simple_platformer\src\deprecated\animated_player.py" />
+    <Compile Include="simple_platformer\src\deprecated\level.py" />
+    <Compile Include="simple_platformer\src\deprecated\platform_scroller.py" />
+    <Compile Include="simple_platformer\src\deprecated\player.py" />
+    <Compile Include="simple_platformer\src\examples\game_platformer.py" />
+    <Compile Include="simple_platformer\src\examples\test_smach_state_machine.py" />
+    <Compile Include="simple_platformer\src\examples\test_sprite_loader.py" />
+    <Compile Include="simple_platformer\src\examples\test_state_machine.py" />
+    <Compile Include="simple_platformer\src\examples\__init__.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\__init__.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\animatable_object\animatable_object.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\animatable_object\__init__.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\game_state_machine\actions.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\game_state_machine\states.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\game_state_machine\__init__.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\levels\game_level.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\levels\platform.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\levels\__init__.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\players\animatable_player.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\players\player_properties.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\players\player_state_machine.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\players\__init__.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\utilities\constants.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\utilities\sprite_management.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\utilities\utilities.py" />
+    <Compile Include="simple_platformer\src\simple_platformer\utilities\__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="game_assets" />
+    <Folder Include="game_assets\src" />
+    <Folder Include="game_assets\src\game_assets" />
+    <Folder Include="game_assets\src\game_assets\gui" />
+    <Folder Include="game_assets\src\game_assets\object_assets" />
+    <Folder Include="game_assets\src\game_assets\properties" />
+    <Folder Include="game_assets\src\game_assets\serialization" />
+    <Folder Include="game_assets\src\game_assets\unsorted" />
+    <Folder Include="game_assets\src\tests" />
+    <Folder Include="simple_platformer" />
+    <Folder Include="simple_platformer\resources\" />
+    <Folder Include="simple_platformer\resources\backgrounds" />
+    <Folder Include="simple_platformer\resources\hiei_sprites" />
+    <Folder Include="simple_platformer\src\" />
+    <Folder Include="simple_platformer\src\deprecated" />
+    <Folder Include="simple_platformer\src\examples" />
+    <Folder Include="simple_platformer\src\simple_platformer" />
+    <Folder Include="simple_platformer\src\simple_platformer\animatable_object" />
+    <Folder Include="simple_platformer\src\simple_platformer\game_state_machine" />
+    <Folder Include="simple_platformer\src\simple_platformer\levels" />
+    <Folder Include="simple_platformer\src\simple_platformer\players" />
+    <Folder Include="simple_platformer\src\simple_platformer\utilities" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+</Project>
