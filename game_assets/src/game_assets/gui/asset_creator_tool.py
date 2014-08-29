@@ -3,6 +3,53 @@ import tkFont
 import ttk
 from game_assets.gui.properties import *
 
+class VerticalScrolledFrame(ttk.Frame):
+    """A pure Tkinter scrollable frame that actually works!
+
+    * Use the 'interior' attribute to place widgets inside the scrollable frame
+    * Construct and pack/place/grid normally
+    * This frame only allows vertical scrolling
+    
+    """
+    def __init__(self, parent, *args, **kw):
+        ttk.Frame.__init__(self, parent, *args, **kw)            
+
+        # create a canvas object and a vertical scrollbar for scrolling it
+        vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
+        vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=tk.FALSE)
+        canvas = tk.Canvas(self, bd=0, highlightthickness=0,
+                        yscrollcommand=vscrollbar.set)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=tk.TRUE)
+        vscrollbar.config(command=canvas.yview)
+
+        # reset the view
+        canvas.xview_moveto(0)
+        canvas.yview_moveto(0)
+
+        # create a frame inside the canvas which will be scrolled with it
+        self.interior = interior = ttk.Frame(canvas)
+        interior_id = canvas.create_window(0, 0, window=interior,
+                                           anchor=tk.NW)
+
+        # track changes to the canvas and frame width and sync them,
+        # also updating the scrollbar
+        def _configure_interior(event):
+            # update the scrollbars to match the size of the inner frame
+            size = (interior.winfo_reqwidth(), interior.winfo_reqheight())
+            canvas.config(scrollregion="0 0 %s %s" % size)
+            if interior.winfo_reqwidth() != canvas.winfo_width():
+                # update the canvas's width to fit the inner frame
+                canvas.config(width=interior.winfo_reqwidth())
+        interior.bind('<Configure>', _configure_interior)
+
+        def _configure_canvas(event):
+            if interior.winfo_reqwidth() != canvas.winfo_width():
+                # update the inner frame's width to fill the canvas
+                canvas.itemconfigure(interior_id, width=canvas.winfo_width())
+        canvas.bind('<Configure>', _configure_canvas)
+
+        return
+
 class SpriteSheetWidget(ttk.Frame):
     
     def __init__(self,parent):
@@ -18,7 +65,7 @@ class SpriteSheetWidget(ttk.Frame):
         C = GUIProperties.Constants
         F = GUIProperties.Fonts
         
-        self.configure(borderwidth = 2)
+        self.configure(borderwidth = 2,relief = tk.GROOVE)
         
         # image file controls
         self.open_image_button = ttk.Button(self,text = 'Open File')
@@ -70,18 +117,21 @@ class AnimationWidget(ttk.Frame):
         
         # creating notebook
         self.left_right_nb = ttk.Notebook(self,width = w, height = h)
-        self.right_frame = ttk.Frame(self.left_right_nb)
-        self.left_frame = ttk.Frame(self.left_right_nb)
-        self.right_sprites_frame = self.create_scrollable_frame(self.right_frame,sframew,sframeh)
-        self.left_sprites_frame = self.create_scrollable_frame(self.left_frame,sframew,sframeh)
+        self.right_frame = ttk.Frame(self.left_right_nb,width = sframew,height = sframeh)
+        self.left_frame = ttk.Frame(self.left_right_nb,width = sframew,height = sframeh)
         
+        # sprite sheet widget frames
+        self.right_sprites_frame = VerticalScrolledFrame(self.right_frame)
+        self.right_sprites_frame.configure(relief = tk.SUNKEN,borderwidth = 1)
+        self.left_sprites_frame = VerticalScrolledFrame(self.left_frame)  
+        self.left_sprites_frame.configure(relief = tk.SUNKEN,borderwidth = 1)     
         
         
         # creating sprite sheet widgets
         num_sprite_widgets = 3
         for i in range(0,3):
              
-            sw = SpriteSheetWidget(self.right_sprites_frame)
+            sw = SpriteSheetWidget(self.right_sprites_frame.interior)
             sw.pack(fill = tk.X)
              
         #endfor
@@ -94,21 +144,7 @@ class AnimationWidget(ttk.Frame):
         self.left_sprites_frame.pack(fill = tk.BOTH)
         
         self.left_right_nb.pack()        
-        
-        
-    def create_scrollable_frame(self,parent,width,height):
-        
-        canvas = tk.Canvas(parent,width = width, height = height)
-        scrollable_frame = ttk.Frame(canvas,width = width, height = height)
-        scrollbar = ttk.Scrollbar(parent,orient = tk.VERTICAL,command = canvas.yview)
-        canvas.configure(yscrollcommand = scrollbar.set)
-        canvas.create_window((0,0),window = scrollable_frame)
-        
-        canvas.grid(column = 0,row = 0,sticky = (tk.N,tk.W,tk.E,tk.W))
-        scrollbar.grid(column = 1,row = 0,sticky = (tk.N,tk.S))
-        return scrollable_frame
-        
-        
+
 
 class SelectionWidget(ttk.Frame):
     
