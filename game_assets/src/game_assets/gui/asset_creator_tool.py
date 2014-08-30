@@ -28,7 +28,7 @@ class ActionsEditWidget(ttk.Frame):
         self.action_nb = ttk.Notebook(self,width = w,height = h)        
         
         # action frames (player, attack)
-        self.animation_frame = AnimationWidget(self.action_nb)
+        self.animation_frame = AnimationsWidget(self.action_nb)
         self.collision_frame = ttk.Frame(self.action_nb)
         self.attack_frame = ttk.Frame(self.action_nb)        
         self.action_nb.add(self.animation_frame,text= WN.ACTION_NB_ANIMATION_FRAME)

@@ -1,6 +1,13 @@
 
 class GUIProperties(object):
     
+    IMAGE_FORMATS = [
+        ('Windows Bitmap','*.bmp'),
+        ('Portable Network Graphics','*.png'),
+        ('JPEG / JFIF','*.jpg'),
+        ('CompuServer GIF','*.gif'),
+        ]
+    
     class Constants(object):
         
         WINDOW_WIDTH = 800
@@ -16,6 +23,7 @@ class GUIProperties(object):
         SET_SELECTION_LABEL = ('Helvetica',14,'normal')
         SET_COMBO_BOX = ('Symbol',14,'normal')
         SET_BUTTON = ('Times',14,'normal')
+        SPRITE_WIDGET_SPIN = ('Times',14,'normal')
         
     
     class Names(object):
