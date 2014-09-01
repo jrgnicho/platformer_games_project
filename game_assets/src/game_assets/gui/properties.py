@@ -1,9 +1,9 @@
 
 class GUIProperties(object):
     
-    IMAGE_FORMATS = [
-        ('Windows Bitmap','*.bmp'),
+    IMAGE_FORMATS = [                     
         ('Portable Network Graphics','*.png'),
+        ('Windows Bitmap','*.bmp'),
         ('JPEG / JFIF','*.jpg'),
         ('CompuServer GIF','*.gif'),
         ]
@@ -12,6 +12,13 @@ class GUIProperties(object):
         
         WINDOW_WIDTH = 800
         WINDOW_HEIGHT = 800
+        
+    class PG_Colors(object):
+        BLACK    = (   0,   0,   0)
+        WHITE    = ( 255, 255, 255)
+        BLUE     = (   0,   0, 255)
+        RED      = ( 255,   0,   0)
+        GREEN    = (   0, 255,   0)
         
         
     class Fonts(object):

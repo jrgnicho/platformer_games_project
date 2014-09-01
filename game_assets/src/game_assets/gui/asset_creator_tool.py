@@ -4,6 +4,7 @@ import ttk
 from game_assets.gui.properties import *
 from game_assets.gui.general_widgets import *
 from game_assets.gui.animation_widgets import *
+import pygame
         
 class ActionsEditWidget(ttk.Frame):
     
@@ -91,7 +92,8 @@ class AssetCreatorTool(object):
         
         WN = GUIProperties.Names
         C = GUIProperties.Constants        
-        F = GUIProperties.Fonts
+        F = GUIProperties.Fonts       
+        
         
         self.root.title(WN.TITLE)
         self.root.protocol('WM_DELETE_WINDOW', self.exit)
@@ -107,17 +109,24 @@ class AssetCreatorTool(object):
         self.start_frame = None
         self.collection_frame = None
         self.sets_frame = None
-        self.sets_widget = None
-        
+        self.sets_widget = None        
         
         self.create_main_notebook(self.main_frame)
         self.create_collection_frame(self.collection_frame)
         self.create_sets_widget(self.sets_frame)
         
+        # setting up pygame
+        self.hidden_frame = tk.Frame(self.root)
+        os.environ['SDL_WINDOWID'] = str(self.hidden_frame.winfo_id())        
+        self.root.update()
+        pygame.init()
+        self.screen = pygame.display.set_mode((20,20))
+        
         print "GUI initialized"
         
     def exit(self):
         print "GUI exiting"
+        pygame.quit()
         self.root.quit()
         self.root = None
     
@@ -177,6 +186,8 @@ class AssetCreatorTool(object):
         self.sets_widget = AssetSetWidget(parent)
         
     def run(self):
+        
+        
         
         print "GUI started"
         while (self.root != None):
