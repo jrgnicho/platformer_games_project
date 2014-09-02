@@ -10,8 +10,12 @@ class GUIProperties(object):
     
     class Constants(object):
         
-        WINDOW_WIDTH = 800
-        WINDOW_HEIGHT = 800
+        WINDOW_WIDTH = 1200
+        WINDOW_HEIGHT = 1000
+        SPRITE_SHEET_CANVAS_WIDTH = 600
+        SPRITE_SHEET_CANVAS_HEIGHT = 150
+        ANIMATION_CANVAS_WIDTH = 200
+        ANIMATION_CANVAS_HEIGHT = 200
         
     class PG_Colors(object):
         BLACK    = (   0,   0,   0)
@@ -19,6 +23,7 @@ class GUIProperties(object):
         BLUE     = (   0,   0, 255)
         RED      = ( 255,   0,   0)
         GREEN    = (   0, 255,   0)
+        LIGHT_BLUE = (0,255,255)
         
         
     class Fonts(object):
