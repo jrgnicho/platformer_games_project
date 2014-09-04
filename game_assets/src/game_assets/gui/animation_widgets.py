@@ -140,10 +140,10 @@ class SpriteSheetWidget(ttk.Frame):
         self.props_frame = ttk.Frame(self)
         self.columns_label = ttk.Label(self.props_frame ,text = 'cols',width = 6,anchor = tk.CENTER)
         self.columns_spin = tk.Spinbox(self.props_frame, from_ = 1,to = 99,width = 2,font = F.SPRITE_WIDGET_SPIN,
-                                       command = self.update_sprites,state = tk.DISABLED)
+                                       command = self.update_canvas,state = tk.DISABLED)
         self.rows_label = ttk.Label(self.props_frame ,text = 'rows',width = 6,anchor = tk.CENTER)
         self.rows_spin = tk.Spinbox(self.props_frame ,from_ = 1,to = 99,width = 2,font = F.SPRITE_WIDGET_SPIN,
-                                    command = self.update_sprites,state = tk.DISABLED)
+                                    command = self.update_canvas,state = tk.DISABLED)
         
         # scale x widgets
         self.scalex_var = tk.DoubleVar()
@@ -152,7 +152,7 @@ class SpriteSheetWidget(ttk.Frame):
                                          validatecommand = (self.register(self.validate_entry), '%d', '%i', '%S'),
                                          width = 4,font = F.SPRITE_WIDGET_SPIN,
                                          textvariable = self.scalex_var)
-        self.scalex_entry.bind('<Return>',lambda evnt: self.update_sprites())
+        self.scalex_entry.bind('<Return>',lambda evnt: self.update_canvas())
         self.scalex_var.set(1.0)
         
         # scale y widgets
@@ -162,18 +162,18 @@ class SpriteSheetWidget(ttk.Frame):
                                       validatecommand = (self.register(self.validate_entry),'%d','%i','%S'),
                                       width = 4,font = F.SPRITE_WIDGET_SPIN,
                                       textvariable = self.scaley_var)
-        self.scaley_entry.bind('<Return>',lambda evnt: self.update_sprites())
+        self.scaley_entry.bind('<Return>',lambda evnt: self.update_canvas())
         self.scaley_var.set(1.0)
         
         # flip x/y check buttons
         self.flipx_check_var = tk.BooleanVar()
         self.flipx_check_button = ttk.Checkbutton(self.props_frame,text = 'Flip x',variable = self.flipx_check_var,
-                                                  command = self.update_sprites)
+                                                  command = self.update_canvas)
         self.flipx_check_var.set(False)
         
         self.flipy_check_var= tk.BooleanVar(value = False)
         self.flipy_check_button = ttk.Checkbutton(self.props_frame,text = 'Flip y',variable = self.flipy_check_var,
-                                                  command = self.update_sprites)
+                                                  command = self.update_canvas)
         
         self.size_label = ttk.Label(self.props_frame ,text = 'size',width = 5,anchor = tk.CENTER)
         self.size_info_label = ttk.Label(self.props_frame ,font = F.COLLECTION_INFO,width = 8,
@@ -224,7 +224,7 @@ class SpriteSheetWidget(ttk.Frame):
             
             self.enable_sprite_widgets(True)
             self.open_image()
-            self.update_sprites()
+            self.update_canvas()
             self.update_indicator_widgets()
             
     def generate_sprites(self):
@@ -272,18 +272,18 @@ class SpriteSheetWidget(ttk.Frame):
         self.pg_sprites_image.set_colorkey(CL.BLACK)
         
             
-    def update_sprites(self):
+    def update_sprites_image(self):
         
         CL = GUIProperties.PG_Colors
         
-        self.generate_sprites()
+        
         
         cols = int(self.columns_spin.get())
         rows = int(self.rows_spin.get())
         
         # individual sprite size
-        w = int(self.pg_original_image.get_width()*self.scalex_var.get())
-        h = int(self.pg_original_image.get_height()*self.scaley_var.get())
+        w = int(self.pg_sprites_image.get_width())
+        h = int(self.pg_sprites_image.get_height())
         sw = w/cols
         sh = h/rows
                 
@@ -291,14 +291,13 @@ class SpriteSheetWidget(ttk.Frame):
         for r in range(0,rows):
             
             pygame.draw.line(self.pg_sprites_image,CL.RED,(0,r*sh),(w,r*sh))
-            pygame.draw.line(self.pg_sprites_image,CL.RED,(0,(r+1)*sh-1),(w,(r+1)*sh-1))
+            pygame.draw.line(self.pg_sprites_image,CL.RED,(0,((r+1)*sh)-1),(w,((r+1)*sh)-1))
             for c in range(1,cols+1):                
         
-                pygame.draw.line(self.pg_sprites_image,CL.RED,(c*sw-1,r*sh),(c*sw-1,(r+1)*sh))                
+                pygame.draw.line(self.pg_sprites_image,CL.RED,((c*sw),r*sh),((c*sw),(r+1)*sh))                
             #endfor
         #endfor
         
-        self.update_canvas(self.pg_sprites_image)
         
     def update_indicator_widgets(self):
         
@@ -325,9 +324,11 @@ class SpriteSheetWidget(ttk.Frame):
         
         return pygame.transform.smoothscale(surf,(new_width,new_height))
         
-    def update_canvas(self,surf):
-         
-        self.sprite_canvas.draw(surf)        
+    def update_canvas(self):
+        
+        self.generate_sprites()
+        self.update_sprites_image()         
+        self.sprite_canvas.draw(self.pg_sprites_image)        
         
     def validate_entry(self,why,where,val):
         
