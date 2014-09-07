@@ -216,9 +216,9 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.rect.width = self.image.get_width()       
         
         
-    def print_current_animation_details(self, action_key):
+    def print_current_animation_details(self, animation_key):
         
-        if action_key == self.animation_set_key:
+        if animation_key == self.animation_set_key:
         
             print "Animation key: %s, frame index: %i, selected frames: %s"%(
                                                                              self.animation_set_key,

@@ -23,7 +23,7 @@ class AttackAssets(object):
         # extras
         self.extra_attributes = {}
 
-class ActionAssets(object):
+class ObjectAssets(object):
     """
     This class contains the necessary assets to control a player's object's animations an perform
     collision detection checks corresponding to this action

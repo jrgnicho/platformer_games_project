@@ -1,7 +1,7 @@
 from xml.etree import ElementTree as ET
 from pygame import Rect
 from pygame.sprite import Sprite
-from game_assets.object_assets import ActionAssets
+from game_assets.object_assets import ObjectAssets
 from game_assets.object_assets import AttackAssets
 from game_assets.object_assets import AssetSet
 
@@ -37,29 +37,29 @@ class AssetCollectionXml(object):
         
         asset_set_elemt = ET.SubElement(parent_elmt, 'asset_set', {'name':set.name})  
         
-        for k in set.actions_assets_dict.keys():            
+        for k in set.object_assets_dict.keys():            
             
-            action_assets = set.actions_assets_dict[k]
-            #print "key %s,value: %s"%(k,str(action_assets))
-            self.write_player_action_asset(asset_set_elemt, action_assets, set.name)
+            object_assets = set.object_assets_dict[k]
+            #print "key %s,value: %s"%(k,str(object_assets))
+            self.write_player_object_asset(asset_set_elemt, object_assets, set.name)
         #endfor
         
         return asset_set_elemt
         
-    def write_player_action_asset(self,parent_elmt, asset ,set_name):
+    def write_player_object_asset(self,parent_elmt, asset ,set_name):
         
-        action_elmt = ET.SubElement(parent_elmt, 'player_action', {'key':asset.key,'set':set_name})
+        object_elmt = ET.SubElement(parent_elmt, 'player_object', {'key':asset.key,'set':set_name})
         
         
         # animation asset
-        animation_elmt = self.write_animation_asset(action_elmt, asset.animation)
+        animation_elmt = self.write_animation_asset(object_elmt, asset.animation)
         
         # right and left sprite sets
         self.write_sprite_list(animation_elmt, direction = 'RIGHT')
         self.write_sprite_list(animation_elmt, direction = 'LEFT',flipx = True)
         
         # collision group
-        self.write_collision(action_elmt, asset.collision)
+        self.write_collision(object_elmt, asset.collision)
         
         
     def write_animation_asset(self,parent_elmt,animation_asset):
