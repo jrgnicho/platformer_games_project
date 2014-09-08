@@ -110,7 +110,7 @@ class DashBreakingState(BasicState):
         BasicState.__init__(self, StateKeys.DASH_BREAKING, player)
         
         self.add_action(AK.ACTION_SEQUENCE_EXPIRED,
-                            lambda : self.set_current_animation_key(AK.DASH_BREAK,[-1])) 
+                            lambda : self.player.set_current_animation_key(StateKeys.DASH_BREAKING,[-1])) 
         
     def enter(self):
         
@@ -206,9 +206,9 @@ class StandOnEdgeState(BasicState):
         BasicState.__init__(self,StateKeys.STANDING_ON_EDGE,player)
         
         move_speed = self.player.player_properties.run_speed
-        self.add_action(AK.MOVE_LEFT,lambda : self.turn_left(-move_speed))
-        self.add_action(AK.MOVE_RIGHT,lambda : self.turn_right(move_speed))
-        self.add_action(AK.ACTION_SEQUENCE_EXPIRED,lambda : self.set_current_animation_key(AK.STAND_EDGE,[-1]))
+        self.add_action(AK.MOVE_LEFT,lambda : self.player.turn_left(-move_speed))
+        self.add_action(AK.MOVE_RIGHT,lambda : self.player.turn_right(move_speed))
+        self.add_action(AK.ACTION_SEQUENCE_EXPIRED,lambda : self.player.set_current_animation_key(StateKeys.STANDING_ON_EDGE,[-1]))
         
     def enter(self):
         
@@ -242,6 +242,7 @@ class JumpState(BasicState):
         self.add_action(AK.CANCEL_MOVE,lambda : self.player.set_horizontal_speed(0))
         self.add_action(AK.CANCEL_JUMP,lambda : self.cancel_jump())
         self.add_action(AK.APPLY_GRAVITY,lambda g: self.player.apply_gravity(g))    
+        self.add_action(AK.COLLISION_ABOVE,lambda platform : self.player.set_vertical_speed(0))
         self.add_action(AK.COLLISION_BELOW,self.check_landing)
         self.add_action(AK.COLLISION_RIGHT_WALL,lambda platform : self.player.set_momentum(0))
         self.add_action(AK.COLLISION_LEFT_WALL,lambda platform : self.player.set_momentum(0)) 
@@ -319,14 +320,14 @@ class JumpState(BasicState):
                 
                 if self.player.facing_right and hs.rect.collidepoint(platform.rect.topleft) :                            
                     self.edge_in_reach = True  
-                    self.player.near_platforms.empty()
-                    self.player.near_platforms.add(platform)
+                    self.player.nearby_platforms.empty()
+                    self.player.nearby_platforms.add(platform)
                     break
                 
                 if (not self.player.facing_right) and hs.rect.collidepoint(platform.rect.topright):                            
                     self.edge_in_reach = True  
-                    self.player.near_platforms.empty()
-                    self.player.near_platforms.add(platform) 
+                    self.player.nearby_platforms.empty()
+                    self.player.nearby_platforms.add(platform) 
                     break
                              
                  
@@ -433,14 +434,14 @@ class FallState(BasicState):
                 
                 if self.player.facing_right and hs.rect.collidepoint(platform.rect.topleft) :
                     self.edge_in_reach = True
-                    self.player.near_platforms.empty()
-                    self.player.near_platforms.add(platform)
+                    self.player.nearby_platforms.empty()
+                    self.player.nearby_platforms.add(platform)
                     break
                 
                 if (not self.player.facing_right) and hs.rect.collidepoint(platform.rect.topright):
                     self.edge_in_reach = True
-                    self.player.near_platforms.empty()
-                    self.player.near_platforms.add(platform)
+                    self.player.nearby_platforms.empty()
+                    self.player.nearby_platforms.add(platform)
                     break
                              
                  
@@ -483,7 +484,7 @@ class HangingState(BasicState):
         self.platform_rect = None
         
         self.add_action(AK.ACTION_SEQUENCE_EXPIRED,
-                            lambda : self.player.set_current_animation_key(AK.HANG,[-1]))        
+                            lambda : self.player.set_current_animation_key(StateKeys.HANGING,[-1]))        
         
         
     def hang(self,platform):
@@ -511,7 +512,7 @@ class HangingState(BasicState):
         self.player.set_horizontal_speed(0)
         self.player.set_vertical_speed(0)
         self.player.set_momentum(0)
-        self.hang(self.player.near_platforms.sprites()[0])
+        self.hang(self.player.nearby_platforms.sprites()[0])
         
     def exit(self):
         
@@ -533,7 +534,7 @@ class ClimbingState(BasicState):
         self.player.set_vertical_speed(0)
         self.player.set_momentum(0)
         
-        self.platform_rect = self.player.near_platforms.sprites()[0].rect
+        self.platform_rect = self.player.nearby_platforms.sprites()[0].rect
         
 
         ply_rect = self.player.collision_sprite.rect
@@ -563,7 +564,7 @@ class ClimbingState(BasicState):
                           (dx,dy)]
         
     def exit(self):                
-        self.player.near_platforms.empty()
+        self.player.nearby_platforms.empty()
         
     def climb(self):
         

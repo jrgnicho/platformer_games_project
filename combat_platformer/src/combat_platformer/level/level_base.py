@@ -231,10 +231,10 @@ class LevelBase(pygame.sprite.Sprite):
         
         # moving and checking collision
         self.player.update_pos_x()
-        self.check_collisions_in_y() 
+        self.check_collisions_in_x() 
         
         self.player.update_pos_y()
-        self.check_collisions_in_x() 
+        self.check_collisions_in_y() 
         
         # check for platform below
         self.check_platform_support()
