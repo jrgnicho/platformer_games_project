@@ -1,5 +1,7 @@
+import pygame
 from simple_platformer.game_state_machine import State
 from combat_platformer.player.action_keys import PlayerActionKeys
+
 
 
 AK = PlayerActionKeys
@@ -25,7 +27,8 @@ class BasicState(State):
     
     def __init__(self,key,player):
         
-        BasicState.__init__(self,key)
+        print "State key " + key
+        State.__init__(self,key)
         self.player = player
     
     """
@@ -50,7 +53,7 @@ class RunState(BasicState):
     def enter(self):
         
         self.player.player_properties.max_x_position_change = self.speed            
-        self.player.set_current_animation_key(AK.RUN),
+        self.player.set_current_animation_key(StateKeys.RUNNING),
         self.player.set_horizontal_speed(self.speed)  
         
     def exit(self):
@@ -63,11 +66,11 @@ class DashState(BasicState):
         
         BasicState.__init__(self,StateKeys.DASHING,player)
         
-    def enter(self,action_key = AK.DASH):
+    def enter(self):
         
        # perform dash
-       self.player.set_current_animation_key(action_key),
-       self.player.set_horizontal_speed(self.player_properties.dash_speed)
+       self.player.set_current_animation_key(StateKeys.DASHING),
+       self.player.set_horizontal_speed(self.player.player_properties.dash_speed)
     
     def exit(self):
         
@@ -81,11 +84,11 @@ class MidairDashState(BasicState):
         
         BasicState.__init__(self,StateKeys.MIDAIR_DASHING,player)
         
-    def midair_dash(self,action_key = AK.MIDAIR_DASH):
+    def midair_dash(self):
         
        plyr = self.player
-       plyr.set_current_animation_key(action_key),
-       plyr.set_horizontal_speed(self.player_properties.dash_speed)
+       plyr.set_current_animation_key(StateKeys.MIDAIR_DASHING),
+       plyr.set_horizontal_speed(self.player.player_properties.dash_speed)
        plyr.set_vertical_speed(0)
        plyr.midair_dash_countdown -=1
         
@@ -109,12 +112,12 @@ class DashBreakingState(BasicState):
         self.add_action(AK.ACTION_SEQUENCE_EXPIRED,
                             lambda : self.set_current_animation_key(AK.DASH_BREAK,[-1])) 
         
-    def enter(self,action_key = AK.DASH_BREAK):
+    def enter(self):
         
         plyr = self.player
         plyr.set_momentum(plyr.player_properties.run_speed)
         plyr.set_horizontal_speed(0),
-        plyr.set_current_animation_key(action_key)
+        plyr.set_current_animation_key(StateKeys.DASH_BREAKING)
         
         
     def exit(self):
@@ -127,7 +130,7 @@ class StandState(BasicState):
     
     def __init__(self,player):
         
-        BasicState.__init__(self,PlayerStateMachine.StateKeys.STANDING,player)
+        BasicState.__init__(self,StateKeys.STANDING,player)
         self.is_standing_on_edge = False
         self.is_beyond_edge = False
         
@@ -141,7 +144,7 @@ class StandState(BasicState):
     def enter(self):
         
         self.player.set_horizontal_speed(0)
-        self.player.set_current_animation_key(AK.STAND)
+        self.player.set_current_animation_key(StateKeys.STANDING)
         self.player.set_momentum(0)
         self.player.midair_dash_countdown = self.player.player_properties.max_midair_dashes
         self.player.range_collision_group.add(self.range_sprite) 
@@ -207,10 +210,10 @@ class StandOnEdgeState(BasicState):
         self.add_action(AK.MOVE_RIGHT,lambda : self.turn_right(move_speed))
         self.add_action(AK.ACTION_SEQUENCE_EXPIRED,lambda : self.set_current_animation_key(AK.STAND_EDGE,[-1]))
         
-    def enter(self,action = AK.STAND_EDGE):
+    def enter(self):
         
         plyr = self.player
-        plyr.set_current_animation_key(action)
+        plyr.set_current_animation_key(StateKeys.STANDING_ON_EDGE)
         plyr.set_horizontal_speed(0)
         
         
@@ -252,7 +255,7 @@ class JumpState(BasicState):
     
     def enter(self):
         self.player.set_vertical_speed(self.player.player_properties.jump_speed)
-        self.player.set_current_animation_key(AK.JUMP)
+        self.player.set_current_animation_key(StateKeys.JUMPING)
         self.player.midair_dash_countdown = self.player.player_properties.max_midair_dashes
         self.player.range_collision_group.add(self.range_sprite) 
         
@@ -367,7 +370,7 @@ class FallState(BasicState):
         if self.player.horizontal_speed < 0:
             self.player.horizontal_speed = 0
     
-        self.player.set_current_animation_key(AK.FALL)
+        self.player.set_current_animation_key(StateKeys.FALLING)
         self.player.range_collision_group.add(self.range_sprite)
         
     def exit(self):
@@ -459,12 +462,12 @@ class LandState(BasicState):
 
         self.player.midair_dash_countdown = self.player.player_properties.max_midair_dashes
         
-        self.player.set_current_animation_key(AK.LAND)
+        self.player.set_current_animation_key(StateKeys.LANDING)
         
-        if (self.player.vertical_speed + self.player.momemtum) < 0 and self.player.momemtum > 0:
-            self.player.momemtum = 0
-        elif (self.player.vertical_speed + self.player.momemtum) > 0 and self.player.momemtum < 0:
-            self.player.momemtum = 0
+        if (self.player.vertical_speed + self.player.momentum) < 0 and self.player.momentum > 0:
+            self.player.momentum = 0
+        elif (self.player.vertical_speed + self.player.momentum) > 0 and self.player.momentum < 0:
+            self.player.momentum = 0
         #endif
         
         self.player.vertical_speed = 0
@@ -504,7 +507,7 @@ class HangingState(BasicState):
         
     def enter(self):
         
-        self.player.set_current_animation_key(AK.HANG)
+        self.player.set_current_animation_key(StateKeys.HANGING)
         self.player.set_horizontal_speed(0)
         self.player.set_vertical_speed(0)
         self.player.set_momentum(0)
@@ -514,19 +517,18 @@ class HangingState(BasicState):
         
         self.platform_rect = None
         
-class ClimbingState(State):
+class ClimbingState(BasicState):
     
     def __init__(self,player):
         
-        State.__init__(self,StateKeys.CLIMBING)
-        self.player = player
+        BasicState.__init__(self,StateKeys.CLIMBING,player)
         self.platform_rect = None
         self.climb_path =[]
         
         self.add_action(AK.STEP_GAME,self.climb)
         
     def enter(self):
-        self.player.set_current_animation_key(AK.CLIMB)
+        self.player.set_current_animation_key(StateKeys.CLIMBING)
         self.player.set_horizontal_speed(0)
         self.player.set_vertical_speed(0)
         self.player.set_momentum(0)

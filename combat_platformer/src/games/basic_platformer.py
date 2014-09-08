@@ -51,7 +51,11 @@ class BasicPlatformer(object):
         
         #endif
         
+        if not self.player.setup():
+            return False
+        
         keys = self.player.states_dict.keys()
+        print "animation keys: " + str(keys)
         
         for key in keys:
             
@@ -71,6 +75,8 @@ class BasicPlatformer(object):
         
         if not self.load_resources():
             return False 
+        
+
         
         if not self.level.setup():
             return False
