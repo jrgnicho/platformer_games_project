@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <name>combat_platformer</name>
+  <version>0.0.0</version>
+  <description>The combat_platformer package</description>
+
+  <maintainer email="coky@todo.todo">coky</maintainer>
+  <license>TODO</license>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>simple_platformer</build_depend>
+  <build_depend>rospy</build_depend>
+  <run_depend>simple_platformer</run_depend>
+  <run_depend>rospy</run_depend>
+
+
+  <export>
+  </export>
+</package>
