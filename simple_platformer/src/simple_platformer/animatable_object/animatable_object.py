@@ -117,7 +117,8 @@ class AnimatableObject(pygame.sprite.Sprite):
                     
             else:
                 
-                print TerminalColorCodes.FAIL +  "Animation set for key %s not found"%(key)
+                #print TerminalColorCodes.FAIL +  "Animation set for key %s not found"%(animation_set_key)
+                print "ERROR: " +  "Animation set for key %s not found"%(animation_set_key)
                 False
         else:
             
