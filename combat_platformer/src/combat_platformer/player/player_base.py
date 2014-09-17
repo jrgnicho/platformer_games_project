@@ -22,10 +22,17 @@ class PlayerBase(AnimatableObject):
         
         
         # auxilary properties
+        self.max_delta_x = 0;
+        self.momentum_reduction = 0
         self.midair_dash_counter = self.player_properties.max_midair_dashes
         self.range_collision_group = pygame.sprite.Group()    
         self.nearby_platforms = pygame.sprite.Group()
         self.active_attacks = []
+        
+    def setup(self):
+        
+        self.max_delta_x = self.player_properties.max_x_position_change
+        self.momentum_reduction = self.player_properties.inertial_reduction
         
         
     def turn_right(self,dx):        
@@ -66,7 +73,7 @@ class PlayerBase(AnimatableObject):
         if self.momentum>0 :
                             
             # reduce inertia
-            self.momentum-=self.player_properties.inertial_reduction           
+            self.momentum-=self.momentum_reduction          
             
             if self.momentum < 0:
                 self.momentum = 0
@@ -74,7 +81,7 @@ class PlayerBase(AnimatableObject):
         elif self.momentum < 0 :
                             
             # reduce inertia
-            self.momentum+=self.player_properties.inertial_reduction  
+            self.momentum+=self.momentum_reduction 
             
             if self.momentum > 0:
                 self.momentum = 0
@@ -88,10 +95,10 @@ class PlayerBase(AnimatableObject):
         dx = self.horizontal_speed+ self.momentum
         self.update_momentum()
         
-        if dx > self.player_properties.max_x_position_change:
-            dx = self.player_properties.max_x_position_change
-        elif dx < -self.player_properties.max_x_position_change:
-            dx = -self.player_properties.max_x_position_change
+        if dx > self.max_delta_x:
+            dx = self.max_delta_x
+        elif dx < -self.max_delta_x:
+            dx = -self.max_delta_x
                         
         #endif
                

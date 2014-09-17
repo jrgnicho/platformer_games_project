@@ -19,7 +19,15 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         
     def setup(self):
         
-        self.create_transition_rules()        
+        PlayerBase.setup(self)
+        self.create_transition_rules()   
+        
+        # invoking setup method for each state
+        for state in self.states_dict.values():
+            state.setup(None)
+        #endfor
+        
+             
         return True
         
     def action_sequence_expired_handler(self):

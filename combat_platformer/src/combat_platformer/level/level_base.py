@@ -123,6 +123,7 @@ class LevelBase(pygame.sprite.Sprite):
                      Platform(450 + 400, 400 + 300,100, 20),
                      Platform(450 + 450, 400 + 20,200, 20),
                      Platform(450 + 500, 400 + 120,100, 20),
+                     Platform(800,110,600,20),
                      Platform(0,-10,2000,20)] # floor
         
         self.add_platforms(platforms)
@@ -229,12 +230,13 @@ class LevelBase(pygame.sprite.Sprite):
         # apply gravity
         self.player.execute(PlayerActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])   
         
-        # moving and checking collision
+        # moving and checking collision           
         self.player.update_pos_x()
-        self.check_collisions_in_x() 
-        
+        self.check_collisions_in_x()         
+            
         self.player.update_pos_y()
         self.check_collisions_in_y() 
+        
         
         # check for platform below
         self.check_platform_support()

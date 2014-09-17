@@ -35,14 +35,15 @@ class BasicState(State):
     This method shall be implemented by all subclasses in order to load the corresponding game assets for that state
     """   
     def setup(self,asset):
-        print "setup(...) method unimplemented"
+        print "setup(...) method for state %s unimplemented"%(self.key)
     
     
 class RunState(BasicState):
 
     def __init__(self,player):
         
-        BasicState.__init__(self,StateKeys.RUNNING,player)
+        BasicState.__init__(self,StateKeys.RUNNING,player)        
+    
         
         self.speed = self.player.player_properties.run_speed
         
@@ -52,12 +53,12 @@ class RunState(BasicState):
     
     def enter(self):
         
-        self.player.player_properties.max_x_position_change = self.speed            
+        self.player.max_delta_x = self.speed            
         self.player.set_current_animation_key(StateKeys.RUNNING),
         self.player.set_horizontal_speed(self.speed)  
         
     def exit(self):
-        self.player.player_properties.max_x_position_change = self.player.player_properties.dash_speed  
+        self.player.max_delta_x = self.player.player_properties.dash_speed  
         
         
 class DashState(BasicState):
@@ -66,16 +67,23 @@ class DashState(BasicState):
         
         BasicState.__init__(self,StateKeys.DASHING,player)
         
+    def setup(self,asset):     
+                
+        pass
+        
     def enter(self):
         
        # perform dash
        self.player.set_current_animation_key(StateKeys.DASHING),
        self.player.set_horizontal_speed(self.player.player_properties.dash_speed)
+       
     
     def exit(self):
         
         self.player.set_momentum(0.8*self.player.player_properties.dash_speed 
                                                       if self.player.animation_set_progress_percentage()>0.3 else 0)
+
+        
         
         
 class MidairDashState(BasicState):
@@ -83,24 +91,32 @@ class MidairDashState(BasicState):
     def __init__(self,player):
         
         BasicState.__init__(self,StateKeys.MIDAIR_DASHING,player)
+    
+        
+        
+    def setup(self,asset):       
+                
+        # creating collision rectangle
+        pass
+        
         
     def midair_dash(self):
         
-       plyr = self.player
-       plyr.set_current_animation_key(StateKeys.MIDAIR_DASHING),
-       plyr.set_horizontal_speed(self.player.player_properties.dash_speed)
-       plyr.set_vertical_speed(0)
-       plyr.midair_dash_countdown -=1
+        plyr = self.player
+        plyr.set_current_animation_key(StateKeys.MIDAIR_DASHING),
+        plyr.set_horizontal_speed(self.player.player_properties.dash_speed)
+        plyr.set_vertical_speed(0)
+        plyr.midair_dash_countdown -=1
         
         
     def enter(self,action_key = AK.MIDAIR_DASH):
-        
+                
         self.midair_dash()
         
     def exit(self):
         
         plyr = self.player
-        plyr.set_momentum(plyr.player_properties.dash_speed * plyr.animation_set_progress_percentage())
+        plyr.set_momentum(plyr.player_properties.dash_speed * plyr.animation_set_progress_percentage())     
         
         
 class DashBreakingState(BasicState):
@@ -132,14 +148,20 @@ class StandState(BasicState):
         
         BasicState.__init__(self,StateKeys.STANDING,player)
         self.is_standing_on_edge = False
-        self.is_beyond_edge = False
-        
-        # creating range rectangle
-        self.range_sprite = pygame.sprite.Sprite()
-        self.range_sprite.rect = self.player.collision_sprite.rect.copy()
-        self.range_sprite.rect.height = self.range_sprite.rect.height + 4
+        self.is_beyond_edge = False     
+
         
         self.add_action(AK.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms)) 
+        
+    def setup(self,asset):
+        
+        # creating range rectangle
+        self.range_height_extension = 4
+        self.range_sprite = pygame.sprite.Sprite()
+        self.range_sprite.rect = self.player.collision_sprite.rect.copy()
+        self.range_sprite.rect.height = self.range_sprite.rect.height + self.range_height_extension
+
+        
         
     def enter(self):
         
@@ -150,6 +172,7 @@ class StandState(BasicState):
         self.player.range_collision_group.add(self.range_sprite) 
         self.is_standing_on_edge = False
         self.is_beyond_edge = False
+        
         
     def exit(self):
         
@@ -228,14 +251,7 @@ class JumpState(BasicState):
         self.has_landed = False
         self.edge_in_reach = False                   
         self.hang_sprite = pygame.sprite.Sprite()
-        self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player.player_properties.hang_radius,
-                                                 2*self.player.player_properties.hang_radius) 
-        
-        # creating range rectangle
-        self.range_sprite = pygame.sprite.Sprite()
-        self.range_sprite.rect = self.player.collision_sprite.rect.copy()
-        self.range_sprite.rect.width = self.range_sprite.rect.width + self.hang_sprite.rect.width
-        self.range_sprite.rect.height = self.range_sprite.rect.height + self.hang_sprite.rect.height
+
         
         self.add_action(AK.MOVE_LEFT,lambda : self.player.turn_left(-self.speed))
         self.add_action(AK.MOVE_RIGHT,lambda : self.player.turn_right(self.speed))                
@@ -248,6 +264,16 @@ class JumpState(BasicState):
         self.add_action(AK.COLLISION_LEFT_WALL,lambda platform : self.player.set_momentum(0)) 
         self.add_action(AK.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms))  
         
+    def setup(self,asset):
+        
+        self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player.player_properties.hang_radius,
+                                                 2*self.player.player_properties.hang_radius) 
+        
+        # creating range rectangle
+        self.range_sprite = pygame.sprite.Sprite()
+        self.range_sprite.rect = self.player.collision_sprite.rect.copy()
+        self.range_sprite.rect.width = self.range_sprite.rect.width + self.hang_sprite.rect.width
+        self.range_sprite.rect.height = self.range_sprite.rect.height + self.hang_sprite.rect.height
         
     def cancel_jump(self):
         
@@ -346,14 +372,7 @@ class FallState(BasicState):
                 
         self.edge_in_reach = False  
         self.has_landed = False  
-        self.hang_sprite = pygame.sprite.Sprite()
-        self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player.player_properties.hang_radius,
-                                                 2*self.player.player_properties.hang_radius) 
-        # creating range rectangle
-        self.range_sprite = pygame.sprite.Sprite()
-        self.range_sprite.rect = self.player.collision_sprite.rect.copy()
-        self.range_sprite.rect.width = self.range_sprite.rect.width + self.hang_sprite.rect.width
-        self.range_sprite.rect.height = self.range_sprite.rect.height + self.hang_sprite.rect.height
+        self.hang_sprite = pygame.sprite.Sprite()         
         
         self.add_action(AK.CANCEL_MOVE,lambda : self.player.set_horizontal_speed(0))
         self.add_action(AK.APPLY_GRAVITY,lambda g: self.player.apply_gravity(g))
@@ -362,7 +381,19 @@ class FallState(BasicState):
         self.add_action(AK.COLLISION_BELOW,self.check_landing)
         self.add_action(AK.COLLISION_RIGHT_WALL,lambda platform : self.player.set_momentum(0))
         self.add_action(AK.COLLISION_LEFT_WALL,lambda platform : self.player.set_momentum(0)) 
-        self.add_action(AK.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms))   
+        self.add_action(AK.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms))  
+        
+        
+    def setup(self,asset):
+        
+        self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player.player_properties.hang_radius,
+                                                 2*self.player.player_properties.hang_radius) 
+        
+        # creating range rectangle
+        self.range_sprite = pygame.sprite.Sprite()
+        self.range_sprite.rect = self.player.collision_sprite.rect.copy()
+        self.range_sprite.rect.width = self.range_sprite.rect.width + self.hang_sprite.rect.width
+        self.range_sprite.rect.height = self.range_sprite.rect.height + self.hang_sprite.rect.height 
         
 
     
