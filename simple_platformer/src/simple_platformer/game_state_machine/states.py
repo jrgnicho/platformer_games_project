@@ -208,4 +208,59 @@ class StateMachine(object):
         #endif
         
         return True
+    
+class SubStateMachine(StateMachine):
+    
+    class ActionKeys(object):
+        
+        ENTER = 'ENTER'
+        EXIT = 'EXIT'
+        
+        
+    class StateKeys(object):
+        
+        START = 'START'
+        STOP = 'STOP'
+        
+        
+    class StartState(State,parent_sm):
+        
+        def __init__(self):
+            State.__init__(self,SubStateMachine.StateKeys.START)
+            
+            
+    class StopState(State):
+        
+        def __init__(self,parent_sm):
+            
+            State.__init__(self,SubStateMachine.StateKeys.STOP)
+            
+            self.add_action(self,SubStateMachine.ActionKeys.EXIT,lambda : parent_sm.stop())
+            
+    
+    def __init__(self,key,parent_state_machine):
+        StateMachine.__init__(self)
+        
+        self.key = key
+        self.parent_sm = parent_state_machine
+        self.start_state = SubStateMachine.StartState()
+        self.stop_state = SubStateMachine.StopState()
+        
+    
+    def stop(self):
+        
+        self.active_state_key = self.start_state.key
+        self.parent_sm.execute(SubStateMachine.ActionKeys.EXIT)
+        
+    def enter(self):
+        self.active_state_key = self.start_state.key
+    
+    def exit(self):
+        pass
+        
+        
+        
+    
+        
+    
         
