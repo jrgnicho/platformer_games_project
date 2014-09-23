@@ -9,6 +9,7 @@ class PlayerProperties(object):
     # Movement Defaults
     JUMP_SPEED = -10 # y axis points downwards
     SUPER_JUMP_SPEED = -12
+    WALK_SPEED = 2
     RUN_SPEED = 4
     DASH_SPEED = 8    
     MAX_X_POSITION_CHANGE = 8       
@@ -33,6 +34,7 @@ class PlayerProperties(object):
         self.jump_speed = PlayerProperties.JUMP_SPEED
         self.super_jump_speed = PlayerProperties.SUPER_JUMP_SPEED
         self.run_speed = PlayerProperties.RUN_SPEED
+        self.walk_speed = PlayerProperties.WALK_SPEED
         self.dash_speed = PlayerProperties.DASH_SPEED
         self.max_x_position_change = PlayerProperties.MAX_X_POSITION_CHANGE
         self.max_midair_dashes = PlayerProperties.MAX_MIDAIR_DASHES
