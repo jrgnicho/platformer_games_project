@@ -83,9 +83,9 @@ class BasicPlatformer(object):
             
         return True
     
-    def step_game(self):
+    def step_game(self,elapsed_time):
         
-        if (self.proceed and self.level.update()):
+        if (self.proceed and self.level.update(elapsed_time)):
             self.level.draw(self.screen)            
 
             return True
@@ -107,7 +107,7 @@ class BasicPlatformer(object):
             return
         
         clock = pygame.time.Clock()
-        while self.step_game():
+        while self.step_game(clock.get_time()):
             
             clock.tick(GameProperties.FRAME_RATE)                     
             pygame.display.flip()
