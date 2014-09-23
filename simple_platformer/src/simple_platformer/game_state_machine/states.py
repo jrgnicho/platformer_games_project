@@ -213,8 +213,8 @@ class SubStateMachine(StateMachine):
     
     class ActionKeys(object):
         
-        ENTER = 'ENTER'
-        EXIT = 'EXIT'
+        START_SM = 'START_SM'
+        STOP_SM = 'STOP_SM'
         
         
     class StateKeys(object):
@@ -223,10 +223,15 @@ class SubStateMachine(StateMachine):
         STOP = 'STOP'
         
         
-    class StartState(State,parent_sm):
+    class StartState(State):
         
-        def __init__(self):
+        def __init__(self,parent_sm):
+            
             State.__init__(self,SubStateMachine.StateKeys.START)
+            self.parent_sm = parent_sm
+            
+        def enter(self):            
+            self.parent_sm.start()
             
             
     class StopState(State):
@@ -234,8 +239,10 @@ class SubStateMachine(StateMachine):
         def __init__(self,parent_sm):
             
             State.__init__(self,SubStateMachine.StateKeys.STOP)
+            self.parent_sm = parent_sm
             
-            self.add_action(self,SubStateMachine.ActionKeys.EXIT,lambda : parent_sm.stop())
+        def enter(self):            
+            self.parent_sm.stop()
             
     
     def __init__(self,key,parent_state_machine):
@@ -243,20 +250,22 @@ class SubStateMachine(StateMachine):
         
         self.key = key
         self.parent_sm = parent_state_machine
-        self.start_state = SubStateMachine.StartState()
-        self.stop_state = SubStateMachine.StopState()
+        self.start_state = SubStateMachine.StartState(self)
+        self.stop_state = SubStateMachine.StopState(self)    
         
+    def start(self):
+        
+        self.execute(SubStateMachine.ActionKeys.START_SM)    
     
     def stop(self):
         
         self.active_state_key = self.start_state.key
-        self.parent_sm.execute(SubStateMachine.ActionKeys.EXIT)
+        self.parent_sm.execute(SubStateMachine.ActionKeys.STOP_SM)
         
     def enter(self):
+        
         self.active_state_key = self.start_state.key
     
-    def exit(self):
-        pass
         
         
         
