@@ -213,14 +213,14 @@ class LevelBase(pygame.sprite.Sprite):
         return True
         
         
-    def update(self):
+    def update(self,elapsed_time):
         """
             Checks user input and steps game.  Also calls the update method on all game objects including the player  
             
             - outputs: True if successful, False otherwise due to game exit condition or user input
         """
         # perform transition or execute action if supported by active state
-        self.player.execute(PlayerActionKeys.STEP_GAME)                 
+        self.player.execute(PlayerActionKeys.STEP_GAME,[elapsed_time])                 
         
         # check user input
         if not self.check_input():
