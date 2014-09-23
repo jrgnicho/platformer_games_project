@@ -8,7 +8,7 @@ class PlayerBase(AnimatableObject):
         AnimatableObject.__init__(self)
         
         # player properties
-        self.player_properties = PlayerProperties()
+        self.properties = PlayerProperties()
         
         # movement 
         self.vertical_speed = 0
@@ -17,22 +17,22 @@ class PlayerBase(AnimatableObject):
                                
         
         # collision detection objects
-        self.collision_sprite.rect = pygame.Rect(0,0,self.player_properties.collision_width,
-                                                 self.player_properties.collision_height)  
+        self.collision_sprite.rect = pygame.Rect(0,0,self.properties.collision_width,
+                                                 self.properties.collision_height)  
         
         
         # auxilary properties
         self.max_delta_x = 0;
         self.momentum_reduction = 0
-        self.midair_dash_counter = self.player_properties.max_midair_dashes
+        self.midair_dash_counter = self.properties.max_midair_dashes
         self.range_collision_group = pygame.sprite.Group()    
         self.nearby_platforms = pygame.sprite.Group()
         self.active_attacks = []
         
     def setup(self):
         
-        self.max_delta_x = self.player_properties.max_x_position_change
-        self.momentum_reduction = self.player_properties.inertial_reduction
+        self.max_delta_x = self.properties.max_x_position_change
+        self.momentum_reduction = self.properties.inertial_reduction
         
         
     def turn_right(self,dx):        

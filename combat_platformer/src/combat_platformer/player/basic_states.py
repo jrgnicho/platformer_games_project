@@ -45,7 +45,7 @@ class RunState(BasicState):
         BasicState.__init__(self,StateKeys.RUNNING,player)        
     
         
-        self.speed = self.player.player_properties.run_speed
+        self.speed = self.player.properties.run_speed
         
         self.add_action(AK.MOVE_LEFT,lambda : self.player.turn_left(-self.speed))
         self.add_action(AK.MOVE_RIGHT,lambda : self.player.turn_right(self.speed))
@@ -58,7 +58,7 @@ class RunState(BasicState):
         self.player.set_horizontal_speed(self.speed)  
         
     def exit(self):
-        self.player.max_delta_x = self.player.player_properties.dash_speed  
+        self.player.max_delta_x = self.player.properties.dash_speed  
         
         
 class DashState(BasicState):
@@ -75,12 +75,12 @@ class DashState(BasicState):
         
        # perform dash
        self.player.set_current_animation_key(StateKeys.DASHING),
-       self.player.set_horizontal_speed(self.player.player_properties.dash_speed)
+       self.player.set_horizontal_speed(self.player.properties.dash_speed)
        
     
     def exit(self):
         
-        self.player.set_momentum(0.8*self.player.player_properties.dash_speed 
+        self.player.set_momentum(0.8*self.player.properties.dash_speed 
                                                       if self.player.animation_set_progress_percentage()>0.3 else 0)
 
         
@@ -104,7 +104,7 @@ class MidairDashState(BasicState):
         
         plyr = self.player
         plyr.set_current_animation_key(StateKeys.MIDAIR_DASHING),
-        plyr.set_horizontal_speed(self.player.player_properties.dash_speed)
+        plyr.set_horizontal_speed(self.player.properties.dash_speed)
         plyr.set_vertical_speed(0)
         plyr.midair_dash_countdown -=1
         
@@ -116,7 +116,7 @@ class MidairDashState(BasicState):
     def exit(self):
         
         plyr = self.player
-        plyr.set_momentum(plyr.player_properties.dash_speed * plyr.animation_set_progress_percentage())     
+        plyr.set_momentum(plyr.properties.dash_speed * plyr.animation_set_progress_percentage())     
         
         
 class DashBreakingState(BasicState):
@@ -131,7 +131,7 @@ class DashBreakingState(BasicState):
     def enter(self):
         
         plyr = self.player
-        plyr.set_momentum(plyr.player_properties.run_speed)
+        plyr.set_momentum(plyr.properties.run_speed)
         plyr.set_horizontal_speed(0),
         plyr.set_current_animation_key(StateKeys.DASH_BREAKING)
         
@@ -168,7 +168,7 @@ class StandState(BasicState):
         self.player.set_horizontal_speed(0)
         self.player.set_current_animation_key(StateKeys.STANDING)
         self.player.set_momentum(0)
-        self.player.midair_dash_countdown = self.player.player_properties.max_midair_dashes
+        self.player.midair_dash_countdown = self.player.properties.max_midair_dashes
         self.player.range_collision_group.add(self.range_sprite) 
         self.is_standing_on_edge = False
         self.is_beyond_edge = False
@@ -190,8 +190,8 @@ class StandState(BasicState):
             #endif                    
             
             w = ps.rect.width
-            max = w*self.player.player_properties.max_distance_from_edge
-            min = w*self.player.player_properties.min_distance_from_edge
+            max = w*self.player.properties.max_distance_from_edge
+            min = w*self.player.properties.min_distance_from_edge
             
             # finding side of platform
             on_platform_right = ps.rect.centerx > platform.rect.centerx
@@ -228,7 +228,7 @@ class StandOnEdgeState(BasicState):
         
         BasicState.__init__(self,StateKeys.STANDING_ON_EDGE,player)
         
-        move_speed = self.player.player_properties.run_speed
+        move_speed = self.player.properties.run_speed
         self.add_action(AK.MOVE_LEFT,lambda : self.player.turn_left(-move_speed))
         self.add_action(AK.MOVE_RIGHT,lambda : self.player.turn_right(move_speed))
         self.add_action(AK.ACTION_SEQUENCE_EXPIRED,lambda : self.player.set_current_animation_key(StateKeys.STANDING_ON_EDGE,[-1]))
@@ -246,7 +246,7 @@ class JumpState(BasicState):
         
         BasicState.__init__(self,StateKeys.JUMPING,player)
         
-        self.speed = self.player.player_properties.run_speed
+        self.speed = self.player.properties.run_speed
         
         self.has_landed = False
         self.edge_in_reach = False                   
@@ -266,8 +266,8 @@ class JumpState(BasicState):
         
     def setup(self,asset):
         
-        self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player.player_properties.hang_radius,
-                                                 2*self.player.player_properties.hang_radius) 
+        self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player.properties.hang_radius,
+                                                 2*self.player.properties.hang_radius) 
         
         # creating range rectangle
         self.range_sprite = pygame.sprite.Sprite()
@@ -281,9 +281,9 @@ class JumpState(BasicState):
             self.player.vertical_speed = 0 
     
     def enter(self):
-        self.player.set_vertical_speed(self.player.player_properties.jump_speed)
+        self.player.set_vertical_speed(self.player.properties.jump_speed)
         self.player.set_current_animation_key(StateKeys.JUMPING)
-        self.player.midair_dash_countdown = self.player.player_properties.max_midair_dashes
+        self.player.midair_dash_countdown = self.player.properties.max_midair_dashes
         self.player.range_collision_group.add(self.range_sprite) 
         
     def exit(self):
@@ -376,8 +376,8 @@ class FallState(BasicState):
         
         self.add_action(AK.CANCEL_MOVE,lambda : self.player.set_horizontal_speed(0))
         self.add_action(AK.APPLY_GRAVITY,lambda g: self.player.apply_gravity(g))
-        self.add_action(AK.MOVE_LEFT,lambda : self.player.turn_left(-self.player.player_properties.run_speed))
-        self.add_action(AK.MOVE_RIGHT,lambda : self.player.turn_right(self.player.player_properties.run_speed))
+        self.add_action(AK.MOVE_LEFT,lambda : self.player.turn_left(-self.player.properties.run_speed))
+        self.add_action(AK.MOVE_RIGHT,lambda : self.player.turn_right(self.player.properties.run_speed))
         self.add_action(AK.COLLISION_BELOW,self.check_landing)
         self.add_action(AK.COLLISION_RIGHT_WALL,lambda platform : self.player.set_momentum(0))
         self.add_action(AK.COLLISION_LEFT_WALL,lambda platform : self.player.set_momentum(0)) 
@@ -386,8 +386,8 @@ class FallState(BasicState):
         
     def setup(self,asset):
         
-        self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player.player_properties.hang_radius,
-                                                 2*self.player.player_properties.hang_radius) 
+        self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player.properties.hang_radius,
+                                                 2*self.player.properties.hang_radius) 
         
         # creating range rectangle
         self.range_sprite = pygame.sprite.Sprite()
@@ -492,7 +492,7 @@ class LandState(BasicState):
         
     def enter(self):                
 
-        self.player.midair_dash_countdown = self.player.player_properties.max_midair_dashes
+        self.player.midair_dash_countdown = self.player.properties.max_midair_dashes
         
         self.player.set_current_animation_key(StateKeys.LANDING)
         
@@ -526,14 +526,14 @@ class HangingState(BasicState):
             
             if self.player.facing_right:
                 self.player.collision_sprite.rect.right = self.platform_rect.left - \
-                self.player.player_properties.hang_distance_from_side
+                self.player.properties.hang_distance_from_side
             else:
                 self.player.collision_sprite.rect.left = self.platform_rect.right + \
-                self.player.player_properties.hang_distance_from_side
+                self.player.properties.hang_distance_from_side
             
             #endif
                 
-            self.player.collision_sprite.rect.top = self.platform_rect.top + self.player.player_properties.hang_distance_from_top
+            self.player.collision_sprite.rect.top = self.platform_rect.top + self.player.properties.hang_distance_from_top
             
         print "Hanging at top point %i"%(self.player.collision_sprite.rect.top)
         
@@ -557,7 +557,7 @@ class ClimbingState(BasicState):
         self.platform_rect = None
         self.climb_path =[]
         
-        self.add_action(AK.STEP_GAME,self.climb)
+        self.add_action(AK.STEP_GAME,lambda time_elapsed :self.climb())
         
     def enter(self):
         self.player.set_current_animation_key(StateKeys.CLIMBING)
@@ -572,11 +572,11 @@ class ClimbingState(BasicState):
         plt_rect = self.platform_rect
         
         # saving initial position relative to platform
-        self.startx = self.player.player_properties.climb_distance_from_side + ply_rect.width
+        self.startx = self.player.properties.climb_distance_from_side + ply_rect.width
         self.startx = (-self.startx ) if self.player.facing_right else (self.startx)
         
         # start y value of rect bottom
-        self.starty =  self.player.player_properties.climb_distance_from_top +ply_rect.height                
+        self.starty =  self.player.properties.climb_distance_from_top +ply_rect.height                
 
         # calculating distances
         dx = -self.startx
