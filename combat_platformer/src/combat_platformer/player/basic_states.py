@@ -49,6 +49,7 @@ class RunState(BasicState):
         
         self.add_action(AK.MOVE_LEFT,lambda : self.player.turn_left(-self.speed))
         self.add_action(AK.MOVE_RIGHT,lambda : self.player.turn_right(self.speed))
+        self.add_action(AK.STEP_GAME,lambda time_elapsed :self.player.reduce_momentum())
         
     
     def enter(self):
@@ -80,8 +81,9 @@ class DashState(BasicState):
     
     def exit(self):
         
+        progress_percent = self.player.animation_set_progress_percentage()
         self.player.set_momentum(0.8*self.player.properties.dash_speed 
-                                                      if self.player.animation_set_progress_percentage()>0.3 else 0)
+                                                      if progress_percent>0.3 else 0)
 
         
         
@@ -127,6 +129,7 @@ class DashBreakingState(BasicState):
         
         self.add_action(AK.ACTION_SEQUENCE_EXPIRED,
                             lambda : self.player.set_current_animation_key(StateKeys.DASH_BREAKING,[-1])) 
+        self.add_action(AK.STEP_GAME,lambda time_elapsed :self.update())
         
     def enter(self):
         
@@ -134,7 +137,11 @@ class DashBreakingState(BasicState):
         plyr.set_momentum(plyr.properties.run_speed)
         plyr.set_horizontal_speed(0),
         plyr.set_current_animation_key(StateKeys.DASH_BREAKING)
-        
+    
+    def update(self):
+        self.player.reduce_momentum()
+        self.player.set_horizontal_speed(abs(self.player.momentum))
+          
         
     def exit(self):
         
@@ -246,16 +253,16 @@ class JumpState(BasicState):
         
         BasicState.__init__(self,StateKeys.JUMPING,player)
         
-        self.speed = self.player.properties.run_speed
+        self.speed = 0
         
         self.has_landed = False
         self.edge_in_reach = False                   
         self.hang_sprite = pygame.sprite.Sprite()
 
         
-        self.add_action(AK.MOVE_LEFT,lambda : self.player.turn_left(-self.speed))
-        self.add_action(AK.MOVE_RIGHT,lambda : self.player.turn_right(self.speed))                
-        self.add_action(AK.CANCEL_MOVE,lambda : self.player.set_horizontal_speed(0))
+        self.add_action(AK.MOVE_LEFT,lambda : self.turn_left())
+        self.add_action(AK.MOVE_RIGHT,lambda : self.turn_right())                
+        self.add_action(AK.CANCEL_MOVE,lambda : self.cancel_move())
         self.add_action(AK.CANCEL_JUMP,lambda : self.cancel_jump())
         self.add_action(AK.APPLY_GRAVITY,lambda g: self.player.apply_gravity(g))    
         self.add_action(AK.COLLISION_ABOVE,lambda platform : self.player.set_vertical_speed(0))
@@ -269,11 +276,47 @@ class JumpState(BasicState):
         self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player.properties.hang_radius,
                                                  2*self.player.properties.hang_radius) 
         
+        self.speed = self.player.properties.run_speed
+        
         # creating range rectangle
         self.range_sprite = pygame.sprite.Sprite()
         self.range_sprite.rect = self.player.collision_sprite.rect.copy()
         self.range_sprite.rect.width = self.range_sprite.rect.width + self.hang_sprite.rect.width
         self.range_sprite.rect.height = self.range_sprite.rect.height + self.hang_sprite.rect.height
+        
+    def turn_right(self):
+        
+        pl = self.player
+        if pl.momentum >0:
+        
+            pl.turn_right(pl.momentum if pl.momentum > self.speed else self.speed)
+        else:
+            pl.turn_right(self.speed + pl.momentum)                
+            pl.reduce_momentum()
+                
+            #endif
+        #endif
+            
+        
+    def turn_left(self):
+        
+        pl = self.player
+        if pl.momentum <0:
+        
+            pl.turn_left(pl.momentum if abs(pl.momentum) > self.speed else -self.speed)
+        else:
+            pl.turn_left(-self.speed + pl.momentum)                
+            pl.reduce_momentum()
+                
+            #endif
+        #endif
+        
+    def cancel_move(self):
+        
+        pl = self.player
+        pl.set_horizontal_speed(abs(pl.momentum))
+        pl.reduce_momentum()            
+        
         
     def cancel_jump(self):
         
@@ -285,6 +328,7 @@ class JumpState(BasicState):
         self.player.set_current_animation_key(StateKeys.JUMPING)
         self.player.midair_dash_countdown = self.player.properties.max_midair_dashes
         self.player.range_collision_group.add(self.range_sprite) 
+        
         
     def exit(self):
         self.player.range_collision_group.remove(self.range_sprite)                
@@ -369,15 +413,17 @@ class FallState(BasicState):
     def __init__(self,player):
         
         BasicState.__init__(self,StateKeys.FALLING,player)
+        
+        self.speed = 0
                 
         self.edge_in_reach = False  
         self.has_landed = False  
         self.hang_sprite = pygame.sprite.Sprite()         
         
-        self.add_action(AK.CANCEL_MOVE,lambda : self.player.set_horizontal_speed(0))
+        self.add_action(AK.CANCEL_MOVE,lambda : self.cancel_move())
         self.add_action(AK.APPLY_GRAVITY,lambda g: self.player.apply_gravity(g))
-        self.add_action(AK.MOVE_LEFT,lambda : self.player.turn_left(-self.player.properties.run_speed))
-        self.add_action(AK.MOVE_RIGHT,lambda : self.player.turn_right(self.player.properties.run_speed))
+        self.add_action(AK.MOVE_LEFT,lambda : self.turn_left())
+        self.add_action(AK.MOVE_RIGHT,lambda : self.turn_right())   
         self.add_action(AK.COLLISION_BELOW,self.check_landing)
         self.add_action(AK.COLLISION_RIGHT_WALL,lambda platform : self.player.set_momentum(0))
         self.add_action(AK.COLLISION_LEFT_WALL,lambda platform : self.player.set_momentum(0)) 
@@ -389,21 +435,55 @@ class FallState(BasicState):
         self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player.properties.hang_radius,
                                                  2*self.player.properties.hang_radius) 
         
+        self.speed = self.player.properties.run_speed
+        
+        
         # creating range rectangle
         self.range_sprite = pygame.sprite.Sprite()
         self.range_sprite.rect = self.player.collision_sprite.rect.copy()
         self.range_sprite.rect.width = self.range_sprite.rect.width + self.hang_sprite.rect.width
         self.range_sprite.rect.height = self.range_sprite.rect.height + self.hang_sprite.rect.height 
         
+    def turn_right(self):
+        
+        pl = self.player
+        if pl.momentum >0:
+        
+            pl.turn_right(pl.momentum if pl.momentum > self.speed else self.speed)
+        else:
+            pl.turn_right(self.speed + pl.momentum)                
+            pl.reduce_momentum()
+                
+            #endif
+        #endif
+            
+        
+    def turn_left(self):
+        
+        pl = self.player
+        if pl.momentum <0:
+        
+            pl.turn_left(pl.momentum if abs(pl.momentum) > self.speed else -self.speed)
+        else:
+            pl.turn_left(-self.speed + pl.momentum)                
+            pl.reduce_momentum()
+                
+            #endif
+        #endif  
+        
+    def cancel_move(self):        
+        
+        pl = self.player
+        pl.set_horizontal_speed(abs(pl.momentum))
+        pl.reduce_momentum()  
 
     
     def enter(self):
-        
-        if self.player.horizontal_speed < 0:
-            self.player.horizontal_speed = 0
-    
+            
         self.player.set_current_animation_key(StateKeys.FALLING)
         self.player.range_collision_group.add(self.range_sprite)
+        
+        
         
     def exit(self):
         self.player.range_collision_group.remove(self.range_sprite)
@@ -490,21 +570,18 @@ class LandState(BasicState):
         
         BasicState.__init__(self,StateKeys.LANDING,player)
         
+        self.apply_momentum_reduction = False
+        
+        
     def enter(self):                
 
         self.player.midair_dash_countdown = self.player.properties.max_midair_dashes
         
-        self.player.set_current_animation_key(StateKeys.LANDING)
-        
-        if (self.player.vertical_speed + self.player.momentum) < 0 and self.player.momentum > 0:
-            self.player.momentum = 0
-        elif (self.player.vertical_speed + self.player.momentum) > 0 and self.player.momentum < 0:
-            self.player.momentum = 0
-        #endif
+        self.player.set_current_animation_key(StateKeys.LANDING)           
         
         self.player.vertical_speed = 0
         self.player.horizontal_speed = 0
-        
+        self.player.set_momentum(0)       
         
 class HangingState(BasicState):
     
