@@ -28,6 +28,7 @@ class EnemyProperties(object):
     CLIMB_DISTANCE_FROM_SIDE = 0
     
     PATROL_AREA_RECTANGLE = pygame.Rect(0,0,500,100)
+    SIGHT_AREA_RECTANGLE = pygame.Rect(0,0,200,100) 
     
     def __init__(self):
         
@@ -55,4 +56,7 @@ class EnemyProperties(object):
         self.patrol_area_rect = EnemyProperties.PATROL_AREA_RECTANGLE
         self.patrol_walk_time = 10
         self.patrol_nap_time = 5
+        self.sight_area_rect = EnemyProperties.SIGHT_AREA_RECTANGLE
+        
         self.alert_time = 5
+        
