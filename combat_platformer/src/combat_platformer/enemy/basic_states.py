@@ -91,14 +91,55 @@ class AlertState(BasicState):
     def __init__(self,character):
         BasicState.__init__(self,StateKeys.ALERT,character) 
         
-        self.time_consumed= False
+        self.time_active = 10
+        self.time_left = 10
+        self.time_consumed = False
+        self.alert_area_sprite = pygame.sprite.Sprite()
         
-    def setup(self,assets):
         
         self.add_action(BasicState.LA.STEP_GAME, lambda time_elapsed: self.update(time_elapsed))
         
+    def setup(self,assets):
+        
+        self.time_active = self.character.properties.alert_time
+        
+        pr = self.character.collision_sprite.rect
+        self.alert_area_sprite.rect = self.character.properties.sight_area_rect
+        self.alert_area_sprite.offset = (0,(pr.height - self.alert_area_sprite.rect.height)/2)
+        
     def update(self,time_elapsed):
-        pass
+        
+        if self.is_player_in_area():
+            
+            #reset time
+            self.time_left = self.time_active
+        else:
+            
+            self.time_left -= time_elapsed
+            
+            if self.time_left <= 0:
+                self.time_consumed = True
+            #endif
+        #endif
+    
+    def is_player_in_area(self):
+        
+        ps = self.target_player.collision_sprite
+        ar = self.alert_area_sprite
+        cs = self.character.collision_sprite
+        
+        ar.rect.centerx = cs.rect.centerx + ar.offset[0]
+        ar.rect.centery = cs.rect.centery + ar.offset[1]
+        
+        return pygame.sprite.collide_rect(ps, cs)
+    
+    def enter(self):
+        
+        self.time_left = self.time_active
+        self.time_consumed = False
+        
+        self.character.set_vertical_speed(0)
+        self.character.set_current_animation_key(StateKeys.ALERT)
         
     
 class PatrolState(SubStateMachine):
@@ -179,9 +220,11 @@ class PatrolState(SubStateMachine):
                 
                 if sp == self.sight_sprite:                    
                     if self.character.facing_right and (self.rect.centerx < ps.rect.centerx):
+                        self.character.target_player = player
                         self.player_sighted = True
                     
                     elif self.character.facing_left and (self.rect.centerx > ps.rect.centerx):
+                        self.character.target_player = player
                         self.player_sighted = True
                         
                     #endif
