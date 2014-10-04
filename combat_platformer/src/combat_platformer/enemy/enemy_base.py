@@ -6,4 +6,5 @@ class EnemyBase(PlayerBase):
     def __init__(self):
         PlayerBase.__init__(self)
         self.properties = EnemyProperties()
+        self.target_player = None
         
