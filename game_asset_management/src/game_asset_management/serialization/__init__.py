@@ -1,0 +1,1 @@
+from asset_collection_xml import *
