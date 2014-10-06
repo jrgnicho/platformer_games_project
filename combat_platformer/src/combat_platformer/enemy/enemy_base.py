@@ -1,3 +1,4 @@
+import pygame
 from combat_platformer.player import PlayerBase
 from combat_platformer.enemy import EnemyProperties
 
@@ -7,4 +8,16 @@ class EnemyBase(PlayerBase):
         PlayerBase.__init__(self)
         self.properties = EnemyProperties()
         self.target_player = None
+        
+    def setup(self):
+        
+        # collision sprite
+        self.collision_sprite.rect = pygame.Rect(0,0,self.properties.collision_width,
+                                                 self.properties.collision_height)      
+        
+        if self.target_player == None:
+            print "The 'target_player' member in the EnemyBase class has not been set"
+            return False
+        #endif
+        
         
