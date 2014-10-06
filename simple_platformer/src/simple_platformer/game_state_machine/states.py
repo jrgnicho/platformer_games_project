@@ -73,7 +73,7 @@ class StateMachine(object):
         self.active_state_key = None
         self.transitions={}
         self.action_queue = [] # list of an action, arguments tuple 
-        self.enter = self.execute  # will be called when used as a sub state machine        
+        #self.enter = self.execute  # will be called when used as a sub state machine        
 
         
     def add_state(self,state_obj):
@@ -150,7 +150,7 @@ class StateMachine(object):
                         # exiting active state
                         active_state_obj.exit()
                         
-                        # entering new state
+                        # entering new state                        
                         next_state_obj.enter()
                         
                         # setting next state as active
@@ -230,7 +230,8 @@ class SubStateMachine(StateMachine):
             State.__init__(self,SubStateMachine.StateKeys.START)
             self.parent_sm = parent_sm
             
-        def enter(self):            
+        def enter(self):    
+            print "SM START state enter method invoked"        
             self.parent_sm.start()
             
             
@@ -241,7 +242,8 @@ class SubStateMachine(StateMachine):
             State.__init__(self,SubStateMachine.StateKeys.STOP)
             self.parent_sm = parent_sm
             
-        def enter(self):            
+        def enter(self):   
+            print 'SM STOP state enter method invoked'         
             self.parent_sm.stop()
             
     
@@ -260,18 +262,17 @@ class SubStateMachine(StateMachine):
         
         if self.active_state_key == SubStateMachine.StateKeys.START:
             self.start()
-            return True
+            return False
         else:
-           active_state_obj = self.states_dict[self.active_state_key]
+           return active_state_obj.has_action(action_key)
         #endif 
         
-        return active_state_obj.has_action(action_key)
         
     def start(self):
         
         print "SM start method invoked"
-        self.execute(SubStateMachine.ActionKeys.START_SM)    
-    
+        self.execute(SubStateMachine.ActionKeys.START_SM)  
+            
     def stop(self):
         
         self.active_state_key = self.start_state.key
@@ -279,8 +280,13 @@ class SubStateMachine(StateMachine):
         
     def enter(self):
         
-        self.active_state_key = self.start_state.key
         print "ENTERING SUB MACHINE WITH STATE " + self.active_state_key
+        self.active_state_key = self.start_state.key
+        
+    def exit(self):
+        active_state_obj = self.states_dict[self.active_state_key]
+        active_state_obj.exit()
+        
     
         
         
