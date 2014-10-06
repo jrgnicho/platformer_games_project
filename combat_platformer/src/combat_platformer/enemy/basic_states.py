@@ -14,7 +14,7 @@ class StateKeys(object):
     RUN = 'RUN'
     WALK = 'WALK'
     JUMP='JUMP'
-    NAP='NAP'
+    UNWARY='UNWARY'
     
     
 class BasicState(State):
@@ -148,12 +148,12 @@ class PatrolState(SubStateMachine):
     
         def __init__(self,character):
             
-            BasicState.__init__(self,StateKeys.WALK,self.character)      
+            BasicState.__init__(self,StateKeys.WALK,character)      
               
             self.speed = 0 
             self.patrol_rect = None
-            self.time_active = 10
-            self.time_left = 10
+            self.time_active = 10000
+            self.time_left = 10000
             self.time_consumed = False
             self.player_sighted = False
             
@@ -168,6 +168,8 @@ class PatrolState(SubStateMachine):
                             lambda player,range_sprites : self.check_player_insight(player,range_sprites))
             
         def enter(self):
+            
+            print "Entered PATROL WALK state with %s base location"%(str(self.character.collision_sprite.rect.bottom))
                      
             self.time_left = self.time_active
             self.time_consumed = False
@@ -179,6 +181,8 @@ class PatrolState(SubStateMachine):
         def exit(self):
             self.character.range_collision_group.remove(self.range_sprite)
             self.character.range_collision_group.remove(self.sight_sprite)
+            
+            print "Exit PATROL WALK state"
             
         def setup(self,assets):
             
@@ -236,11 +240,11 @@ class PatrolState(SubStateMachine):
 
             
         def update(self,time_elapsed):
-            
+                        
             # update time counter
             self.time_left -= time_elapsed
             
-            if self.is_inside_patrol_area(self):
+            if self.is_inside_patrol_area():
                 
                 # check active time
                 if self.time_left <= 0:
@@ -252,30 +256,34 @@ class PatrolState(SubStateMachine):
             
             #endif
             
-    class NapState(BasicState):
+    class UnwaryState(BasicState):
         
         def __init__(self,character):
             
-            BasicState.__init__(self,StateKeys.NAP,self.character)
+            BasicState.__init__(self,StateKeys.UNWARY,character)
             
-            self.time_active = 10
-            self.time_left = 10 
+            self.time_active = 10000
+            self.time_left = 10000 
             self.time_consumed = False
+            
+            self.add_action(BasicState.LA.STEP_GAME, lambda time_elapsed: self.update(time_elapsed))  
             
         def enter(self):      
             
+            self.character.set_current_animation_key(StateKeys.UNWARY)
             self.time_left = self.time_active
             self.time_consumed = False   
         
         def setup(self,assets):
             
-            self.time_active = self.character.properties.patrol_nap_time
+            self.time_active = self.character.properties.patrol_unwary_time
             
         def update(self,time_elapsed):
             
             self.time_left -= time_elapsed
             if self.time_left <= 0:
                 
+                print 'UNWARY state time consumed, time elapsed %i'%(time_elapsed)
                 self.time_consumed = True
             #endif                
     
@@ -291,19 +299,24 @@ class PatrolState(SubStateMachine):
         
         # invoking setup method for each state
         for state in self.states_dict.values():
-            state.setup(assets)
+            
+            if (state.key == SubStateMachine.StateKeys.START) or (state.key == SubStateMachine.StateKeys.STOP):
+                continue
+            else:
+                state.setup(assets)
+            #endif
         #endfor
         
     def create_transition_rules(self):
         
-        self.walk_state = self.WalkState(self,self.character)
-        self.nap_state = self.NapState(self,self.character)
+        self.walk_state = self.WalkState(self.character)
+        self.unwary_state = self.UnwaryState(self.character)
         
         # transitions
-        self.add_transition(self.start_state, self.ActionKeys.ENTER, self.walk_state)
+        self.add_transition(self.start_state, self.ActionKeys.START_SM, self.walk_state.key)
         
-        self.add_transition(self.walk_state, BasicState.LA.STEP_GAME, self.nap_state, self.walk_state.time_consumed)
-        self.add_transition(self.walk_state, BasicState.LA.STEP_GAME, self.stop_state, self.walk_state.player_sighted)
+        self.add_transition(self.walk_state, BasicState.LA.STEP_GAME, self.unwary_state.key, lambda: self.walk_state.time_consumed)
+        self.add_transition(self.walk_state, BasicState.LA.STEP_GAME, self.stop_state.key, lambda: self.walk_state.player_sighted)
         
-        self.add_transition(self.nap_state, BasicState.LA.STEP_GAME, self.walk_state, self.nap_state.time_consumed)
+        self.add_transition(self.unwary_state, BasicState.LA.STEP_GAME, self.walk_state.key, lambda: self.unwary_state.time_consumed)
         
