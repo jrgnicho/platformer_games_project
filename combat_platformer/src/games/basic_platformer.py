@@ -60,12 +60,13 @@ class BasicPlatformer(object):
         
         #endif
         
+        self.player.properties.collision_width = 42
+        self.player.properties.collision_height = 75        
         if not self.player.setup():            
-            return False
+            return False        
         
-        self.player.collision_sprite.rect.width = 42
-        self.player.collision_sprite.rect.height = 75
-        self.player.collision_sprite.rect.center = (0,500)
+        self.player.collision_sprite.rect.center = (0,500)       
+
         
         keys = self.player.states_dict.keys()
         print "Adding player animation keys: " + str(keys)
