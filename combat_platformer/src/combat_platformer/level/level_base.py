@@ -2,11 +2,13 @@ import pygame
 from simple_platformer.utilities import GameProperties
 from simple_platformer.utilities import ScreenBounds
 from simple_platformer.utilities import Colors, ScreenProperties
+from simple_platformer.game_state_machine import StateMachine
 from simple_platformer.levels import Platform
 from simple_platformer.game_state_machine import *
+from combat_platformer.level.action_keys import *
 from combat_platformer.player.action_keys import *
 from combat_platformer.player import PlayerBase
-from combat_platformer.player import PlayerStateMachine
+from combat_platformer.enemy import EnemyBase
 
 
 class LevelBase(pygame.sprite.Sprite):
@@ -20,7 +22,7 @@ class LevelBase(pygame.sprite.Sprite):
         # level objects
         self.player = None # placeholder for PlayerStateMachine object
         self.platforms = pygame.sprite.Group()
-        self.enemys  = pygame.sprite.Group()        
+        self.enemies  = []       
         
         # level size
         self.rect = pygame.Rect(0,0,w,h)  
@@ -105,11 +107,7 @@ class LevelBase(pygame.sprite.Sprite):
         # setup player
         if self.player == None:
             print "Player has not been added, exiting"
-            return False
-        else:            
-            self.player.collision_sprite.rect.x = 300
-            self.player.collision_sprite.rect.y = 30
-            
+            return False            
         #endif
         
         
@@ -220,15 +218,33 @@ class LevelBase(pygame.sprite.Sprite):
             - outputs: True if successful, False otherwise due to game exit condition or user input
         """
         # perform transition or execute action if supported by active state
-        self.player.execute(PlayerActionKeys.STEP_GAME,[elapsed_time])                 
+        self.player.execute(LevelActionKeys.STEP_GAME,[elapsed_time])     
+        
+        for enemy in self.enemies:
+            enemy.execute(LevelActionKeys.STEP_GAME,[elapsed_time])            
         
         # check user input
         if not self.check_input():
             return False       
 
         
+        self.update_player()
+        self.update_enemies()
+                   
+        # updating objects
+        for enemy in self.enemies:
+            enemy.update()  
+        #endfor
+        
+        self.platforms.update()
+        self.player.update()
+        
+        return True
+    
+    def update_player(self):
+        
         # apply gravity
-        self.player.execute(PlayerActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])   
+        self.player.execute(LevelActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])   
         
         # moving and checking collision           
         self.player.update_pos_x()
@@ -238,19 +254,34 @@ class LevelBase(pygame.sprite.Sprite):
         self.check_collisions_in_y(self.player) 
         
         
-        # check for platform below
+        # check for platform collisions
         self.check_platform_support(self.player)
         
         # check screen and level bounds        
         self.check_level_bounds(self.player)
         self.check_screen_bounds()
-                   
-        # updating objects
-        self.enemys.update()  
-        self.platforms.update()
-        self.player.update()
         
-        return True
+    def update_enemies(self):
+        
+        for enemy in self.enemies:            
+            
+            # apply gravity
+            enemy.execute(LevelActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])   
+            
+            # moving and checking collision           
+            enemy.update_pos_x()
+            self.check_collisions_in_x(enemy)         
+                
+            enemy.update_pos_y()
+            self.check_collisions_in_y(enemy) 
+            
+            
+            # check for platform collisions
+            self.check_platform_support(enemy)
+            
+            # check screen and level bounds        
+            self.check_level_bounds(enemy)
+        
         
     def draw(self,screen):        
         
@@ -264,7 +295,9 @@ class LevelBase(pygame.sprite.Sprite):
 
         # draw objects
         self.platforms.draw(screen)
-        self.enemys.draw(screen)
+        
+        for enemy in self.enemies:
+            enemy.draw(screen)
         
         # draw player
         self.player.draw(screen)
@@ -284,9 +317,9 @@ class LevelBase(pygame.sprite.Sprite):
             platform.rect.y -= dy
         #endfor
         
-        for enemy in self.enemys:
-            enemy.rect.x += dx
-            enemy.rect.y -= dy
+        for enemy in self.enemies:
+            enemy.collision_sprite.rect.x += dx
+            enemy.collision_sprite.rect.y -= dy
         #endfor  
         
     def check_platform_support(self,animatable):
@@ -297,7 +330,7 @@ class LevelBase(pygame.sprite.Sprite):
         
         ps = animatable.collision_sprite
         if len(platforms) == 0:
-            animatable.execute(PlayerActionKeys.PLATFORM_LOST)                   
+            animatable.execute(LevelActionKeys.PLATFORM_LOST)                   
         #endif  
             
         
@@ -311,11 +344,11 @@ class LevelBase(pygame.sprite.Sprite):
             
             if animatable.collision_sprite.rect.centery < platform.rect.centery:
                 animatable.collision_sprite.rect.bottom = platform.rect.top
-                animatable.execute(PlayerActionKeys.COLLISION_BELOW,[platform])  
+                animatable.execute(LevelActionKeys.COLLISION_BELOW,[platform])  
                               
             else:
                 animatable.collision_sprite.rect.top = platform.rect.bottom
-                animatable.execute(PlayerActionKeys.COLLISION_ABOVE,[platform])
+                animatable.execute(LevelActionKeys.COLLISION_ABOVE,[platform])
             #endif
     
         #endfor    
@@ -326,7 +359,7 @@ class LevelBase(pygame.sprite.Sprite):
             rs.rect.center = pr.center
             platforms = pygame.sprite.spritecollide(rs,self.platforms,False)
             if len(platforms) > 0:
-                animatable.execute(PlayerActionKeys.PLATFORMS_IN_RANGE,[platforms])   
+                animatable.execute(LevelActionKeys.PLATFORMS_IN_RANGE,[platforms])   
 
                 
                 
@@ -339,11 +372,11 @@ class LevelBase(pygame.sprite.Sprite):
             
             if animatable.collision_sprite.rect.centerx > platform.rect.centerx:
                 animatable.collision_sprite.rect.left = platform.rect.right
-                animatable.execute(PlayerActionKeys.COLLISION_LEFT_WALL,[platform])
+                animatable.execute(LevelActionKeys.COLLISION_LEFT_WALL,[platform])
                 
             else:
                 animatable.collision_sprite.rect.right = platform.rect.left
-                animatable.execute(PlayerActionKeys.COLLISION_RIGHT_WALL,[platform])
+                animatable.execute(LevelActionKeys.COLLISION_RIGHT_WALL,[platform])
                 
             #endif          
             
@@ -355,7 +388,7 @@ class LevelBase(pygame.sprite.Sprite):
             rs.rect.center = pr.center
             platforms = pygame.sprite.spritecollide(rs,self.platforms,False)
             if len(platforms) > 0:
-                animatable.execute(PlayerActionKeys.PLATFORMS_IN_RANGE,[platforms])
+                animatable.execute(LevelActionKeys.PLATFORMS_IN_RANGE,[platforms])
                 
         
          
