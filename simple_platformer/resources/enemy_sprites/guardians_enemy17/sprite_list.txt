@@ -1,4 +1,6 @@
 key file	colums rows rate(miliseconds) scalex scale y
-WALK enemy17_waking_0-5.png 6 1 120 SX1.0 SY1.0
-UNWARY enemy17_faint_0-8.png 9 1 150 SX1.0 SY1.0
-ALERT enemy17_alert_0-0.png 1 1 200 SX1.0 SY1.0
+WALK enemy17_waking_0-5.png 6 1 120 SX1.2 SY1.2
+UNWARY enemy17_faint_0-8.png 9 1 150 SX1.2 SY1.2
+ALERT enemy17_alert_0-0.png 1 1 200 SX1.2 SY1.2
+DROP enemy17_drop_0-5.png 6 1 200 SX1.2 SY1.2
+WIPEOUT enemy17_whipeout_0-7.png 8 1 120 SX1.2 SY1.2
