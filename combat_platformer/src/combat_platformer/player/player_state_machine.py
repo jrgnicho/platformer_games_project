@@ -3,9 +3,10 @@ from simple_platformer.animatable_object import *
 from combat_platformer.player.basic_states import *
 from combat_platformer.player.action_keys import *
 from combat_platformer.player import PlayerBase
+from combat_platformer.level.action_keys import *
 
-AK = PlayerActionKeys
 class PlayerStateMachine(StateMachine,PlayerBase):
+    
     
     def __init__(self):
     
@@ -31,7 +32,7 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         return True
         
     def action_sequence_expired_handler(self):
-            self.execute(AK.ACTION_SEQUENCE_EXPIRED)
+            self.execute(AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED)
             
             
     def create_transition_rules(self):
@@ -52,86 +53,86 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         # transitions
         sm = self
         
-        sm.add_transition(run_state,AK.CANCEL_MOVE,StateKeys.STANDING)
-        sm.add_transition(run_state,AK.JUMP,StateKeys.JUMPING)
-        sm.add_transition(run_state,AK.PLATFORM_LOST,StateKeys.FALLING)
-        sm.add_transition(run_state,AK.DASH,StateKeys.DASHING)
-        sm.add_transition(run_state,AK.MOVE_LEFT,StateKeys.DASH_BREAKING,
+        sm.add_transition(run_state,PlayerActionKeys.CANCEL_MOVE,StateKeys.STANDING)
+        sm.add_transition(run_state,PlayerActionKeys.JUMP,StateKeys.JUMPING)
+        sm.add_transition(run_state,LevelActionKeys.PLATFORM_LOST,StateKeys.FALLING)
+        sm.add_transition(run_state,PlayerActionKeys.DASH,StateKeys.DASHING)
+        sm.add_transition(run_state,PlayerActionKeys.MOVE_LEFT,StateKeys.DASH_BREAKING,
                           lambda: self.momentum > 0)
-        sm.add_transition(run_state,AK.MOVE_RIGHT,StateKeys.DASH_BREAKING,
+        sm.add_transition(run_state,PlayerActionKeys.MOVE_RIGHT,StateKeys.DASH_BREAKING,
                           lambda: self.momentum < 0)
         
         
-        sm.add_transition(dash_state,AK.CANCEL_DASH,StateKeys.DASH_BREAKING,
+        sm.add_transition(dash_state,PlayerActionKeys.CANCEL_DASH,StateKeys.DASH_BREAKING,
                           lambda: self.animation_set_progress_percentage()>0.2)
-        sm.add_transition(dash_state,AK.CANCEL_DASH,StateKeys.RUNNING,
+        sm.add_transition(dash_state,PlayerActionKeys.CANCEL_DASH,StateKeys.RUNNING,
                           lambda: not (self.animation_set_progress_percentage()>0.2))
-        sm.add_transition(dash_state,AK.JUMP,StateKeys.JUMPING)
-        sm.add_transition(dash_state,AK.PLATFORM_LOST,StateKeys.FALLING)
-        sm.add_transition(dash_state,AK.ACTION_SEQUENCE_EXPIRED,StateKeys.RUNNING)
+        sm.add_transition(dash_state,PlayerActionKeys.JUMP,StateKeys.JUMPING)
+        sm.add_transition(dash_state,LevelActionKeys.PLATFORM_LOST,StateKeys.FALLING)
+        sm.add_transition(dash_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.RUNNING)
         
         
-        sm.add_transition(midair_dash_state,AK.CANCEL_DASH,StateKeys.FALLING)
-        sm.add_transition(midair_dash_state,AK.ACTION_SEQUENCE_EXPIRED,StateKeys.FALLING)
+        sm.add_transition(midair_dash_state,PlayerActionKeys.CANCEL_DASH,StateKeys.FALLING)
+        sm.add_transition(midair_dash_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.FALLING)
         
-        sm.add_transition(dash_breaking_state,AK.MOVE_LEFT,StateKeys.RUNNING,
+        sm.add_transition(dash_breaking_state,PlayerActionKeys.MOVE_LEFT,StateKeys.RUNNING,
                           lambda: not self.facing_right)
-        sm.add_transition(dash_breaking_state,AK.MOVE_RIGHT,StateKeys.RUNNING,
+        sm.add_transition(dash_breaking_state,PlayerActionKeys.MOVE_RIGHT,StateKeys.RUNNING,
                           lambda: self.facing_right)
-        sm.add_transition(dash_breaking_state,AK.JUMP,StateKeys.JUMPING)
-        sm.add_transition(dash_breaking_state,AK.PLATFORM_LOST,StateKeys.FALLING)
-        sm.add_transition(dash_breaking_state,AK.STEP_GAME,StateKeys.STANDING,
+        sm.add_transition(dash_breaking_state,PlayerActionKeys.JUMP,StateKeys.JUMPING)
+        sm.add_transition(dash_breaking_state,LevelActionKeys.PLATFORM_LOST,StateKeys.FALLING)
+        sm.add_transition(dash_breaking_state,LevelActionKeys.STEP_GAME,StateKeys.STANDING,
                           lambda: self.momentum == 0)
         
         
-        sm.add_transition(stand_state,AK.RUN,StateKeys.RUNNING)
-        sm.add_transition(stand_state,AK.JUMP,StateKeys.JUMPING)
-        sm.add_transition(stand_state,AK.PLATFORM_LOST,StateKeys.FALLING)
-        sm.add_transition(stand_state,AK.MOVE_LEFT,StateKeys.RUNNING)
-        sm.add_transition(stand_state,AK.MOVE_RIGHT,StateKeys.RUNNING)
-        sm.add_transition(stand_state,AK.DASH,StateKeys.DASHING)
-        sm.add_transition(stand_state,AK.PLATFORMS_IN_RANGE,StateKeys.STANDING_ON_EDGE,
+        sm.add_transition(stand_state,PlayerActionKeys.RUN,StateKeys.RUNNING)
+        sm.add_transition(stand_state,PlayerActionKeys.JUMP,StateKeys.JUMPING)
+        sm.add_transition(stand_state,LevelActionKeys.PLATFORM_LOST,StateKeys.FALLING)
+        sm.add_transition(stand_state,PlayerActionKeys.MOVE_LEFT,StateKeys.RUNNING)
+        sm.add_transition(stand_state,PlayerActionKeys.MOVE_RIGHT,StateKeys.RUNNING)
+        sm.add_transition(stand_state,PlayerActionKeys.DASH,StateKeys.DASHING)
+        sm.add_transition(stand_state,LevelActionKeys.PLATFORMS_IN_RANGE,StateKeys.STANDING_ON_EDGE,
                           lambda: stand_state.is_standing_on_edge)
-        sm.add_transition(stand_state,AK.PLATFORMS_IN_RANGE,StateKeys.FALLING,
+        sm.add_transition(stand_state,LevelActionKeys.PLATFORMS_IN_RANGE,StateKeys.FALLING,
                   lambda: stand_state.is_beyond_edge)
         
         
-        sm.add_transition(stand_edge_state,AK.RUN,StateKeys.RUNNING)
-        sm.add_transition(stand_edge_state,AK.JUMP,StateKeys.JUMPING)
-        sm.add_transition(stand_edge_state,AK.PLATFORM_LOST,StateKeys.FALLING)
-        sm.add_transition(stand_edge_state,AK.MOVE_LEFT,StateKeys.RUNNING)
-        sm.add_transition(stand_edge_state,AK.MOVE_RIGHT,StateKeys.RUNNING)
-        sm.add_transition(stand_edge_state,AK.DASH,StateKeys.DASHING)
+        sm.add_transition(stand_edge_state,PlayerActionKeys.RUN,StateKeys.RUNNING)
+        sm.add_transition(stand_edge_state,PlayerActionKeys.JUMP,StateKeys.JUMPING)
+        sm.add_transition(stand_edge_state,LevelActionKeys.PLATFORM_LOST,StateKeys.FALLING)
+        sm.add_transition(stand_edge_state,PlayerActionKeys.MOVE_LEFT,StateKeys.RUNNING)
+        sm.add_transition(stand_edge_state,PlayerActionKeys.MOVE_RIGHT,StateKeys.RUNNING)
+        sm.add_transition(stand_edge_state,PlayerActionKeys.DASH,StateKeys.DASHING)
         
-        sm.add_transition(jump_state,AK.DASH,StateKeys.MIDAIR_DASHING,
+        sm.add_transition(jump_state,PlayerActionKeys.DASH,StateKeys.MIDAIR_DASHING,
                           lambda: self.midair_dash_countdown > 0)
-        sm.add_transition(jump_state,AK.LAND,StateKeys.LANDING)
-        sm.add_transition(jump_state,AK.COLLISION_BELOW,StateKeys.LANDING,
+        sm.add_transition(jump_state,PlayerActionKeys.LAND,StateKeys.LANDING)
+        sm.add_transition(jump_state,LevelActionKeys.COLLISION_BELOW,StateKeys.LANDING,
                           lambda : jump_state.has_landed)
-        sm.add_transition(jump_state,AK.ACTION_SEQUENCE_EXPIRED,StateKeys.FALLING)
-        sm.add_transition(jump_state,AK.COLLISION_ABOVE,StateKeys.FALLING)
-        sm.add_transition(jump_state,AK.PLATFORMS_IN_RANGE,StateKeys.HANGING,
+        sm.add_transition(jump_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.FALLING)
+        sm.add_transition(jump_state,LevelActionKeys.COLLISION_ABOVE,StateKeys.FALLING)
+        sm.add_transition(jump_state,LevelActionKeys.PLATFORMS_IN_RANGE,StateKeys.HANGING,
                           lambda : jump_state.edge_in_reach)
         
-        sm.add_transition(fall_state,AK.DASH,StateKeys.MIDAIR_DASHING,
+        sm.add_transition(fall_state,PlayerActionKeys.DASH,StateKeys.MIDAIR_DASHING,
                           lambda: self.midair_dash_countdown > 0)
-        sm.add_transition(fall_state,AK.LAND,StateKeys.LANDING)
-        sm.add_transition(fall_state,AK.COLLISION_BELOW,StateKeys.LANDING,
+        sm.add_transition(fall_state,PlayerActionKeys.LAND,StateKeys.LANDING)
+        sm.add_transition(fall_state,LevelActionKeys.COLLISION_BELOW,StateKeys.LANDING,
                           lambda : fall_state.has_landed)
-        sm.add_transition(fall_state,AK.PLATFORMS_IN_RANGE,StateKeys.HANGING,
+        sm.add_transition(fall_state,LevelActionKeys.PLATFORMS_IN_RANGE,StateKeys.HANGING,
                           lambda : fall_state.edge_in_reach)
         
-        sm.add_transition(hanging_state,AK.JUMP,StateKeys.JUMPING,
+        sm.add_transition(hanging_state,PlayerActionKeys.JUMP,StateKeys.JUMPING,
                           lambda : self.animation_set_progress_percentage()>0.2) 
-        sm.add_transition(hanging_state,AK.MOVE_UP,StateKeys.CLIMBING,
+        sm.add_transition(hanging_state,PlayerActionKeys.MOVE_UP,StateKeys.CLIMBING,
                           lambda : self.animation_set_progress_percentage()>=1) 
         
-        sm.add_transition(climbing_state,AK.ACTION_SEQUENCE_EXPIRED,StateKeys.STANDING) 
+        sm.add_transition(climbing_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.STANDING) 
         
         
-        sm.add_transition(land_state,AK.ACTION_SEQUENCE_EXPIRED,StateKeys.STANDING)  
-        sm.add_transition(land_state,AK.JUMP,StateKeys.JUMPING,
+        sm.add_transition(land_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.STANDING)  
+        sm.add_transition(land_state,PlayerActionKeys.JUMP,StateKeys.JUMPING,
                           lambda : self.animation_set_progress_percentage()>0.2)  
-        sm.add_transition(land_state,AK.DASH,StateKeys.DASHING,
+        sm.add_transition(land_state,PlayerActionKeys.DASH,StateKeys.DASHING,
                           lambda : self.animation_set_progress_percentage()>0.2)
-        sm.add_transition(land_state,AK.PLATFORM_LOST,StateKeys.FALLING) 
+        sm.add_transition(land_state,LevelActionKeys.PLATFORM_LOST,StateKeys.FALLING) 

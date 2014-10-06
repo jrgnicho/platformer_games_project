@@ -1,10 +1,9 @@
 import pygame
 from simple_platformer.game_state_machine import State
+from combat_platformer.level.action_keys import LevelActionKeys
 from combat_platformer.player.action_keys import PlayerActionKeys
 
 
-
-AK = PlayerActionKeys
 
 class StateKeys(object):
     
@@ -47,9 +46,9 @@ class RunState(BasicState):
         
         self.speed = self.player.properties.run_speed
         
-        self.add_action(AK.MOVE_LEFT,lambda : self.player.turn_left(-self.speed))
-        self.add_action(AK.MOVE_RIGHT,lambda : self.player.turn_right(self.speed))
-        self.add_action(AK.STEP_GAME,lambda time_elapsed :self.player.reduce_momentum())
+        self.add_action(PlayerActionKeys.MOVE_LEFT,lambda : self.player.turn_left(-self.speed))
+        self.add_action(PlayerActionKeys.MOVE_RIGHT,lambda : self.player.turn_right(self.speed))
+        self.add_action(LevelActionKeys.STEP_GAME,lambda time_elapsed :self.player.reduce_momentum())
         
     
     def enter(self):
@@ -111,7 +110,7 @@ class MidairDashState(BasicState):
         plyr.midair_dash_countdown -=1
         
         
-    def enter(self,action_key = AK.MIDAIR_DASH):
+    def enter(self):
                 
         self.midair_dash()
         
@@ -127,9 +126,9 @@ class DashBreakingState(BasicState):
         
         BasicState.__init__(self, StateKeys.DASH_BREAKING, player)
         
-        self.add_action(AK.ACTION_SEQUENCE_EXPIRED,
+        self.add_action(PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,
                             lambda : self.player.set_current_animation_key(StateKeys.DASH_BREAKING,[-1])) 
-        self.add_action(AK.STEP_GAME,lambda time_elapsed :self.update())
+        self.add_action(LevelActionKeys.STEP_GAME,lambda time_elapsed :self.update())
         
     def enter(self):
         
@@ -158,7 +157,7 @@ class StandState(BasicState):
         self.is_beyond_edge = False     
 
         
-        self.add_action(AK.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms)) 
+        self.add_action(LevelActionKeys.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms)) 
         
     def setup(self,asset):
         
@@ -236,9 +235,9 @@ class StandOnEdgeState(BasicState):
         BasicState.__init__(self,StateKeys.STANDING_ON_EDGE,player)
         
         move_speed = self.player.properties.run_speed
-        self.add_action(AK.MOVE_LEFT,lambda : self.player.turn_left(-move_speed))
-        self.add_action(AK.MOVE_RIGHT,lambda : self.player.turn_right(move_speed))
-        self.add_action(AK.ACTION_SEQUENCE_EXPIRED,lambda : self.player.set_current_animation_key(StateKeys.STANDING_ON_EDGE,[-1]))
+        self.add_action(PlayerActionKeys.MOVE_LEFT,lambda : self.player.turn_left(-move_speed))
+        self.add_action(PlayerActionKeys.MOVE_RIGHT,lambda : self.player.turn_right(move_speed))
+        self.add_action(PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,lambda : self.player.set_current_animation_key(StateKeys.STANDING_ON_EDGE,[-1]))
         
     def enter(self):
         
@@ -260,16 +259,16 @@ class JumpState(BasicState):
         self.hang_sprite = pygame.sprite.Sprite()
 
         
-        self.add_action(AK.MOVE_LEFT,lambda : self.turn_left())
-        self.add_action(AK.MOVE_RIGHT,lambda : self.turn_right())                
-        self.add_action(AK.CANCEL_MOVE,lambda : self.cancel_move())
-        self.add_action(AK.CANCEL_JUMP,lambda : self.cancel_jump())
-        self.add_action(AK.APPLY_GRAVITY,lambda g: self.player.apply_gravity(g))    
-        self.add_action(AK.COLLISION_ABOVE,lambda platform : self.player.set_vertical_speed(0))
-        self.add_action(AK.COLLISION_BELOW,self.check_landing)
-        self.add_action(AK.COLLISION_RIGHT_WALL,lambda platform : self.player.set_momentum(0))
-        self.add_action(AK.COLLISION_LEFT_WALL,lambda platform : self.player.set_momentum(0)) 
-        self.add_action(AK.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms))  
+        self.add_action(PlayerActionKeys.MOVE_LEFT,lambda : self.turn_left())
+        self.add_action(PlayerActionKeys.MOVE_RIGHT,lambda : self.turn_right())                
+        self.add_action(PlayerActionKeys.CANCEL_MOVE,lambda : self.cancel_move())
+        self.add_action(PlayerActionKeys.CANCEL_JUMP,lambda : self.cancel_jump())
+        self.add_action(LevelActionKeys.APPLY_GRAVITY,lambda g: self.player.apply_gravity(g))    
+        self.add_action(LevelActionKeys.COLLISION_ABOVE,lambda platform : self.player.set_vertical_speed(0))
+        self.add_action(LevelActionKeys.COLLISION_BELOW,self.check_landing)
+        self.add_action(LevelActionKeys.COLLISION_RIGHT_WALL,lambda platform : self.player.set_momentum(0))
+        self.add_action(LevelActionKeys.COLLISION_LEFT_WALL,lambda platform : self.player.set_momentum(0)) 
+        self.add_action(LevelActionKeys.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms))  
         
     def setup(self,asset):
         
@@ -420,14 +419,14 @@ class FallState(BasicState):
         self.has_landed = False  
         self.hang_sprite = pygame.sprite.Sprite()         
         
-        self.add_action(AK.CANCEL_MOVE,lambda : self.cancel_move())
-        self.add_action(AK.APPLY_GRAVITY,lambda g: self.player.apply_gravity(g))
-        self.add_action(AK.MOVE_LEFT,lambda : self.turn_left())
-        self.add_action(AK.MOVE_RIGHT,lambda : self.turn_right())   
-        self.add_action(AK.COLLISION_BELOW,self.check_landing)
-        self.add_action(AK.COLLISION_RIGHT_WALL,lambda platform : self.player.set_momentum(0))
-        self.add_action(AK.COLLISION_LEFT_WALL,lambda platform : self.player.set_momentum(0)) 
-        self.add_action(AK.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms))  
+        self.add_action(PlayerActionKeys.CANCEL_MOVE,lambda : self.cancel_move())
+        self.add_action(LevelActionKeys.APPLY_GRAVITY,lambda g: self.player.apply_gravity(g))
+        self.add_action(PlayerActionKeys.MOVE_LEFT,lambda : self.turn_left())
+        self.add_action(PlayerActionKeys.MOVE_RIGHT,lambda : self.turn_right())   
+        self.add_action(LevelActionKeys.COLLISION_BELOW,self.check_landing)
+        self.add_action(LevelActionKeys.COLLISION_RIGHT_WALL,lambda platform : self.player.set_momentum(0))
+        self.add_action(LevelActionKeys.COLLISION_LEFT_WALL,lambda platform : self.player.set_momentum(0)) 
+        self.add_action(LevelActionKeys.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms))  
         
         
     def setup(self,asset):
@@ -591,7 +590,7 @@ class HangingState(BasicState):
         
         self.platform_rect = None
         
-        self.add_action(AK.ACTION_SEQUENCE_EXPIRED,
+        self.add_action(PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,
                             lambda : self.player.set_current_animation_key(StateKeys.HANGING,[-1]))        
         
         
@@ -634,7 +633,7 @@ class ClimbingState(BasicState):
         self.platform_rect = None
         self.climb_path =[]
         
-        self.add_action(AK.STEP_GAME,lambda time_elapsed :self.climb())
+        self.add_action(LevelActionKeys.STEP_GAME,lambda time_elapsed :self.climb())
         
     def enter(self):
         self.player.set_current_animation_key(StateKeys.CLIMBING)
