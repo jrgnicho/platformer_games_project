@@ -4,6 +4,9 @@ from simple_platformer.utilities import *
 
 class AnimatableObject(pygame.sprite.Sprite):
     
+    class ActionKeys:
+        ACTION_SEQUENCE_EXPIRED = 'ACTION_SEQUENCE_EXPIRED'
+    
     # animation modes
     ANIMATION_MODE_CYCLE = 1
     ANIMATION_MODE_CONSUME = 2    
