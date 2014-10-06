@@ -1,6 +1,7 @@
 import pygame
 from simple_platformer.game_state_machine import State
 from simple_platformer.game_state_machine import SubStateMachine
+from simple_platformer.animatable_object import AnimatableObject
 from combat_platformer.player.action_keys import PlayerActionKeys
 from combat_platformer.level.action_keys import LevelActionKeys
 from combat_platformer.enemy import EnemyProperties
@@ -267,6 +268,8 @@ class PatrolState(SubStateMachine):
             self.time_consumed = False
             
             self.add_action(BasicState.LA.STEP_GAME, lambda time_elapsed: self.update(time_elapsed))  
+            self.add_action(AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED,
+                            lambda : self.character.set_current_animation_key(StateKeys.UNWARY,[-1]))
             
         def enter(self):      
             
