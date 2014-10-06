@@ -253,8 +253,23 @@ class SubStateMachine(StateMachine):
         self.start_state = SubStateMachine.StartState(self)
         self.stop_state = SubStateMachine.StopState(self)    
         
+    def has_action(self,action_key):
+        
+        #print "SM at state %s has not action %s"%(self.active_state_key,action_key)
+        active_state_obj = self.states_dict[self.active_state_key]
+        
+        if self.active_state_key == SubStateMachine.StateKeys.START:
+            self.start()
+            return True
+        else:
+           active_state_obj = self.states_dict[self.active_state_key]
+        #endif 
+        
+        return active_state_obj.has_action(action_key)
+        
     def start(self):
         
+        print "SM start method invoked"
         self.execute(SubStateMachine.ActionKeys.START_SM)    
     
     def stop(self):
@@ -265,6 +280,7 @@ class SubStateMachine(StateMachine):
     def enter(self):
         
         self.active_state_key = self.start_state.key
+        print "ENTERING SUB MACHINE WITH STATE " + self.active_state_key
     
         
         
