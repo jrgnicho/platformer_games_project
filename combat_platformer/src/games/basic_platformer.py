@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 import pygame
+import rospkg
 from simple_platformer.utilities import *
 from simple_platformer.game_state_machine import *
 from simple_platformer.levels import Platform
 from combat_platformer.player import PlayerStateMachine
 from combat_platformer.level import LevelBase
-import rospkg
+from combat_platformer.enemy import EnemyBase
+from combat_platformer.enemy import EnemyStateMachine
 
 class BasicPlatformer(object):
     
@@ -14,14 +16,19 @@ class BasicPlatformer(object):
         
         # player 
         self.player = PlayerStateMachine()
-        self.player.collision_sprite.rect.width = 42
-        self.player.collision_sprite.rect.height = 75
         
         #level
         self.level = LevelBase()
         self.level.player = self.player
         self.screen = None
         self.proceed = True
+        
+        # enemys
+        self.num_enemies = 1
+        for i in range(0,self.num_enemies):
+            enemy = EnemyStateMachine()
+            self.level.enemies.append(enemy)
+        #endfor
 
     def exit(self):
         
@@ -34,7 +41,9 @@ class BasicPlatformer(object):
         background_file = rospack.get_path('simple_platformer') + \
         '/resources/backgrounds/cplusplus_programming_background_960x800.jpg'        
         
-        return self.level.load_background(background_file) and self.load_player_sprites()
+        return self.level.load_background(background_file) \
+            and self.load_player_sprites()\
+            and self.load_enemy_sprites()
     
     def load_player_sprites(self):
         rospack = rospkg.RosPack()
@@ -51,11 +60,15 @@ class BasicPlatformer(object):
         
         #endif
         
-        if not self.player.setup():
+        if not self.player.setup():            
             return False
         
+        self.player.collision_sprite.rect.width = 42
+        self.player.collision_sprite.rect.height = 75
+        self.player.collision_sprite.rect.center = (0,500)
+        
         keys = self.player.states_dict.keys()
-        print "animation keys: " + str(keys)
+        print "Adding player animation keys: " + str(keys)
         
         for key in keys:
             
@@ -67,9 +80,42 @@ class BasicPlatformer(object):
             
         #endfor
         
-        print "Added all sprite sets"
+        print "Added all animation sprites"
 
         return True
+    
+    def load_enemy_sprites(self):
+        rospack = rospkg.RosPack()
+        sprite_list_file = rospack.get_path('simple_platformer') + '/resources/enemy_sprites/guardians_enemy17/sprite_list.txt'
+        self.sprite_loader.sprite_sets.clear()
+        
+        if self.sprite_loader.load_sets(sprite_list_file):
+            print "Enemy sprites successfully loaded"
+        else:
+            print "Enemy sprites failed to load"
+            return False
+        #endif
+        
+        keys = ['WALK', 'UNWARY','ALERT']
+        for enemy in self.level.enemies:
+            
+            enemy.target_player = self.player
+            enemy.setup()
+            enemy.collision_sprite.rect.center= (400,1000)
+            
+            for key in keys:
+                if (not enemy.add_animation_sets(key,self.sprite_loader.sprite_sets[key],
+                                                 self.sprite_loader.sprite_sets[key].invert_set())):
+                    print "Error loading animation sprites for key %s"%(key)
+                    return False
+                #endif
+            #endfor
+            
+            print "Added enemy animation keys: [%s]"%(str(keys))
+        #endfor
+        
+        return True      
+        
           
     def setup(self):
         
