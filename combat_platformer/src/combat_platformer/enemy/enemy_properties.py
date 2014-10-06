@@ -1,10 +1,10 @@
-from pygame import Rect
+import pygame
 
 class EnemyProperties(object):
     
     # size
-    COLLISION_WIDTH = 40
-    COLLISION_HEIGH = 60
+    COLLISION_WIDTH = 74
+    COLLISION_HEIGHT = 94
     
     # Movement Defaults
     JUMP_SPEED = -10 # y axis points downwards
@@ -33,7 +33,7 @@ class EnemyProperties(object):
     def __init__(self):
         
         self.collision_width = EnemyProperties.COLLISION_WIDTH
-        self.collision_height = EnemyProperties.COLLISION_HEIGH
+        self.collision_height = EnemyProperties.COLLISION_HEIGHT
         self.jump_speed = EnemyProperties.JUMP_SPEED
         self.super_jump_speed = EnemyProperties.SUPER_JUMP_SPEED
         self.run_speed = EnemyProperties.RUN_SPEED
@@ -54,8 +54,8 @@ class EnemyProperties(object):
         self.climb_distance_from_side = EnemyProperties.CLIMB_DISTANCE_FROM_SIDE
         
         self.patrol_area_rect = EnemyProperties.PATROL_AREA_RECTANGLE
-        self.patrol_walk_time = 10
-        self.patrol_nap_time = 5
+        self.patrol_walk_time = 10000
+        self.patrol_unwary_time = 5000
         self.sight_area_rect = EnemyProperties.SIGHT_AREA_RECTANGLE
         
         self.alert_time = 5
