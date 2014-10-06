@@ -13,7 +13,9 @@ class EnemyBase(PlayerBase):
         
         # collision sprite
         self.collision_sprite.rect = pygame.Rect(0,0,self.properties.collision_width,
-                                                 self.properties.collision_height)      
+                                                 self.properties.collision_height)    
+        
+        self.max_delta_x = self.properties.max_x_position_change  
         
         if self.target_player == None:
             print "The 'target_player' member in the EnemyBase class has not been set"

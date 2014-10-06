@@ -97,22 +97,22 @@ class BasicPlatformer(object):
             return False
         #endif
         
-        keys = ['WALK', 'UNWARY','ALERT']
+        keys = ['WALK', 'UNWARY','ALERT','DROP','WIPEOUT']
         for enemy in self.level.enemies:
             
             enemy.target_player = self.player
             enemy.setup()
-            enemy.collision_sprite.rect.center= (400,1000)
+            enemy.collision_sprite.rect.center= (160,400)
             
             for key in keys:
-                if (not enemy.add_animation_sets(key,self.sprite_loader.sprite_sets[key],
-                                                 self.sprite_loader.sprite_sets[key].invert_set())):
+                if (not enemy.add_animation_sets(key,self.sprite_loader.sprite_sets[key].invert_set(),
+                                                 self.sprite_loader.sprite_sets[key])):
                     print "Error loading animation sprites for key %s"%(key)
                     return False
                 #endif
             #endfor
             
-            print "Added enemy animation keys: [%s]"%(str(keys))
+            print "Added enemy animation keys: %s"%(str(keys))
         #endfor
         
         return True      

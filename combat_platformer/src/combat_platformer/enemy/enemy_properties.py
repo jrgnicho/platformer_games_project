@@ -3,8 +3,8 @@ import pygame
 class EnemyProperties(object):
     
     # size
-    COLLISION_WIDTH = 74
-    COLLISION_HEIGHT = 94
+    COLLISION_WIDTH = 88
+    COLLISION_HEIGHT = 112
     
     # Movement Defaults
     JUMP_SPEED = -10 # y axis points downwards

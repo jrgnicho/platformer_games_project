@@ -16,6 +16,8 @@ class StateKeys(object):
     WALK = 'WALK'
     JUMP='JUMP'
     UNWARY='UNWARY'
+    DROP='DROP'
+    WIPEOUT='WIPEOUT'
     
     
 class BasicState(State):
@@ -86,6 +88,34 @@ class JumpState(BasicState):
     def exit(self):
         self.character.range_collision_group.remove(self.range_sprite)      
         self.has_landed = False
+        
+class DropState(BasicState):
+    
+    def __init__(self,character):
+        BasicState.__init__(self, StateKeys.DROP , character)
+                        
+        self.add_action(LevelActionKeys.APPLY_GRAVITY,lambda g: self.character.apply_gravity(g))
+        self.add_action(AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED,
+                lambda : self.character.set_current_animation_key(StateKeys.DROP,[-1]))
+        
+    def setup(self,asset):
+        pass
+    
+    def enter(self):
+            
+        self.character.set_current_animation_key(StateKeys.DROP)
+        self.character.set_horizontal_speed(0)
+        
+class WipeoutState(BasicState):
+    
+    def __init__(self,character):
+        
+        BasicState.__init__(self, StateKeys.WIPEOUT, character)
+        
+    def enter(self):
+        self.character.set_current_animation_key(StateKeys.WIPEOUT)
+        self.character.set_vertical_speed(0)
+           
         
 class AlertState(BasicState):
     
@@ -163,8 +193,8 @@ class PatrolState(SubStateMachine):
             self.range_sprite = pygame.sprite.Sprite()              
             
             self.add_action(BasicState.LA.STEP_GAME, lambda time_elapsed: self.update(time_elapsed))    
-            self.add_action(BasicState.LA.COLLISION_RIGHT_WALL, lambda platforms : self.turn_around())
-            self.add_action(BasicState.LA.COLLISION_LEFT_WALL, lambda platforms : self.turn_around())
+            self.add_action(BasicState.LA.COLLISION_RIGHT_WALL, lambda platforms : self.turn_around(True))
+            self.add_action(BasicState.LA.COLLISION_LEFT_WALL, lambda platforms : self.turn_around(False))
             self.add_action(BasicState.LA.PLAYER_IN_RANGE,
                             lambda player,range_sprites : self.check_player_insight(player,range_sprites))
             
@@ -178,6 +208,7 @@ class PatrolState(SubStateMachine):
             self.character.set_current_animation_key(StateKeys.WALK)
             self.character.range_collision_group.add(self.range_sprite)
             self.character.range_collision_group.add(self.sight_sprite)
+            self.character.set_horizontal_speed(self.speed)
             
         def exit(self):
             self.character.range_collision_group.remove(self.range_sprite)
@@ -202,12 +233,16 @@ class PatrolState(SubStateMachine):
             self.range_sprite.rect.height = self.range_sprite.rect.height + self.range_height_extension
             self.range_sprite.offset = (0,0)
             
-        def turn_around(self):
+        def turn_around(self,collision_right):
             
-            if self.character.facing_right:
-                self.character.turn_left(self.speed)
-            else:
-                self.character.turn_right(self.speed)
+            if self.character.facing_right == collision_right:
+                
+                if self.character.facing_right:
+                    self.character.turn_left(-self.speed)
+                else :
+                    self.character.turn_right(self.speed)
+                #endif
+                
             #endif
             
         def is_inside_patrol_area(self):
@@ -241,7 +276,7 @@ class PatrolState(SubStateMachine):
 
             
         def update(self,time_elapsed):
-                        
+                     
             # update time counter
             self.time_left -= time_elapsed
             
@@ -252,7 +287,7 @@ class PatrolState(SubStateMachine):
                     self.time_consumed = True
                 #endif
                 
-            else:                
+            else:             
                 self.turn_around()
             
             #endif
@@ -275,7 +310,8 @@ class PatrolState(SubStateMachine):
             
             self.character.set_current_animation_key(StateKeys.UNWARY)
             self.time_left = self.time_active
-            self.time_consumed = False   
+            self.time_consumed = False  
+            self.character.set_horizontal_speed(0) 
         
         def setup(self,assets):
             
