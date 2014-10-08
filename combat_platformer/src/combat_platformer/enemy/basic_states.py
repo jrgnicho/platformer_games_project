@@ -111,10 +111,35 @@ class WipeoutState(BasicState):
     def __init__(self,character):
         
         BasicState.__init__(self, StateKeys.WIPEOUT, character)
+        self.time_down = 2000
+        self.time_left = 0
+        self.time_consumed = False
+        self.start_consume_time = False
+        
+        self.add_action(BasicState.LA.STEP_GAME, lambda time_elapsed: self.update(time_elapsed))
+        self.add_action(AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED,
+                lambda : self.animation_expired())
         
     def enter(self):
         self.character.set_current_animation_key(StateKeys.WIPEOUT)
         self.character.set_vertical_speed(0)
+        self.time_left = self.time_down
+        self.start_consume_time = False
+        self.time_consumed = False
+        
+    def animation_expired(self):
+        self.start_consume_time = True
+        self.character.set_current_animation_key(StateKeys.WIPEOUT,[-1])
+        
+    def update(self,time_elapsed):
+        
+        if self.start_consume_time:
+            self.time_left-=time_elapsed
+            
+            if self.time_left <= 0:
+                self.time_consumed = True
+            #endif
+        #endif
            
         
 class AlertState(BasicState):

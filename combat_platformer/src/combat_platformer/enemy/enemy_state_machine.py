@@ -49,7 +49,8 @@ class EnemyStateMachine(StateMachine,EnemyBase):
         
         self.add_transition(self.drop_state,LevelActionKeys.COLLISION_BELOW,self.wipeout_state.key)
         
-        self.add_transition(self.wipeout_state,AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED,self.patrol_state.key)
+        self.add_transition(self.wipeout_state,LevelActionKeys.STEP_GAME,self.patrol_state.key,
+                            lambda: self.wipeout_state.time_consumed)
         
         
         self.add_transition(self.alert_state,LevelActionKeys.STEP_GAME,self.patrol_state.key,lambda: self.alert_state.time_consumed)
