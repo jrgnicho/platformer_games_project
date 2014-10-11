@@ -35,17 +35,18 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.animation_mode = AnimatableObject.ANIMATION_MODE_CYCLE
         self.animation_selected_frames = 0 # only the frames which indices are in this list will be animated 
         self.animation_cycles_counter = 0 # number of times the current animation sequence has been cycled through
+        self.animation_sprite = pygame.sprite.Sprite()
+        self.animation_sprite.image = pygame.Surface([w,h])
+        self.animation_sprite.image.fill(Colors.RED)
+        self.animation_sprite.rect = self.animation_sprite.image.get_rect()
         
         # Graphics
         self.sprite_group = pygame.sprite.Group()
-        self.sprite_group.add(self)
-        self.image = pygame.Surface([w,h])
-        self.image.fill(Colors.RED)
-        self.rect = self.image.get_rect()
+        self.sprite_group.add(self.animation_sprite)
                 
         # collision 
         self.collision_sprite = pygame.sprite.Sprite()
-        self.collision_sprite.rect = self.rect.copy()
+        self.collision_sprite.rect = self.animation_sprite.rect.copy()
         
         # event handlers
         self.event_handlers = {} # dictionary of lists
@@ -176,7 +177,7 @@ class AnimatableObject(pygame.sprite.Sprite):
             
             # select last frame
             last_frame_index = self.animation_selected_frames[-1]
-            self.image = sprite_set.sprites[last_frame_index]
+            self.animation_sprite.image = sprite_set.sprites[last_frame_index]
             
             # reset animation start time
             self.animation_start_time = current_time
@@ -202,22 +203,22 @@ class AnimatableObject(pygame.sprite.Sprite):
             self.animation_frame_index = self.animation_selected_frames[frame_index_position]         
             
             # select following frame           
-            self.image = sprite_set.sprites[self.animation_frame_index]
+            self.animation_sprite.image = sprite_set.sprites[self.animation_frame_index]
             
             self.notify(AnimatableObject.Events.ANIMATION_FRAME_COMPLETED)
             
         #endif 
             
         # setting values of view rectangle equal to collision
-        self.rect.x = self.collision_sprite.rect.x
-        self.rect.y = self.collision_sprite.rect.y
+        self.animation_sprite.rect.x = self.collision_sprite.rect.x
+        self.animation_sprite.rect.y = self.collision_sprite.rect.y
         
         # adjusting to sprite height
-        self.rect.y += (self.collision_sprite.rect.height - self.image.get_height())            
-        self.rect.height = self.image.get_height()
+        self.animation_sprite.rect.y += (self.collision_sprite.rect.height - self.animation_sprite.image.get_height())            
+        self.animation_sprite.rect.height = self.animation_sprite.image.get_height()
         
-        self.rect.centerx = self.collision_sprite.rect.centerx
-        self.rect.width = self.image.get_width()       
+        self.animation_sprite.rect.centerx = self.collision_sprite.rect.centerx
+        self.animation_sprite.rect.width = self.animation_sprite.image.get_width()       
         
         
     def print_current_animation_details(self, animation_key):
