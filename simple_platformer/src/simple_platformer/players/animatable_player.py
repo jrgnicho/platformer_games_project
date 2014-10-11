@@ -28,7 +28,7 @@ class AnimatablePlayer(AnimatableObject):
         self.midair_dash_countdown = 1
         
         # collision detection objects
-        self.collision_sprite.rect = pygame.Rect(0,0,self.player_properties.collision_width,
+        self.rect = pygame.Rect(0,0,self.player_properties.collision_width,
                                                  self.player_properties.collision_height)  
         
         self.range_collision_group = pygame.sprite.Group()    

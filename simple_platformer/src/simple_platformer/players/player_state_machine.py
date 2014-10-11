@@ -103,7 +103,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 
                 # creating range rectangle
                 self.range_sprite = pygame.sprite.Sprite()
-                self.range_sprite.rect = self.player.collision_sprite.rect.copy()
+                self.range_sprite.rect = self.player.rect.copy()
                 self.range_sprite.rect.height = self.range_sprite.rect.height + 4
                 
                 self.add_action(ActionKeys.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms)) 
@@ -126,7 +126,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 
                             
                 # check if near edge
-                ps = self.player.collision_sprite
+                ps = self.player
                 for platform in platforms:
                     
                     if platform.rect.top < ps.rect.top:
@@ -194,7 +194,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 
                 # creating range rectangle
                 self.range_sprite = pygame.sprite.Sprite()
-                self.range_sprite.rect = self.player.collision_sprite.rect.copy()
+                self.range_sprite.rect = self.player.rect.copy()
                 self.range_sprite.rect.width = self.range_sprite.rect.width + self.hang_sprite.rect.width
                 self.range_sprite.rect.height = self.range_sprite.rect.height + self.hang_sprite.rect.height
                 
@@ -228,7 +228,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
             def check_landing(self,platform):
                 
                 # check if near edge
-                ps = self.player.collision_sprite                
+                ps = self.player                
                 w = ps.rect.width
                 min = w*0.5
                 
@@ -255,11 +255,11 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         
         
                 if self.player.facing_right:
-                    self.hang_sprite.rect.centerx = self.player.collision_sprite.rect.right
-                    self.hang_sprite.rect.centery = self.player.collision_sprite.rect.top
+                    self.hang_sprite.rect.centerx = self.player.rect.right
+                    self.hang_sprite.rect.centery = self.player.rect.top
                 else :
-                    self.hang_sprite.rect.centerx = self.player.collision_sprite.rect.left
-                    self.hang_sprite.rect.centery = self.player.collision_sprite.rect.top
+                    self.hang_sprite.rect.centerx = self.player.rect.left
+                    self.hang_sprite.rect.centery = self.player.rect.top
                 
                 return self.hang_sprite  
                 
@@ -270,7 +270,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 
                 
                 # check for reachable edges
-                ps = self.player.collision_sprite
+                ps = self.player
                 hs = self.get_hang_sprite()
                             
                 # must be below platform top                
@@ -316,7 +316,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                                                          2*self.player.player_properties.hang_radius) 
                 # creating range rectangle
                 self.range_sprite = pygame.sprite.Sprite()
-                self.range_sprite.rect = self.player.collision_sprite.rect.copy()
+                self.range_sprite.rect = self.player.rect.copy()
                 self.range_sprite.rect.width = self.range_sprite.rect.width + self.hang_sprite.rect.width
                 self.range_sprite.rect.height = self.range_sprite.rect.height + self.hang_sprite.rect.height
                 
@@ -347,7 +347,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
             def check_landing(self,platform):
                 
                 # check if near edge
-                ps = self.player.collision_sprite                
+                ps = self.player                
                 w = ps.rect.width
                 min = w*0.5
                 
@@ -377,11 +377,11 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
             def get_hang_sprite(self):        
         
                 if self.player.facing_right:
-                    self.hang_sprite.rect.centerx = self.player.collision_sprite.rect.right
-                    self.hang_sprite.rect.centery = self.player.collision_sprite.rect.top
+                    self.hang_sprite.rect.centerx = self.player.rect.right
+                    self.hang_sprite.rect.centery = self.player.rect.top
                 else :
-                    self.hang_sprite.rect.centerx = self.player.collision_sprite.rect.left
-                    self.hang_sprite.rect.centery = self.player.collision_sprite.rect.top
+                    self.hang_sprite.rect.centerx = self.player.rect.left
+                    self.hang_sprite.rect.centery = self.player.rect.top
                 
                 return self.hang_sprite  
             
@@ -389,7 +389,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 
                 
                 # check for reachable edges
-                ps = self.player.collision_sprite
+                ps = self.player
                 hs = self.get_hang_sprite()
                             
                 # must be below platform top
@@ -469,17 +469,17 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                     self.platform_rect = platform.rect
                     
                     if self.player.facing_right:
-                        self.player.collision_sprite.rect.right = self.platform_rect.left - \
+                        self.player.rect.right = self.platform_rect.left - \
                         self.player.player_properties.hang_distance_from_side
                     else:
-                        self.player.collision_sprite.rect.left = self.platform_rect.right + \
+                        self.player.rect.left = self.platform_rect.right + \
                         self.player.player_properties.hang_distance_from_side
                     
                     #endif
                         
-                    self.player.collision_sprite.rect.top = self.platform_rect.top + self.player.player_properties.hang_distance_from_top
+                    self.player.rect.top = self.platform_rect.top + self.player.player_properties.hang_distance_from_top
                     
-                print "Hanging at top point %i"%(self.player.collision_sprite.rect.top)
+                print "Hanging at top point %i"%(self.player.rect.top)
                 
             def enter(self):
                 
@@ -518,7 +518,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 self.platform_rect = self.player.near_platforms.sprites()[0].rect
                 
 
-                ply_rect = self.player.collision_sprite.rect
+                ply_rect = self.player.rect
                 plt_rect = self.platform_rect
                 
                 # saving initial position relative to platform
@@ -553,14 +553,14 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 dy = 0
                 if self.player.facing_right:
                     dx = self.platform_rect.left + self.startx +  self.climb_path[self.player.animation_frame_index][0]
-                    self.player.collision_sprite.rect.left = dx
+                    self.player.rect.left = dx
                     
                 else:
                     dx = self.platform_rect.right + self.startx + self.climb_path[self.player.animation_frame_index][0]
-                    self.player.collision_sprite.rect.right = dx
+                    self.player.rect.right = dx
                 
                 dy = self.platform_rect.top + self.starty + self.climb_path[self.player.animation_frame_index][1]
-                self.player.collision_sprite.rect.bottom= dy
+                self.player.rect.bottom= dy
                 
         climbing_state = ClimbingState(self)
                             

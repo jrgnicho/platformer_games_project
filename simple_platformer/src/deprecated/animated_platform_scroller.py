@@ -51,7 +51,7 @@ class PlatformerGame:
         self.animated_player.rect.y = 30
         self.animated_player.rect.width = 52
         self.animated_player.rect.height = 75
-        self.animated_player.collision_sprite.rect  = self.animated_player.rect.copy()
+        self.animated_player.rect  = self.animated_player.rect.copy()
         
         # registering resources
         success = True;

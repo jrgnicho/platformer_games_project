@@ -15,8 +15,8 @@ class GamePlatformer(object):
         
         # player 
         self.player = PlayerStateMachine()
-        self.player.collision_sprite.rect.width = 42
-        self.player.collision_sprite.rect.height = 75
+        self.player.rect.width = 42
+        self.player.rect.height = 75
         
         #level
         self.level = GameLevel()

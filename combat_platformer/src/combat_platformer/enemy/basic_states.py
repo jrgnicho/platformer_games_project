@@ -159,7 +159,7 @@ class AlertState(BasicState):
         
         self.time_active = self.character.properties.alert_time
         
-        pr = self.character.collision_sprite.rect
+        pr = self.character.rect
         self.alert_area_sprite.rect = self.character.properties.sight_area_rect
         self.alert_area_sprite.offset = (0,(pr.height - self.alert_area_sprite.rect.height)/2)
         
@@ -180,9 +180,9 @@ class AlertState(BasicState):
     
     def is_player_in_area(self):
         
-        ps = self.target_player.collision_sprite
+        ps = self.target_player
         ar = self.alert_area_sprite
-        cs = self.character.collision_sprite
+        cs = self.character
         
         ar.rect.centerx = cs.rect.centerx + ar.offset[0]
         ar.rect.centery = cs.rect.centery + ar.offset[1]
@@ -225,7 +225,7 @@ class PatrolState(SubStateMachine):
             
         def enter(self):
             
-            print "Entered PATROL WALK state with %s base location"%(str(self.character.collision_sprite.rect.bottom))
+            print "Entered PATROL WALK state with %s base location"%(str(self.character.rect.bottom))
                      
             self.time_left = self.time_active
             self.time_consumed = False
@@ -248,13 +248,13 @@ class PatrolState(SubStateMachine):
             self.time_active = self.character.properties.patrol_walk_time
             
             # sight sprite
-            pr = self.character.collision_sprite.rect
+            pr = self.character.rect
             self.sight_sprite.rect = pygame.Rect(0,0,200,100) 
             self.sight_sprite.offset = (0,(pr.height - self.sight_sprite.rect.height)/2)
             
             # range sprite
             self.range_height_extension = 4
-            self.range_sprite.rect = self.character.collision_sprite.rect.copy()
+            self.range_sprite.rect = self.character.rect.copy()
             self.range_sprite.rect.height = self.range_sprite.rect.height + self.range_height_extension
             self.range_sprite.offset = (0,0)
             
@@ -272,15 +272,15 @@ class PatrolState(SubStateMachine):
             
         def is_inside_patrol_area(self):
             
-            ps = self.character.collision_sprite
+            ps = self.character
             
             return (ps.rect.left > self.patrol_rect.left) or \
                 (ps.rect.right < self.patrol_rect.right)  
                 
         def check_player_insight(self,player,range_sprites):
             
-            cs = self.character.collision_sprite
-            ps = player.collision_sprite
+            cs = self.character
+            ps = player
             for sp in range_sprites:
                 
                 if sp == self.sight_sprite:                    

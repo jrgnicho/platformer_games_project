@@ -107,8 +107,8 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
             print "Player has not been added, exiting"
             return False
         else:            
-            self.player.collision_sprite.rect.x = 300
-            self.player.collision_sprite.rect.y = 30
+            self.player.rect.x = 300
+            self.player.rect.y = 30
             
         #endif
         
@@ -232,10 +232,10 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         self.player.execute(ActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])   
         
         # moving and checking collision
-        self.player.collision_sprite.rect.centery += self.player.compute_change_in_y() 
+        self.player.rect.centery += self.player.compute_change_in_y() 
         self.check_collisions_in_y() 
         
-        self.player.collision_sprite.rect.centerx += self.player.compute_change_in_x() 
+        self.player.rect.centerx += self.player.compute_change_in_x() 
         self.check_collisions_in_x() 
         
         # check for platform below
@@ -291,11 +291,11 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         
     def check_platform_support(self):
         
-        self.player.collision_sprite.rect.y += GameLevel.PLATFORM_CHECK_STEP
-        platforms = pygame.sprite.spritecollide(self.player.collision_sprite,self.platforms,False)
-        self.player.collision_sprite.rect.y -= GameLevel.PLATFORM_CHECK_STEP
+        self.player.rect.y += GameLevel.PLATFORM_CHECK_STEP
+        platforms = pygame.sprite.spritecollide(self.player,self.platforms,False)
+        self.player.rect.y -= GameLevel.PLATFORM_CHECK_STEP
         
-        ps = self.player.collision_sprite
+        ps = self.player
         if len(platforms) == 0:
             self.player.execute(ActionKeys.PLATFORM_LOST)                   
         #endif  
@@ -305,23 +305,23 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
      
         
         # find colliding platforms in the y direction         
-        platforms = pygame.sprite.spritecollide(self.player.collision_sprite,self.platforms,False)   
+        platforms = pygame.sprite.spritecollide(self.player,self.platforms,False)   
 
         for platform in platforms:
             
-            if self.player.collision_sprite.rect.centery < platform.rect.centery:
-                self.player.collision_sprite.rect.bottom = platform.rect.top
+            if self.player.rect.centery < platform.rect.centery:
+                self.player.rect.bottom = platform.rect.top
                 self.player.execute(ActionKeys.COLLISION_BELOW,[platform])  
                               
             else:
-                self.player.collision_sprite.rect.top = platform.rect.bottom
+                self.player.rect.top = platform.rect.bottom
                 self.player.execute(ActionKeys.COLLISION_ABOVE,[platform])
             #endif
     
         #endfor    
         
         # checking range collision sprites
-        pr = self.player.collision_sprite.rect
+        pr = self.player.rect
         for rs in iter(self.player.range_collision_group):
             rs.rect.center = pr.center
             platforms = pygame.sprite.spritecollide(rs,self.platforms,False)
@@ -334,15 +334,15 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
             
                 
         # find colliding platforms in the x direction            
-        platforms = pygame.sprite.spritecollide(self.player.collision_sprite,self.platforms,False)     
+        platforms = pygame.sprite.spritecollide(self.player,self.platforms,False)     
         for platform in platforms:
             
-            if self.player.collision_sprite.rect.centerx > platform.rect.centerx:
-                self.player.collision_sprite.rect.left = platform.rect.right
+            if self.player.rect.centerx > platform.rect.centerx:
+                self.player.rect.left = platform.rect.right
                 self.player.execute(ActionKeys.COLLISION_LEFT_WALL,[platform])
                 
             else:
-                self.player.collision_sprite.rect.right = platform.rect.left
+                self.player.rect.right = platform.rect.left
                 self.player.execute(ActionKeys.COLLISION_RIGHT_WALL,[platform])
                 
             #endif          
@@ -350,7 +350,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         #endfor 
         
         # checking range collision sprites
-        pr = self.player.collision_sprite.rect
+        pr = self.player.rect
         for rs in iter(self.player.range_collision_group):
             rs.rect.center = pr.center
             platforms = pygame.sprite.spritecollide(rs,self.platforms,False)
@@ -366,23 +366,23 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         scroll_y = 0
         
         # vertical bounds
-        if self.player.collision_sprite.rect.bottom > self.screen_bounds.rect.bottom : # below ground level
-            scroll_y = -(self.screen_bounds.rect.bottom - self.player.collision_sprite.rect.bottom)
-            self.player.collision_sprite.rect.bottom = self.screen_bounds.rect.bottom 
+        if self.player.rect.bottom > self.screen_bounds.rect.bottom : # below ground level
+            scroll_y = -(self.screen_bounds.rect.bottom - self.player.rect.bottom)
+            self.player.rect.bottom = self.screen_bounds.rect.bottom 
             
-        elif self.player.collision_sprite.rect.top < self.screen_bounds.rect.top: # above level top
-            scroll_y = -(self.screen_bounds.rect.top - self.player.collision_sprite.rect.top)
-            self.player.collision_sprite.rect.top = self.screen_bounds.rect.top
+        elif self.player.rect.top < self.screen_bounds.rect.top: # above level top
+            scroll_y = -(self.screen_bounds.rect.top - self.player.rect.top)
+            self.player.rect.top = self.screen_bounds.rect.top
             
         # horizontal bounds
-        if self.player.collision_sprite.rect.right > self.screen_bounds.rect.right : # too far to the right
-            scroll_x = self.screen_bounds.rect.right - self.player.collision_sprite.rect.right
-            self.player.collision_sprite.rect.right = self.screen_bounds.rect.right 
+        if self.player.rect.right > self.screen_bounds.rect.right : # too far to the right
+            scroll_x = self.screen_bounds.rect.right - self.player.rect.right
+            self.player.rect.right = self.screen_bounds.rect.right 
             #print "Scrolling right, screen right bound of %d exceeded"%self.screen_bounds.rect.right
             
-        elif self.player.collision_sprite.rect.left < self.screen_bounds.rect.left: # too far to the left
-            scroll_x = self.screen_bounds.rect.left - self.player.collision_sprite.rect.left
-            self.player.collision_sprite.rect.left = self.screen_bounds.rect.left
+        elif self.player.rect.left < self.screen_bounds.rect.left: # too far to the left
+            scroll_x = self.screen_bounds.rect.left - self.player.rect.left
+            self.player.rect.left = self.screen_bounds.rect.left
             #print "Scrolling left"
             
         # scrolling level 
@@ -391,20 +391,20 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
     def check_level_bounds(self):
         
         # vertical bounds
-        if self.player.collision_sprite.rect.bottom > self.rect.bottom : # below ground level
-            self.player.collision_sprite.rect.bottom = self.rect.bottom
+        if self.player.rect.bottom > self.rect.bottom : # below ground level
+            self.player.rect.bottom = self.rect.bottom
             
-        elif self.player.collision_sprite.rect.top < self.rect.top: # above level top
-            self.player.collision_sprite.rect.top = self.rect.top
+        elif self.player.rect.top < self.rect.top: # above level top
+            self.player.rect.top = self.rect.top
         
         #endif        
          
         # horizontal bounds
-        if self.player.collision_sprite.rect.right  > self.rect.right:
-            self.player.collision_sprite.rect.right = self.rect.right
+        if self.player.rect.right  > self.rect.right:
+            self.player.rect.right = self.rect.right
             
-        elif self.player.collision_sprite.rect.left < self.rect.left:
-            self.player.collision_sprite.rect.left = self.rect.left
+        elif self.player.rect.left < self.rect.left:
+            self.player.rect.left = self.rect.left
             
         #endif
             

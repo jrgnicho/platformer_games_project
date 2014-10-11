@@ -318,17 +318,17 @@ class LevelBase(pygame.sprite.Sprite):
         #endfor
         
         for enemy in self.enemies:
-            enemy.collision_sprite.rect.x += dx
-            enemy.collision_sprite.rect.y -= dy
+            enemy.rect.x += dx
+            enemy.rect.y -= dy
         #endfor  
         
     def check_platform_support(self,animatable):
         
-        animatable.collision_sprite.rect.y += LevelBase.PLATFORM_CHECK_STEP
-        platforms = pygame.sprite.spritecollide(animatable.collision_sprite,self.platforms,False)
-        animatable.collision_sprite.rect.y -= LevelBase.PLATFORM_CHECK_STEP
+        animatable.rect.y += LevelBase.PLATFORM_CHECK_STEP
+        platforms = pygame.sprite.spritecollide(animatable,self.platforms,False)
+        animatable.rect.y -= LevelBase.PLATFORM_CHECK_STEP
         
-        ps = animatable.collision_sprite
+        ps = animatable
         if len(platforms) == 0:
             animatable.execute(LevelActionKeys.PLATFORM_LOST)                   
         #endif  
@@ -338,23 +338,23 @@ class LevelBase(pygame.sprite.Sprite):
      
         
         # find colliding platforms in the y direction         
-        platforms = pygame.sprite.spritecollide(animatable.collision_sprite,self.platforms,False)   
+        platforms = pygame.sprite.spritecollide(animatable,self.platforms,False)   
 
         for platform in platforms:
             
-            if animatable.collision_sprite.rect.centery < platform.rect.centery:
-                animatable.collision_sprite.rect.bottom = platform.rect.top
+            if animatable.rect.centery < platform.rect.centery:
+                animatable.rect.bottom = platform.rect.top
                 animatable.execute(LevelActionKeys.COLLISION_BELOW,[platform])  
                               
             else:
-                animatable.collision_sprite.rect.top = platform.rect.bottom
+                animatable.rect.top = platform.rect.bottom
                 animatable.execute(LevelActionKeys.COLLISION_ABOVE,[platform])
             #endif
     
         #endfor    
         
         # checking range collision sprites
-        pr = animatable.collision_sprite.rect
+        pr = animatable.rect
         for rs in iter(animatable.range_collision_group):
             rs.rect.center = pr.center
             platforms = pygame.sprite.spritecollide(rs,self.platforms,False)
@@ -367,15 +367,15 @@ class LevelBase(pygame.sprite.Sprite):
             
                 
         # find colliding platforms in the x direction            
-        platforms = pygame.sprite.spritecollide(animatable.collision_sprite,self.platforms,False)     
+        platforms = pygame.sprite.spritecollide(animatable,self.platforms,False)     
         for platform in platforms:
             
-            if animatable.collision_sprite.rect.centerx > platform.rect.centerx:
-                animatable.collision_sprite.rect.left = platform.rect.right
+            if animatable.rect.centerx > platform.rect.centerx:
+                animatable.rect.left = platform.rect.right
                 animatable.execute(LevelActionKeys.COLLISION_LEFT_WALL,[platform])
                 
             else:
-                animatable.collision_sprite.rect.right = platform.rect.left
+                animatable.rect.right = platform.rect.left
                 animatable.execute(LevelActionKeys.COLLISION_RIGHT_WALL,[platform])
                 
             #endif          
@@ -383,7 +383,7 @@ class LevelBase(pygame.sprite.Sprite):
         #endfor 
         
         # checking range collision sprites
-        pr = animatable.collision_sprite.rect
+        pr = animatable.rect
         for rs in iter(animatable.range_collision_group):
             rs.rect.center = pr.center
             platforms = pygame.sprite.spritecollide(rs,self.platforms,False)
@@ -399,23 +399,23 @@ class LevelBase(pygame.sprite.Sprite):
         scroll_y = 0
         
         # vertical bounds
-        if self.player.collision_sprite.rect.bottom > self.screen_bounds.rect.bottom : # below ground level
-            scroll_y = -(self.screen_bounds.rect.bottom - self.player.collision_sprite.rect.bottom)
-            self.player.collision_sprite.rect.bottom = self.screen_bounds.rect.bottom 
+        if self.player.rect.bottom > self.screen_bounds.rect.bottom : # below ground level
+            scroll_y = -(self.screen_bounds.rect.bottom - self.player.rect.bottom)
+            self.player.rect.bottom = self.screen_bounds.rect.bottom 
             
-        elif self.player.collision_sprite.rect.top < self.screen_bounds.rect.top: # above level top
-            scroll_y = -(self.screen_bounds.rect.top - self.player.collision_sprite.rect.top)
-            self.player.collision_sprite.rect.top = self.screen_bounds.rect.top
+        elif self.player.rect.top < self.screen_bounds.rect.top: # above level top
+            scroll_y = -(self.screen_bounds.rect.top - self.player.rect.top)
+            self.player.rect.top = self.screen_bounds.rect.top
             
         # horizontal bounds
-        if self.player.collision_sprite.rect.right > self.screen_bounds.rect.right : # too far to the right
-            scroll_x = self.screen_bounds.rect.right - self.player.collision_sprite.rect.right
-            self.player.collision_sprite.rect.right = self.screen_bounds.rect.right 
+        if self.player.rect.right > self.screen_bounds.rect.right : # too far to the right
+            scroll_x = self.screen_bounds.rect.right - self.player.rect.right
+            self.player.rect.right = self.screen_bounds.rect.right 
             #print "Scrolling right, screen right bound of %d exceeded"%self.screen_bounds.rect.right
             
-        elif self.player.collision_sprite.rect.left < self.screen_bounds.rect.left: # too far to the left
-            scroll_x = self.screen_bounds.rect.left - self.player.collision_sprite.rect.left
-            self.player.collision_sprite.rect.left = self.screen_bounds.rect.left
+        elif self.player.rect.left < self.screen_bounds.rect.left: # too far to the left
+            scroll_x = self.screen_bounds.rect.left - self.player.rect.left
+            self.player.rect.left = self.screen_bounds.rect.left
             #print "Scrolling left"
             
         # scrolling level 
@@ -424,20 +424,20 @@ class LevelBase(pygame.sprite.Sprite):
     def check_level_bounds(self,animatable):
         
         # vertical bounds
-        if animatable.collision_sprite.rect.bottom > self.rect.bottom : # below ground level
-            animatable.collision_sprite.rect.bottom = self.rect.bottom
+        if animatable.rect.bottom > self.rect.bottom : # below ground level
+            animatable.rect.bottom = self.rect.bottom
             
-        elif animatable.collision_sprite.rect.top < self.rect.top: # above level top
-            animatable.collision_sprite.rect.top = self.rect.top
+        elif animatable.rect.top < self.rect.top: # above level top
+            animatable.rect.top = self.rect.top
         
         #endif        
          
         # horizontal bounds
-        if animatable.collision_sprite.rect.right  > self.rect.right:
-            animatable.collision_sprite.rect.right = self.rect.right
+        if animatable.rect.right  > self.rect.right:
+            animatable.rect.right = self.rect.right
             
-        elif animatable.collision_sprite.rect.left < self.rect.left:
-            animatable.collision_sprite.rect.left = self.rect.left
+        elif animatable.rect.left < self.rect.left:
+            animatable.rect.left = self.rect.left
             
         #endif
             

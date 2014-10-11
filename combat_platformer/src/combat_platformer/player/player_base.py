@@ -17,7 +17,7 @@ class PlayerBase(AnimatableObject):
                                
         
         # collision detection objects
-        self.collision_sprite.rect = None
+        self.rect = None
         
         
         # auxilary properties
@@ -31,7 +31,7 @@ class PlayerBase(AnimatableObject):
     def setup(self):
         
         # collision detection objects
-        self.collision_sprite.rect = pygame.Rect(0,0,self.properties.collision_width,
+        self.rect = pygame.Rect(0,0,self.properties.collision_width,
                                                  self.properties.collision_height)          
         
         # auxilary properties
@@ -110,8 +110,8 @@ class PlayerBase(AnimatableObject):
                         
         #endif
                
-        self.collision_sprite.rect.centerx+=dx
+        self.rect.centerx+=dx
     
     def update_pos_y(self):
         
-        self.collision_sprite.rect.centery+=self.vertical_speed       
+        self.rect.centery+=self.vertical_speed       

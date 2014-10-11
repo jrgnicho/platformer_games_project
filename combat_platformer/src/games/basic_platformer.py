@@ -65,7 +65,7 @@ class BasicPlatformer(object):
         if not self.player.setup():            
             return False        
         
-        self.player.collision_sprite.rect.center = (0,500)       
+        self.player.rect.center = (0,500)       
 
         
         keys = self.player.states_dict.keys()
@@ -102,7 +102,7 @@ class BasicPlatformer(object):
             
             enemy.target_player = self.player
             enemy.setup()
-            enemy.collision_sprite.rect.center= (160,0)
+            enemy.rect.center= (160,0)
             
             for key in keys:
                 if (not enemy.add_animation_sets(key,self.sprite_loader.sprite_sets[key].invert_set(),

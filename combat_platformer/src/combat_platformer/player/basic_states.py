@@ -164,7 +164,7 @@ class StandState(BasicState):
         # creating range rectangle
         self.range_height_extension = 4
         self.range_sprite = pygame.sprite.Sprite()
-        self.range_sprite.rect = self.player.collision_sprite.rect.copy()
+        self.range_sprite.rect = self.player.rect.copy()
         self.range_sprite.rect.height = self.range_sprite.rect.height + self.range_height_extension
 
         
@@ -188,7 +188,7 @@ class StandState(BasicState):
         
                     
         # check if near edge
-        ps = self.player.collision_sprite
+        ps = self.player
         for platform in platforms:
             
             if platform.rect.top < ps.rect.top:
@@ -279,7 +279,7 @@ class JumpState(BasicState):
         
         # creating range rectangle
         self.range_sprite = pygame.sprite.Sprite()
-        self.range_sprite.rect = self.player.collision_sprite.rect.copy()
+        self.range_sprite.rect = self.player.rect.copy()
         self.range_sprite.rect.width = self.range_sprite.rect.width + self.hang_sprite.rect.width
         self.range_sprite.rect.height = self.range_sprite.rect.height + self.hang_sprite.rect.height
         
@@ -337,7 +337,7 @@ class JumpState(BasicState):
     def check_landing(self,platform):
         
         # check if near edge
-        ps = self.player.collision_sprite                
+        ps = self.player                
         w = ps.rect.width
         min = w*0.5
         
@@ -364,11 +364,11 @@ class JumpState(BasicState):
 
 
         if self.player.facing_right:
-            self.hang_sprite.rect.centerx = self.player.collision_sprite.rect.right
-            self.hang_sprite.rect.centery = self.player.collision_sprite.rect.top
+            self.hang_sprite.rect.centerx = self.player.rect.right
+            self.hang_sprite.rect.centery = self.player.rect.top
         else :
-            self.hang_sprite.rect.centerx = self.player.collision_sprite.rect.left
-            self.hang_sprite.rect.centery = self.player.collision_sprite.rect.top
+            self.hang_sprite.rect.centerx = self.player.rect.left
+            self.hang_sprite.rect.centery = self.player.rect.top
         
         return self.hang_sprite  
         
@@ -379,7 +379,7 @@ class JumpState(BasicState):
         
         
         # check for reachable edges
-        ps = self.player.collision_sprite
+        ps = self.player
         hs = self.get_hang_sprite()
                     
         # must be below platform top                
@@ -439,7 +439,7 @@ class FallState(BasicState):
         
         # creating range rectangle
         self.range_sprite = pygame.sprite.Sprite()
-        self.range_sprite.rect = self.player.collision_sprite.rect.copy()
+        self.range_sprite.rect = self.player.rect.copy()
         self.range_sprite.rect.width = self.range_sprite.rect.width + self.hang_sprite.rect.width
         self.range_sprite.rect.height = self.range_sprite.rect.height + self.hang_sprite.rect.height 
         
@@ -492,7 +492,7 @@ class FallState(BasicState):
     def check_landing(self,platform):
         
         # check if near edge
-        ps = self.player.collision_sprite                
+        ps = self.player                
         w = ps.rect.width
         min = w*0.5
         
@@ -522,11 +522,11 @@ class FallState(BasicState):
     def get_hang_sprite(self):        
 
         if self.player.facing_right:
-            self.hang_sprite.rect.centerx = self.player.collision_sprite.rect.right
-            self.hang_sprite.rect.centery = self.player.collision_sprite.rect.top
+            self.hang_sprite.rect.centerx = self.player.rect.right
+            self.hang_sprite.rect.centery = self.player.rect.top
         else :
-            self.hang_sprite.rect.centerx = self.player.collision_sprite.rect.left
-            self.hang_sprite.rect.centery = self.player.collision_sprite.rect.top
+            self.hang_sprite.rect.centerx = self.player.rect.left
+            self.hang_sprite.rect.centery = self.player.rect.top
         
         return self.hang_sprite  
     
@@ -534,7 +534,7 @@ class FallState(BasicState):
         
         
         # check for reachable edges
-        ps = self.player.collision_sprite
+        ps = self.player
         hs = self.get_hang_sprite()
                     
         # must be below platform top
@@ -601,17 +601,17 @@ class HangingState(BasicState):
             self.platform_rect = platform.rect
             
             if self.player.facing_right:
-                self.player.collision_sprite.rect.right = self.platform_rect.left - \
+                self.player.rect.right = self.platform_rect.left - \
                 self.player.properties.hang_distance_from_side
             else:
-                self.player.collision_sprite.rect.left = self.platform_rect.right + \
+                self.player.rect.left = self.platform_rect.right + \
                 self.player.properties.hang_distance_from_side
             
             #endif
                 
-            self.player.collision_sprite.rect.top = self.platform_rect.top + self.player.properties.hang_distance_from_top
+            self.player.rect.top = self.platform_rect.top + self.player.properties.hang_distance_from_top
             
-        print "Hanging at top point %i"%(self.player.collision_sprite.rect.top)
+        print "Hanging at top point %i"%(self.player.rect.top)
         
     def enter(self):
         
@@ -644,7 +644,7 @@ class ClimbingState(BasicState):
         self.platform_rect = self.player.nearby_platforms.sprites()[0].rect
         
 
-        ply_rect = self.player.collision_sprite.rect
+        ply_rect = self.player.rect
         plt_rect = self.platform_rect
         
         # saving initial position relative to platform
@@ -679,13 +679,13 @@ class ClimbingState(BasicState):
         dy = 0
         if self.player.facing_right:
             dx = self.platform_rect.left + self.startx +  self.climb_path[self.player.animation_frame_index][0]
-            self.player.collision_sprite.rect.left = dx
+            self.player.rect.left = dx
             
         else:
             dx = self.platform_rect.right + self.startx + self.climb_path[self.player.animation_frame_index][0]
-            self.player.collision_sprite.rect.right = dx
+            self.player.rect.right = dx
         
         dy = self.platform_rect.top + self.starty + self.climb_path[self.player.animation_frame_index][1]
-        self.player.collision_sprite.rect.bottom= dy
+        self.player.rect.bottom= dy
         
         

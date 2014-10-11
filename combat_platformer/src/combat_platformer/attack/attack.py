@@ -46,8 +46,8 @@ class Attack(object) :
         
         State.__init__(self)        
         
-        self.__collision_sprite = pygame.sprite.Sprite() # Use the pygame.sprite.groupcollide() to detect when the strike lands
-        self.__collision_sprite.rect = pygame.Rect(0,0,0,0)
+        self._ = pygame.sprite.Sprite() # Use the pygame.sprite.groupcollide() to detect when the strike lands
+        self._.rect = pygame.Rect(0,0,0,0)
         self.parent_object = None # reference to object that spawned this attack, when set it shold be of type Animatable object
         
         # attack attributes
@@ -61,19 +61,19 @@ class Attack(object) :
         Collision Sprite property which is the unions of all strike rectangles
     """
     @property    
-    def collision_sprite(self):
+    def(self):
         
         # used union of all active strike rectangles
-        self.__collision_sprite.rect.unionall_ip(self.strikes[0].strike_rects)
+        self._.rect.unionall_ip(self.strikes[0].strike_rects)
         
         # set location using parents location
-        parent_rect = self.parent_object.collision_sprite.rect
+        parent_rect = self.parent_object.rect
         if self.parent_object != None:            
-            self.__collision_sprite.rect.topleft = parent_rect.topleft
+            self._.rect.topleft = parent_rect.topleft
             
         #endif
         
-        return self.__collision_sprite
+        return self._
     
     """
     update : Empty placeholder for subclass that performs some custom logic

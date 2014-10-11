@@ -39,8 +39,8 @@ class AnimatedPlayer(Player):
         self.animation_mode = AnimatedPlayer.ANIMATION_MODE_CONSUME
         
         # collision 
-        self.collision_sprite = pygame.sprite.Sprite()
-        self.collision_sprite.rect = self.rect.copy()
+        self = pygame.sprite.Sprite()
+        self.rect = self.rect.copy()
         
         # motion state
         self.in_midair = False
@@ -169,14 +169,14 @@ class AnimatedPlayer(Player):
             self.image = sprite_set.sprites[self.animation_frame_index]
             
         # setting values of view rectangle equal to collision
-        self.rect.x = self.collision_sprite.rect.x
-        self.rect.y = self.collision_sprite.rect.y
+        self.rect.x = self.rect.x
+        self.rect.y = self.rect.y
         
         # adjusting to sprite height
-        self.rect.y += (self.collision_sprite.rect.height - self.image.get_height())            
+        self.rect.y += (self.rect.height - self.image.get_height())            
         self.rect.height = self.image.get_height()
         
-        self.rect.centerx = self.collision_sprite.rect.centerx
+        self.rect.centerx = self.rect.centerx
         self.rect.width = self.image.get_width()
          
     #@overloaded  
@@ -214,9 +214,9 @@ class AnimatedPlayer(Player):
                 
         # check for platform below
         if (not self.in_midair):
-            self.collision_sprite.rect.y += Player.PLATFORM_CHECK_STEP
-            platforms = pygame.sprite.spritecollide(self.collision_sprite,self.level.platforms,False)
-            self.collision_sprite.rect.y -= Player.PLATFORM_CHECK_STEP  
+            self.rect.y += Player.PLATFORM_CHECK_STEP
+            platforms = pygame.sprite.spritecollide(self,self.level.platforms,False)
+            self.rect.y -= Player.PLATFORM_CHECK_STEP  
             
             if len(platforms)==0: # falling                
             
@@ -242,9 +242,9 @@ class AnimatedPlayer(Player):
     def jump(self):
         
         # check for platform below
-        self.collision_sprite.rect.y += Player.PLATFORM_CHECK_STEP
-        platforms = pygame.sprite.spritecollide(self.collision_sprite,self.level.platforms,False)
-        self.collision_sprite.rect.y -= Player.PLATFORM_CHECK_STEP
+        self.rect.y += Player.PLATFORM_CHECK_STEP
+        platforms = pygame.sprite.spritecollide(self,self.level.platforms,False)
+        self.rect.y -= Player.PLATFORM_CHECK_STEP
         
         if (len(platforms) > 0) :
             
@@ -270,13 +270,13 @@ class AnimatedPlayer(Player):
      
         
         # find colliding platforms in the y direction        
-        self.collision_sprite.rect.y -= self.incr.y # increment in screen coordinates   
-        platforms = pygame.sprite.spritecollide(self.collision_sprite,self.level.platforms,False)     
+        self.rect.y -= self.incr.y # increment in screen coordinates   
+        platforms = pygame.sprite.spritecollide(self,self.level.platforms,False)     
         for platform in platforms:
             
             # check for vertical overlaps
             if self.incr.y < 0: # falling
-                self.collision_sprite.rect.bottom = platform.rect.top # landed
+                self.rect.bottom = platform.rect.top # landed
                 self.incr.y = 0
                 
                 if self.in_midair:                    
@@ -287,7 +287,7 @@ class AnimatedPlayer(Player):
                 self.in_midair = False
                             
             elif self.incr.y > 0 : # ascending
-                self.collision_sprite.rect.top = platform.rect.bottom                
+                self.rect.top = platform.rect.bottom                
                 self.incr.y = 0
                 
                 
@@ -297,18 +297,18 @@ class AnimatedPlayer(Player):
                     self.set_next_key_in_queue(AnimatedPlayer.JUMP_MIDAIR_ACTION)
                 
         # find colliding platforms in the x direction            
-        self.collision_sprite.rect.x += self.incr.x # increment in screen coordinates 
-        platforms = pygame.sprite.spritecollide(self.collision_sprite,self.level.platforms,False)     
+        self.rect.x += self.incr.x # increment in screen coordinates 
+        platforms = pygame.sprite.spritecollide(self,self.level.platforms,False)     
         for platform in platforms:
                 
             # check for horizontal overlaps
             if self.incr.x < 0:
-                self.collision_sprite.rect.left = platform.rect.right
+                self.rect.left = platform.rect.right
                 #self.incr.x = 0
             elif self.incr.x > 0:                
-                self.collision_sprite.rect.right = platform.rect.left                
+                self.rect.right = platform.rect.left                
                 #self.incr.x = 0                
-                #print "Collision to the right, shifted %d units"%(self.collision_sprite.rect.right)            
+                #print "Collision to the right, shifted %d units"%(self.rect.right)            
             
         # endfor    
             

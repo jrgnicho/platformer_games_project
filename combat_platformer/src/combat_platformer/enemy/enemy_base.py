@@ -12,7 +12,7 @@ class EnemyBase(PlayerBase):
     def setup(self):
         
         # collision sprite
-        self.collision_sprite.rect = pygame.Rect(0,0,self.properties.collision_width,
+        self.rect = pygame.Rect(0,0,self.properties.collision_width,
                                                  self.properties.collision_height)    
         
         self.max_delta_x = self.properties.max_x_position_change  

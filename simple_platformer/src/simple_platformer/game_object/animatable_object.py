@@ -39,14 +39,12 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.animation_sprite.image = pygame.Surface([w,h])
         self.animation_sprite.image.fill(Colors.RED)
         self.animation_sprite.rect = self.animation_sprite.image.get_rect()
-        
-        # Graphics
         self.sprite_group = pygame.sprite.Group()
         self.sprite_group.add(self.animation_sprite)
                 
         # collision 
-        self.collision_sprite = pygame.sprite.Sprite()
-        self.collision_sprite.rect = self.animation_sprite.rect.copy()
+        #self = pygame.sprite.Sprite()
+        self.rect = self.animation_sprite.rect.copy()
         
         # event handlers
         self.event_handlers = {} # dictionary of lists
@@ -210,14 +208,14 @@ class AnimatableObject(pygame.sprite.Sprite):
         #endif 
             
         # setting values of view rectangle equal to collision
-        self.animation_sprite.rect.x = self.collision_sprite.rect.x
-        self.animation_sprite.rect.y = self.collision_sprite.rect.y
+        self.animation_sprite.rect.x = self.rect.x
+        self.animation_sprite.rect.y = self.rect.y
         
         # adjusting to sprite height
-        self.animation_sprite.rect.y += (self.collision_sprite.rect.height - self.animation_sprite.image.get_height())            
+        self.animation_sprite.rect.y += (self.rect.height - self.animation_sprite.image.get_height())            
         self.animation_sprite.rect.height = self.animation_sprite.image.get_height()
         
-        self.animation_sprite.rect.centerx = self.collision_sprite.rect.centerx
+        self.animation_sprite.rect.centerx = self.rect.centerx
         self.animation_sprite.rect.width = self.animation_sprite.image.get_width()       
         
         
@@ -241,10 +239,10 @@ class AnimatableObject(pygame.sprite.Sprite):
             len(self.animation_selected_frames))
         
     def move_x(self,dx):        
-        self.collision_sprite.rect.centerx +=dx
+        self.rect.centerx +=dx
         
     def move_y(self,dy):
-        self.collision_sprite.rect.centery +=dy
+        self.rect.centery +=dy
     
     def face_right(self):        
         self.facing_right = True
@@ -253,14 +251,14 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.facing_right = False
         
     def set_bb_bottom(self,bt):        
-        self.collision_sprite.rect.bottom = bt
+        self.rect.bottom = bt
         
     def set_bb_top(self,top):
-        self.collision_sprite.rect.top = top
+        self.rect.top = top
         
     def set_bb_left(self,left):
-        self.collision_sprite.rect.left = left
+        self.rect.left = left
         
     def set_bb_right(self,rt):
-        self.collision_sprite.rect.right = rt
+        self.rect.right = rt
         
