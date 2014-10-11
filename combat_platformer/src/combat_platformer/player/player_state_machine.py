@@ -64,9 +64,9 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         
         
         sm.add_transition(dash_state,PlayerActionKeys.CANCEL_DASH,StateKeys.DASH_BREAKING,
-                          lambda: self.animation_set_progress_percentage()>0.2)
+                          lambda: self.get_animation_progress_percentage()>0.2)
         sm.add_transition(dash_state,PlayerActionKeys.CANCEL_DASH,StateKeys.RUNNING,
-                          lambda: not (self.animation_set_progress_percentage()>0.2))
+                          lambda: not (self.get_animation_progress_percentage()>0.2))
         sm.add_transition(dash_state,PlayerActionKeys.JUMP,StateKeys.JUMPING)
         sm.add_transition(dash_state,LevelActionKeys.PLATFORM_LOST,StateKeys.FALLING)
         sm.add_transition(dash_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.RUNNING)
@@ -123,16 +123,16 @@ class PlayerStateMachine(StateMachine,PlayerBase):
                           lambda : fall_state.edge_in_reach)
         
         sm.add_transition(hanging_state,PlayerActionKeys.JUMP,StateKeys.JUMPING,
-                          lambda : self.animation_set_progress_percentage()>0.2) 
+                          lambda : self.get_animation_progress_percentage()>0.2) 
         sm.add_transition(hanging_state,PlayerActionKeys.MOVE_UP,StateKeys.CLIMBING,
-                          lambda : self.animation_set_progress_percentage()>=1) 
+                          lambda : self.get_animation_progress_percentage()>=1) 
         
         sm.add_transition(climbing_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.STANDING) 
         
         
         sm.add_transition(land_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.STANDING)  
         sm.add_transition(land_state,PlayerActionKeys.JUMP,StateKeys.JUMPING,
-                          lambda : self.animation_set_progress_percentage()>0.2)  
+                          lambda : self.get_animation_progress_percentage()>0.2)  
         sm.add_transition(land_state,PlayerActionKeys.DASH,StateKeys.DASHING,
-                          lambda : self.animation_set_progress_percentage()>0.2)
+                          lambda : self.get_animation_progress_percentage()>0.2)
         sm.add_transition(land_state,LevelActionKeys.PLATFORM_LOST,StateKeys.FALLING) 

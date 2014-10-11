@@ -229,7 +229,7 @@ class AnimatableObject(pygame.sprite.Sprite):
                                                                              self.animation_frame_index,
                                                                              str(self.animation_selected_frames))
         
-    def animation_set_progress_percentage(self):
+    def get_animation_progress_percentage(self):
         
         #sprite_set = self.animation_images_right_side_dict[self.animation_set_key]
         if self.animation_selected_frames.count(self.animation_frame_index) == 0:

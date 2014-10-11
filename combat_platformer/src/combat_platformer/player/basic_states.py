@@ -80,7 +80,7 @@ class DashState(BasicState):
     
     def exit(self):
         
-        progress_percent = self.player.animation_set_progress_percentage()
+        progress_percent = self.player.get_animation_progress_percentage()
         self.player.set_momentum(0.8*self.player.properties.dash_speed 
                                                       if progress_percent>0.3 else 0)
 
@@ -117,7 +117,7 @@ class MidairDashState(BasicState):
     def exit(self):
         
         plyr = self.player
-        plyr.set_momentum(plyr.properties.dash_speed * plyr.animation_set_progress_percentage())     
+        plyr.set_momentum(plyr.properties.dash_speed * plyr.get_animation_progress_percentage())     
         
         
 class DashBreakingState(BasicState):
