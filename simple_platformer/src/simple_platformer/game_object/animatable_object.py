@@ -29,8 +29,8 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.animation_start_time = 0
         self.animation_frame_index = 0
         self.animation_set_key = 0        
-        self.animation_sprites_right_side_dict= {}
-        self.animation_sprites_left_side_dict= {}
+        self.animation_images_right_side_dict= {}
+        self.animation_images_left_side_dict= {}
         self.facing_right = True;
         self.animation_mode = AnimatableObject.ANIMATION_MODE_CYCLE
         self.animation_selected_frames = 0 # only the frames which indices are in this list will be animated 
@@ -83,8 +83,8 @@ class AnimatableObject(pygame.sprite.Sprite):
             retrieve the corresponding animation sequence during animation.
         """
     
-        self.animation_sprites_right_side_dict[animation_set_key] = sprite_set_right_side
-        self.animation_sprites_left_side_dict[animation_set_key] = sprite_set_left_side
+        self.animation_images_right_side_dict[animation_set_key] = sprite_set_right_side
+        self.animation_images_left_side_dict[animation_set_key] = sprite_set_left_side
         
         return True
         
@@ -101,7 +101,7 @@ class AnimatableObject(pygame.sprite.Sprite):
         # check if already selected
         if self.animation_set_key != animation_set_key:
         
-            if  self.animation_sprites_right_side_dict.has_key(animation_set_key):
+            if  self.animation_images_right_side_dict.has_key(animation_set_key):
                 self.animation_set_key = animation_set_key;
                 self.animation_frame_index = 0
                 self.animation_time_elapsed = 0
@@ -111,7 +111,7 @@ class AnimatableObject(pygame.sprite.Sprite):
                 
                 # checking selected index array
                 if selected_frames == None:
-                    self.animation_selected_frames = range(0,len(self.animation_sprites_right_side_dict[self.animation_set_key].sprites))
+                    self.animation_selected_frames = range(0,len(self.animation_images_right_side_dict[self.animation_set_key].sprites))
                     
                 else:
                     self.animation_selected_frames = selected_frames
@@ -127,7 +127,7 @@ class AnimatableObject(pygame.sprite.Sprite):
             
             # checking selected index array
             if selected_frames == None:
-                self.animation_selected_frames = range(0,len(self.animation_sprites_right_side_dict[self.animation_set_key].sprites))
+                self.animation_selected_frames = range(0,len(self.animation_images_right_side_dict[self.animation_set_key].sprites))
                 
             else:
                 self.animation_selected_frames = selected_frames
@@ -149,9 +149,9 @@ class AnimatableObject(pygame.sprite.Sprite):
         
         sprite_set = None
         if self.facing_right:
-            sprite_set = self.animation_sprites_right_side_dict[self.animation_set_key]
+            sprite_set = self.animation_images_right_side_dict[self.animation_set_key]
         else:
-            sprite_set = self.animation_sprites_left_side_dict[self.animation_set_key]
+            sprite_set = self.animation_images_left_side_dict[self.animation_set_key]
             
         current_time = pygame.time.get_ticks()
         self.animation_time_elapsed = current_time - self.animation_start_time
@@ -231,7 +231,7 @@ class AnimatableObject(pygame.sprite.Sprite):
         
     def animation_set_progress_percentage(self):
         
-        #sprite_set = self.animation_sprites_right_side_dict[self.animation_set_key]
+        #sprite_set = self.animation_images_right_side_dict[self.animation_set_key]
         if self.animation_selected_frames.count(self.animation_frame_index) == 0:
             return 0
         

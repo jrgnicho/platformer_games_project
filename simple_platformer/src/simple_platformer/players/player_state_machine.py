@@ -1,4 +1,4 @@
-from simple_platformer.animatable_object import AnimatableObject
+from simple_platformer.game_object import AnimatableObject
 from simple_platformer.players import AnimatablePlayer
 from simple_platformer.players import PlayerProperties
 from simple_platformer.game_state_machine import *

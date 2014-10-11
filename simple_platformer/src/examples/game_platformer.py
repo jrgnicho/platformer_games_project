@@ -2,7 +2,7 @@
 
 import pygame
 from simple_platformer.levels import GameLevel, Platform
-from simple_platformer.animatable_object import AnimatableObject
+from simple_platformer.game_object import AnimatableObject
 from simple_platformer.players import PlayerStateMachine
 #from simple_platformer.players import AnimatablePlayer
 from simple_platformer.utilities import *

@@ -1,7 +1,7 @@
 import pygame
 from simple_platformer.game_state_machine import State
 from simple_platformer.game_state_machine import SubStateMachine
-from simple_platformer.animatable_object import AnimatableObject
+from simple_platformer.game_object import AnimatableObject
 from combat_platformer.player.action_keys import PlayerActionKeys
 from combat_platformer.level.action_keys import LevelActionKeys
 from combat_platformer.enemy import EnemyProperties

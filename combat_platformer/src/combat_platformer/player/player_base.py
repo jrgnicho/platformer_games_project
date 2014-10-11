@@ -1,4 +1,4 @@
-from simple_platformer.animatable_object import *
+from simple_platformer.game_object import *
 from simple_platformer.players import PlayerProperties
 
 class PlayerBase(AnimatableObject):

@@ -1,5 +1,5 @@
 from simple_platformer.game_state_machine import *
-from simple_platformer.animatable_object import *
+from simple_platformer.game_object import *
 from combat_platformer.level.action_keys import *
 from combat_platformer.enemy import EnemyBase
 from combat_platformer.enemy import EnemyProperties

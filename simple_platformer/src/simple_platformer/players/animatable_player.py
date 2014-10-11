@@ -1,5 +1,5 @@
 import pygame
-from simple_platformer.animatable_object import AnimatableObject
+from simple_platformer.game_object import AnimatableObject
 from simple_platformer.game_state_machine import ActionKeys
 from simple_platformer.utilities import GameProperties
 from simple_platformer.utilities import SpriteLoader
