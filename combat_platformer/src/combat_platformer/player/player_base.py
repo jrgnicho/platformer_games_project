@@ -37,7 +37,7 @@ class PlayerBase(AnimatableObject):
         # auxilary properties
         self.midair_dash_counter = self.properties.max_midair_dashes
         
-        self.max_delta_x = self.properties.max_x_position_change
+        self.max_delta_x = self.properties.max_step_x
         self.momentum_reduction = self.properties.inertial_reduction
         
         

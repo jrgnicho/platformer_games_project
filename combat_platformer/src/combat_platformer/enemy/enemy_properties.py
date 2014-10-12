@@ -12,7 +12,7 @@ class EnemyProperties(object):
     WALK_SPEED = 2
     RUN_SPEED = 4
     DASH_SPEED = 8    
-    MAX_X_POSITION_CHANGE = 8       
+    MAX_STEP_X = 8       
     INERTIA_REDUCTION = 0.14    
     MAX_MIDAIR_DASHES = 1
     
@@ -39,7 +39,7 @@ class EnemyProperties(object):
         self.run_speed = EnemyProperties.RUN_SPEED
         self.walk_speed = EnemyProperties.WALK_SPEED
         self.dash_speed = EnemyProperties.DASH_SPEED
-        self.max_x_position_change = EnemyProperties.MAX_X_POSITION_CHANGE
+        self.max_step_x = EnemyProperties.MAX_STEP_X
         self.max_midair_dashes = EnemyProperties.MAX_MIDAIR_DASHES
         self.inertial_reduction = EnemyProperties.INERTIA_REDUCTION
         

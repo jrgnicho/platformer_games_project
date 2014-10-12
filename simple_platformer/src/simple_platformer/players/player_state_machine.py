@@ -62,12 +62,12 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
             
             def enter(self):
                 
-                self.player.player_properties.max_x_position_change = self.speed            
+                self.player.player_properties.max_step_x = self.speed            
                 self.player.set_current_animation_key(ActionKeys.RUN),
                 self.player.set_forward_speed(self.speed)  
                 
             def exit(self):
-                self.player.player_properties.max_x_position_change = self.player.player_properties.dash_speed         
+                self.player.player_properties.max_step_x = self.player.player_properties.dash_speed         
         run_state = RunningState(self)
         
         

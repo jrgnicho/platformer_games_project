@@ -113,10 +113,10 @@ class AnimatablePlayer(AnimatableObject):
         dx = self.current_forward_speed + self.current_inertia
         self.consume_inertia_residual()
         
-        if dx > self.player_properties.max_x_position_change:
-            dx = self.player_properties.max_x_position_change
-        elif dx < -self.player_properties.max_x_position_change:
-            dx = -self.player_properties.max_x_position_change
+        if dx > self.player_properties.max_step_x:
+            dx = self.player_properties.max_step_x
+        elif dx < -self.player_properties.max_step_x:
+            dx = -self.player_properties.max_step_x
                         
         #endif
                

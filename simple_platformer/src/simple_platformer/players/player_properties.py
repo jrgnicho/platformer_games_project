@@ -12,7 +12,7 @@ class PlayerProperties(object):
     WALK_SPEED = 2
     RUN_SPEED = 4
     DASH_SPEED = 8    
-    MAX_X_POSITION_CHANGE = 8       
+    MAX_STEP_X = 8       
     INERTIA_REDUCTION = 0.14    
     MAX_MIDAIR_DASHES = 1
     
@@ -36,7 +36,7 @@ class PlayerProperties(object):
         self.run_speed = PlayerProperties.RUN_SPEED
         self.walk_speed = PlayerProperties.WALK_SPEED
         self.dash_speed = PlayerProperties.DASH_SPEED
-        self.max_x_position_change = PlayerProperties.MAX_X_POSITION_CHANGE
+        self.max_step_x = PlayerProperties.MAX_STEP_X
         self.max_midair_dashes = PlayerProperties.MAX_MIDAIR_DASHES
         self.inertial_reduction = PlayerProperties.INERTIA_REDUCTION
         

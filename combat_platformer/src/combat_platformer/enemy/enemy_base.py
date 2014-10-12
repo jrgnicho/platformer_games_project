@@ -15,7 +15,7 @@ class EnemyBase(PlayerBase):
         self.rect = pygame.Rect(0,0,self.properties.collision_width,
                                                  self.properties.collision_height)    
         
-        self.max_delta_x = self.properties.max_x_position_change  
+        self.max_delta_x = self.properties.max_step_x  
         
         if self.target_player == None:
             print "The 'target_player' member in the EnemyBase class has not been set"
