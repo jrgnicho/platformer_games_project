@@ -47,6 +47,7 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.rect = self.animation_sprite.rect.copy()
         
         # event handlers
+        self.event_key = AnimatableObject.Events.ANIMATION_FRAME_COMPLETED
         self.event_handlers = {} # dictionary of lists
         self.event_handlers[AnimatableObject.Events.ANIMATION_FRAME_COMPLETED]=[]
         self.event_handlers[AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED]=[]
@@ -114,12 +115,8 @@ class AnimatableObject(pygame.sprite.Sprite):
                     
                 else:
                     self.animation_selected_frames = selected_frames                    
-                #endif
-                
-                # resizing drawable sprite
-                sprite_set = self.animation_images_right_side_dict[self.animation_set_key]
-                self.animation_sprite.rect.height = sprite_set.sprites[0].get_height()
-                self.animation_sprite.rect.width = sprite_set.sprites[0].get_width()
+                #endif               
+
                     
             else:
                 
@@ -140,12 +137,17 @@ class AnimatableObject(pygame.sprite.Sprite):
         
         #endif
         
+        # resizing drawable sprite
+        sprite_set = self.animation_images_right_side_dict[self.animation_set_key]
+        self.animation_sprite.rect.size = sprite_set.sprites[0].get_size()
+        
         return True
     
     def draw(self,screen):
                 
         self.animate_next_frame()
         self.sprite_group.draw(screen)
+        self.notify(self.event_key)
         #pygame.sprite.Sprite.draw(self,screen)
             
     def animate_next_frame(self):
@@ -198,7 +200,8 @@ class AnimatableObject(pygame.sprite.Sprite):
             
             #print "Notifying %s event"%(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
             self.animation_cycles_counter +=1
-            self.notify(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
+            self.event_key = AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED
+            #self.notify(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
             
         else: 
             
@@ -206,15 +209,16 @@ class AnimatableObject(pygame.sprite.Sprite):
             
             # select following frame           
             self.animation_sprite.image = sprite_set.sprites[self.animation_frame_index]
-            
-            self.notify(AnimatableObject.Events.ANIMATION_FRAME_COMPLETED)
+            self.event_key = AnimatableObject.Events.ANIMATION_FRAME_COMPLETED
+            #self.notify(AnimatableObject.Events.ANIMATION_FRAME_COMPLETED)
             
         #endif 
             
         
-        self.animation_sprite.rect.y = self.rect.y
-        self.animation_sprite.rect.y += (self.rect.height - self.animation_sprite.rect.height)       
+        self.animation_sprite.rect.bottom = self.rect.bottom
+        #self.animation_sprite.rect.y += (self.rect.height - self.animation_sprite.rect.height)       
         self.animation_sprite.rect.centerx = self.rect.centerx      
+        
         
         
     def print_current_animation_details(self, animation_key):
