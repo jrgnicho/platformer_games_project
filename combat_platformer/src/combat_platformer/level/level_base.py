@@ -47,7 +47,7 @@ class LevelBase(pygame.sprite.Sprite):
         
         self.__active_enemies_group__.empty()
         self.__active_enemies_region__.rect.center = self.player.rect.center
-        active_enemies = pygame.sprite.spritecollide(self.__active_enemies_region__, self.__enemies_group__, False, False)
+        active_enemies = pygame.sprite.spritecollide(self.__active_enemies_region__, self.__enemies_group__, False, None)
         for enemies in active_enemies:
             self.__active_enemies_group__.add(enemies)
         #endfor       
@@ -141,7 +141,7 @@ class LevelBase(pygame.sprite.Sprite):
                      Platform(450 + 400, 400 + 300,100, 20),
                      Platform(450 + 450, 400 + 20,200, 20),
                      Platform(450 + 500, 400 + 120,100, 20),
-                     Platform(800,110,600,20),
+                     Platform(800,200,600,20),
                      Platform(0,-10,2000,20)] # floor
         
         self.add_platforms(platforms)
@@ -301,6 +301,24 @@ class LevelBase(pygame.sprite.Sprite):
             
             # check screen and level bounds        
             self.check_level_bounds(enemy)
+            
+            #check for player presence
+            self.update_active_enemies()
+            
+            for enemy in iter(self.__active_enemies_group__):
+                rg = enemy.range_collision_group
+                
+                # updating range sprite positions
+                for rs in iter(rg):
+                    rs.rect.center = enemy.rect.center
+                #endfor
+                
+                hits = pygame.sprite.spritecollide(self.player, rg, False, None)
+                if len(hits) > 0:
+                    enemy.execute(LevelActionKeys.PLAYER_IN_RANGE,[self.player, hits])
+                #endif
+            #endfor
+            
         
         
     def draw(self,screen):        
@@ -342,73 +360,73 @@ class LevelBase(pygame.sprite.Sprite):
             enemy.rect.y -= dy
         #endfor  
         
-    def check_platform_support(self,animatable):
+    def check_platform_support(self,game_object):
         
-        animatable.rect.y += LevelBase.PLATFORM_CHECK_STEP
-        platforms = pygame.sprite.spritecollide(animatable,self.__platforms__,False)
-        animatable.rect.y -= LevelBase.PLATFORM_CHECK_STEP
+        game_object.rect.y += LevelBase.PLATFORM_CHECK_STEP
+        platforms = pygame.sprite.spritecollide(game_object,self.__platforms__,False)
+        game_object.rect.y -= LevelBase.PLATFORM_CHECK_STEP
         
-        ps = animatable
+        ps = game_object
         if len(platforms) == 0:
-            animatable.execute(LevelActionKeys.PLATFORM_LOST)                   
+            game_object.execute(LevelActionKeys.PLATFORM_LOST)                   
         #endif  
             
         
-    def check_collisions_in_y(self,animatable):        
+    def check_collisions_in_y(self,game_object):        
      
         
         # find colliding platforms in the y direction         
-        platforms = pygame.sprite.spritecollide(animatable,self.__platforms__,False)   
+        platforms = pygame.sprite.spritecollide(game_object,self.__platforms__,False)   
 
         for platform in platforms:
             
-            if animatable.rect.centery < platform.rect.centery:
-                animatable.rect.bottom = platform.rect.top
-                animatable.execute(LevelActionKeys.COLLISION_BELOW,[platform])  
+            if game_object.rect.centery < platform.rect.centery:
+                game_object.rect.bottom = platform.rect.top
+                game_object.execute(LevelActionKeys.COLLISION_BELOW,[platform])  
                               
             else:
-                animatable.rect.top = platform.rect.bottom
-                animatable.execute(LevelActionKeys.COLLISION_ABOVE,[platform])
+                game_object.rect.top = platform.rect.bottom
+                game_object.execute(LevelActionKeys.COLLISION_ABOVE,[platform])
             #endif
     
         #endfor    
         
         # checking range collision sprites
-        pr = animatable.rect
-        for rs in iter(animatable.range_collision_group):
+        pr = game_object.rect
+        for rs in iter(game_object.range_collision_group):
             rs.rect.center = pr.center
             platforms = pygame.sprite.spritecollide(rs,self.__platforms__,False)
             if len(platforms) > 0:
-                animatable.execute(LevelActionKeys.PLATFORMS_IN_RANGE,[platforms])   
+                game_object.execute(LevelActionKeys.PLATFORMS_IN_RANGE,[platforms])   
 
                 
                 
-    def check_collisions_in_x(self,animatable): 
+    def check_collisions_in_x(self,game_object): 
             
                 
         # find colliding platforms in the x direction            
-        platforms = pygame.sprite.spritecollide(animatable,self.__platforms__,False)     
+        platforms = pygame.sprite.spritecollide(game_object,self.__platforms__,False)     
         for platform in platforms:
             
-            if animatable.rect.centerx > platform.rect.centerx:
-                animatable.rect.left = platform.rect.right
-                animatable.execute(LevelActionKeys.COLLISION_LEFT_WALL,[platform])
+            if game_object.rect.centerx > platform.rect.centerx:
+                game_object.rect.left = platform.rect.right
+                game_object.execute(LevelActionKeys.COLLISION_LEFT_WALL,[platform])
                 
             else:
-                animatable.rect.right = platform.rect.left
-                animatable.execute(LevelActionKeys.COLLISION_RIGHT_WALL,[platform])
+                game_object.rect.right = platform.rect.left
+                game_object.execute(LevelActionKeys.COLLISION_RIGHT_WALL,[platform])
                 
             #endif          
             
         #endfor 
         
         # checking range collision sprites
-        pr = animatable.rect
-        for rs in iter(animatable.range_collision_group):
+        pr = game_object.rect
+        for rs in iter(game_object.range_collision_group):
             rs.rect.center = pr.center
             platforms = pygame.sprite.spritecollide(rs,self.__platforms__,False)
             if len(platforms) > 0:
-                animatable.execute(LevelActionKeys.PLATFORMS_IN_RANGE,[platforms])
+                game_object.execute(LevelActionKeys.PLATFORMS_IN_RANGE,[platforms])
                 
         
          
@@ -441,23 +459,23 @@ class LevelBase(pygame.sprite.Sprite):
         # scrolling level 
         self.scroll(scroll_x,scroll_y)
         
-    def check_level_bounds(self,animatable):
+    def check_level_bounds(self,game_object):
         
         # vertical bounds
-        if animatable.rect.bottom > self.rect.bottom : # below ground level
-            animatable.rect.bottom = self.rect.bottom
+        if game_object.rect.bottom > self.rect.bottom : # below ground level
+            game_object.rect.bottom = self.rect.bottom
             
-        elif animatable.rect.top < self.rect.top: # above level top
-            animatable.rect.top = self.rect.top
+        elif game_object.rect.top < self.rect.top: # above level top
+            game_object.rect.top = self.rect.top
         
         #endif        
          
         # horizontal bounds
-        if animatable.rect.right  > self.rect.right:
-            animatable.rect.right = self.rect.right
+        if game_object.rect.right  > self.rect.right:
+            game_object.rect.right = self.rect.right
             
-        elif animatable.rect.left < self.rect.left:
-            animatable.rect.left = self.rect.left
+        elif game_object.rect.left < self.rect.left:
+            game_object.rect.left = self.rect.left
             
         #endif
             
