@@ -66,7 +66,7 @@ class DashState(BasicState):
     def __init__(self,player):
         
         BasicState.__init__(self,StateKeys.DASHING,player)
-        
+                
     def setup(self,asset):     
                 
         pass
@@ -82,7 +82,7 @@ class DashState(BasicState):
         
         progress_percent = self.player.get_animation_progress_percentage()
         self.player.set_momentum(0.8*self.player.properties.dash_speed 
-                                                      if progress_percent>0.3 else 0)
+                                                      if progress_percent>0.4 else 0)
 
         
         

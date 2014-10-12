@@ -64,9 +64,9 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         
         
         sm.add_transition(dash_state,PlayerActionKeys.CANCEL_DASH,StateKeys.DASH_BREAKING,
-                          lambda: self.get_animation_progress_percentage()>0.2)
+                          lambda: self.get_animation_progress_percentage()>=0.4)
         sm.add_transition(dash_state,PlayerActionKeys.CANCEL_DASH,StateKeys.RUNNING,
-                          lambda: not (self.get_animation_progress_percentage()>0.2))
+                          lambda: self.get_animation_progress_percentage()<0.4)
         sm.add_transition(dash_state,PlayerActionKeys.JUMP,StateKeys.JUMPING)
         sm.add_transition(dash_state,LevelActionKeys.PLATFORM_LOST,StateKeys.FALLING)
         sm.add_transition(dash_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.RUNNING)
