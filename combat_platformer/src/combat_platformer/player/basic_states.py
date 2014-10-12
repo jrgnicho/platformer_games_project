@@ -610,9 +610,7 @@ class HangingState(BasicState):
             #endif
                 
             self.player.rect.top = self.platform_rect.top + self.player.properties.hang_distance_from_top
-            
-        print "Hanging at top point %i"%(self.player.rect.top)
-        
+                    
     def enter(self):
         
         self.player.set_current_animation_key(StateKeys.HANGING)
