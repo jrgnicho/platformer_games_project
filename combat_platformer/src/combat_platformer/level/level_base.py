@@ -247,10 +247,10 @@ class LevelBase(pygame.sprite.Sprite):
         self.player.execute(LevelActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])   
         
         # moving and checking collision           
-        self.player.update_pos_x()
+        self.player.step_x()
         self.check_collisions_in_x(self.player)         
             
-        self.player.update_pos_y()
+        self.player.step_y()
         self.check_collisions_in_y(self.player) 
         
         
@@ -269,10 +269,10 @@ class LevelBase(pygame.sprite.Sprite):
             enemy.execute(LevelActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])   
             
             # moving and checking collision           
-            enemy.update_pos_x()
+            enemy.step_x()
             self.check_collisions_in_x(enemy)         
                 
-            enemy.update_pos_y()
+            enemy.step_y()
             self.check_collisions_in_y(enemy) 
             
             

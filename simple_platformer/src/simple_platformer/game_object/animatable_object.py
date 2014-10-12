@@ -237,28 +237,5 @@ class AnimatableObject(pygame.sprite.Sprite):
         index = self.animation_selected_frames.index(self.animation_frame_index)
         return float(index+1)/float(
             len(self.animation_selected_frames))
-        
-    def move_x(self,dx):        
-        self.rect.centerx +=dx
-        
-    def move_y(self,dy):
-        self.rect.centery +=dy
-    
-    def face_right(self):        
-        self.facing_right = True
-        
-    def face_left(self):        
-        self.facing_right = False
-        
-    def set_bb_bottom(self,bt):        
-        self.rect.bottom = bt
-        
-    def set_bb_top(self,top):
-        self.rect.top = top
-        
-    def set_bb_left(self,left):
-        self.rect.left = left
-        
-    def set_bb_right(self,rt):
-        self.rect.right = rt
+
         

@@ -74,7 +74,7 @@ class PlayerBase(AnimatableObject):
             self.momentum = -momentum
             
             
-    def reduce_momentum(self):
+    def step_momentum(self):
         
         if self.momentum>0 :
                             
@@ -96,12 +96,12 @@ class PlayerBase(AnimatableObject):
             
         #endif
             
-    def update_pos_x(self):
+    def step_x(self):
         
         dx = self.horizontal_speed
         
 #         dx = self.horizontal_speed+ self.momentum
-#         self.reduce_momentum()
+#         self.step_momentum()
         
         if dx > self.max_delta_x:
             dx = self.max_delta_x
@@ -112,6 +112,6 @@ class PlayerBase(AnimatableObject):
                
         self.rect.centerx+=dx
     
-    def update_pos_y(self):
+    def step_y(self):
         
         self.rect.centery+=self.vertical_speed       

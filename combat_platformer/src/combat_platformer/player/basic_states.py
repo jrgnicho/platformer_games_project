@@ -48,7 +48,7 @@ class RunState(BasicState):
         
         self.add_action(PlayerActionKeys.MOVE_LEFT,lambda : self.player.turn_left(-self.speed))
         self.add_action(PlayerActionKeys.MOVE_RIGHT,lambda : self.player.turn_right(self.speed))
-        self.add_action(LevelActionKeys.STEP_GAME,lambda time_elapsed :self.player.reduce_momentum())
+        self.add_action(LevelActionKeys.STEP_GAME,lambda time_elapsed :self.player.step_momentum())
         
     
     def enter(self):
@@ -138,7 +138,7 @@ class DashBreakingState(BasicState):
         plyr.set_current_animation_key(StateKeys.DASH_BREAKING)
     
     def update(self):
-        self.player.reduce_momentum()
+        self.player.step_momentum()
         self.player.set_horizontal_speed(abs(self.player.momentum))
           
         
@@ -291,7 +291,7 @@ class JumpState(BasicState):
             pl.turn_right(pl.momentum if pl.momentum > self.speed else self.speed)
         else:
             pl.turn_right(self.speed + pl.momentum)                
-            pl.reduce_momentum()
+            pl.step_momentum()
                 
             #endif
         #endif
@@ -305,7 +305,7 @@ class JumpState(BasicState):
             pl.turn_left(pl.momentum if abs(pl.momentum) > self.speed else -self.speed)
         else:
             pl.turn_left(-self.speed + pl.momentum)                
-            pl.reduce_momentum()
+            pl.step_momentum()
                 
             #endif
         #endif
@@ -314,7 +314,7 @@ class JumpState(BasicState):
         
         pl = self.player
         pl.set_horizontal_speed(abs(pl.momentum))
-        pl.reduce_momentum()            
+        pl.step_momentum()            
         
         
     def cancel_jump(self):
@@ -451,7 +451,7 @@ class FallState(BasicState):
             pl.turn_right(pl.momentum if pl.momentum > self.speed else self.speed)
         else:
             pl.turn_right(self.speed + pl.momentum)                
-            pl.reduce_momentum()
+            pl.step_momentum()
                 
             #endif
         #endif
@@ -465,7 +465,7 @@ class FallState(BasicState):
             pl.turn_left(pl.momentum if abs(pl.momentum) > self.speed else -self.speed)
         else:
             pl.turn_left(-self.speed + pl.momentum)                
-            pl.reduce_momentum()
+            pl.step_momentum()
                 
             #endif
         #endif  
@@ -474,7 +474,7 @@ class FallState(BasicState):
         
         pl = self.player
         pl.set_horizontal_speed(abs(pl.momentum))
-        pl.reduce_momentum()  
+        pl.step_momentum()  
 
     
     def enter(self):
