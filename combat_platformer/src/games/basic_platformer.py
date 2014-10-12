@@ -97,7 +97,7 @@ class BasicPlatformer(object):
             return False
         #endif
         
-        keys = ['WALK', 'UNWARY','ALERT','DROP','WIPEOUT']
+        keys = ['WALK', 'UNWARY','ALERT','DROP','WIPEOUT', 'STANDUP']
         positions = [(200,200), (400,50), (300,80)]
         counter = 0
         for enemy in self.level.enemies:
