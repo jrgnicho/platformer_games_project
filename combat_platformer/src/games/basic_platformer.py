@@ -24,8 +24,9 @@ class BasicPlatformer(object):
         self.proceed = True
         
         # enemys
-        self.num_enemies = 3
-        self.enemies_list = []
+        self.enemies_list = []        
+        self.enemy_start_positions = [(200,200), (600,50), (300,80), (1000,400)]        
+        self.num_enemies = len(self.enemy_start_positions)
         for i in range(0,self.num_enemies):
             enemy = EnemyStateMachine()
             self.enemies_list.append(enemy)
@@ -99,14 +100,13 @@ class BasicPlatformer(object):
         #endif
         
         keys = ['WALK', 'UNWARY','ALERT','DROP','WIPEOUT', 'STANDUP']
-        positions = [(200,200), (400,50), (300,80)]
         counter = 0
         for enemy in self.enemies_list:
             
             
             enemy.target_player = self.player
             enemy.setup()
-            enemy.rect.center= positions[counter]
+            enemy.rect.center= self.enemy_start_positions[counter]
             counter+=1
             for key in keys:
                 if (not enemy.add_animation_sets(key,self.sprite_loader.sprite_sets[key].invert_set(),
