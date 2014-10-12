@@ -113,9 +113,13 @@ class AnimatableObject(pygame.sprite.Sprite):
                     self.animation_selected_frames = range(0,len(self.animation_images_right_side_dict[self.animation_set_key].sprites))
                     
                 else:
-                    self.animation_selected_frames = selected_frames
-                    
+                    self.animation_selected_frames = selected_frames                    
                 #endif
+                
+                # resizing drawable sprite
+                sprite_set = self.animation_images_right_side_dict[self.animation_set_key]
+                self.animation_sprite.rect.height = sprite_set.sprites[0].get_height()
+                self.animation_sprite.rect.width = sprite_set.sprites[0].get_width()
                     
             else:
                 
@@ -207,16 +211,10 @@ class AnimatableObject(pygame.sprite.Sprite):
             
         #endif 
             
-        # setting values of view rectangle equal to collision
-        self.animation_sprite.rect.x = self.rect.x
+        
         self.animation_sprite.rect.y = self.rect.y
-        
-        # adjusting to sprite height
-        self.animation_sprite.rect.y += (self.rect.height - self.animation_sprite.image.get_height())            
-        self.animation_sprite.rect.height = self.animation_sprite.image.get_height()
-        
-        self.animation_sprite.rect.centerx = self.rect.centerx
-        self.animation_sprite.rect.width = self.animation_sprite.image.get_width()       
+        self.animation_sprite.rect.y += (self.rect.height - self.animation_sprite.rect.height)       
+        self.animation_sprite.rect.centerx = self.rect.centerx      
         
         
     def print_current_animation_details(self, animation_key):
