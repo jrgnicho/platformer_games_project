@@ -3,7 +3,7 @@ import pygame
 class EnemyProperties(object):
     
     # size
-    COLLISION_WIDTH = 88
+    COLLISION_WIDTH = 70
     COLLISION_HEIGHT = 112
     
     # Movement Defaults
@@ -27,8 +27,8 @@ class EnemyProperties(object):
     CLIMB_DISTANCE_FROM_TOP = -5
     CLIMB_DISTANCE_FROM_SIDE = 0
     
-    PATROL_AREA_RECTANGLE = pygame.Rect(0,0,500,100)
-    SIGHT_AREA_RECTANGLE = pygame.Rect(0,0,200,100) 
+    PATROL_AREA_RECTANGLE = pygame.Rect(0,0,400,100)
+    SIGHT_AREA_RECTANGLE = pygame.Rect(0,0,500,100) 
     
     def __init__(self):
         
@@ -53,10 +53,10 @@ class EnemyProperties(object):
         self.climb_distance_from_top = EnemyProperties.CLIMB_DISTANCE_FROM_TOP
         self.climb_distance_from_side = EnemyProperties.CLIMB_DISTANCE_FROM_SIDE
         
-        self.patrol_area_rect = EnemyProperties.PATROL_AREA_RECTANGLE
+        self.patrol_area_rect = EnemyProperties.PATROL_AREA_RECTANGLE.copy()
         self.patrol_walk_time = 10000
         self.patrol_unwary_time = 5000
-        self.sight_area_rect = EnemyProperties.SIGHT_AREA_RECTANGLE
+        self.sight_area_rect = EnemyProperties.SIGHT_AREA_RECTANGLE.copy()
         
-        self.alert_time = 5
+        self.alert_time = 2000
         

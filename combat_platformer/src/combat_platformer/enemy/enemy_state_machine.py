@@ -45,7 +45,7 @@ class EnemyStateMachine(StateMachine,EnemyBase):
         self.standup_state = StandupState(self)   
 
         
-        self.add_transition(self.patrol_state,SubStateMachine.ActionKeys.STOP_SM,self.alert_state.key)
+        self.add_transition(self.patrol_state,LevelActionKeys.STEP_GAME,self.alert_state.key,lambda: self.patrol_state.finished)
         self.add_transition(self.patrol_state,LevelActionKeys.PLATFORM_LOST,self.drop_state.key)
         
         self.add_transition(self.drop_state,LevelActionKeys.COLLISION_BELOW,self.wipeout_state.key)

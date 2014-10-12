@@ -27,10 +27,10 @@ class BasicState(State):
     PA = PlayerActionKeys
     
     
-    def __init__(self,key,character):
+    def __init__(self,key,game_object):
         
         State.__init__(self,key)
-        self.character = character  
+        self.game_object = game_object  
         
     def setup(self,assets):
         
@@ -40,18 +40,18 @@ class BasicState(State):
         
 class RunState(BasicState):
     
-    def __init__(self,character):
+    def __init__(self,game_object):
         
-        BasicState.__init__(self,StateKeys.RUN,self.character)        
+        BasicState.__init__(self,StateKeys.RUN,self.game_object)        
         self.speed = 0 
         
     def enter(self):
                  
-        self.character.set_current_animation_key(StateKeys.RUN)
+        self.game_object.set_current_animation_key(StateKeys.RUN)
         
     def setup(self,assets):
         
-        self.speed = self.character.properties.run_speed
+        self.speed = self.game_object.properties.run_speed
         self.add_action(BasicState.LA.STEP_GAME, lambda : self.update())   
         
     def update(self):
@@ -59,59 +59,59 @@ class RunState(BasicState):
         
 class JumpState(BasicState):
     
-    def __init__(self,character):
+    def __init__(self,game_object):
         
-        BasicState.__init__(self,StateKeys.JUMP,character)        
+        BasicState.__init__(self,StateKeys.JUMP,game_object)        
               
         self.has_landed = False
                       
         
     def setup(self,asset):
         
-        self.speed = self.character.properties.jump_speed 
+        self.speed = self.game_object.properties.jump_speed 
         
         self.add_action(BasicState.LA.STEP_GAME, lambda time_elapsed: self.update())  
-        self.add_action(BasicState.LA.APPLY_GRAVITY,lambda g: self.character.apply_gravity(g))    
-        self.add_action(BasicState.LA.COLLISION_ABOVE,lambda platform : self.character.set_vertical_speed(0))
-        self.add_action(BasicState.LA.COLLISION_RIGHT_WALL,lambda platform : self.character.set_momentum(0))
-        self.add_action(BasicState.LA.COLLISION_LEFT_WALL,lambda platform : self.character.set_momentum(0)) 
+        self.add_action(BasicState.LA.APPLY_GRAVITY,lambda g: self.game_object.apply_gravity(g))    
+        self.add_action(BasicState.LA.COLLISION_ABOVE,lambda platform : self.game_object.set_vertical_speed(0))
+        self.add_action(BasicState.LA.COLLISION_RIGHT_WALL,lambda platform : self.game_object.set_momentum(0))
+        self.add_action(BasicState.LA.COLLISION_LEFT_WALL,lambda platform : self.game_object.set_momentum(0)) 
 
     def update(self):
         pass
     
     def enter(self):        
         
-        self.character.set_vertical_speed(self.speed)
-        self.character.set_current_animation_key(StateKeys.JUMPING)
-        self.character.midair_dash_countdown = self.character.properties.max_midair_dashes
-        self.character.range_collision_group.add(self.range_sprite) 
+        self.game_object.set_vertical_speed(self.speed)
+        self.game_object.set_current_animation_key(StateKeys.JUMPING)
+        self.game_object.midair_dash_countdown = self.game_object.properties.max_midair_dashes
+        self.game_object.range_collision_group.add(self.range_sprite) 
         
     def exit(self):
-        self.character.range_collision_group.remove(self.range_sprite)      
+        self.game_object.range_collision_group.remove(self.range_sprite)      
         self.has_landed = False
         
 class DropState(BasicState):
     
-    def __init__(self,character):
-        BasicState.__init__(self, StateKeys.DROP , character)
+    def __init__(self,game_object):
+        BasicState.__init__(self, StateKeys.DROP , game_object)
                         
-        self.add_action(LevelActionKeys.APPLY_GRAVITY,lambda g: self.character.apply_gravity(g))
+        self.add_action(LevelActionKeys.APPLY_GRAVITY,lambda g: self.game_object.apply_gravity(g))
         self.add_action(AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED,
-                lambda : self.character.set_current_animation_key(StateKeys.DROP,[-1]))
+                lambda : self.game_object.set_current_animation_key(StateKeys.DROP,[-1]))
         
     def setup(self,asset):
         pass
     
     def enter(self):
             
-        self.character.set_current_animation_key(StateKeys.DROP)
-        self.character.set_horizontal_speed(0)
+        self.game_object.set_current_animation_key(StateKeys.DROP)
+        self.game_object.set_horizontal_speed(0)
         
 class WipeoutState(BasicState):
     
-    def __init__(self,character):
+    def __init__(self,game_object):
         
-        BasicState.__init__(self, StateKeys.WIPEOUT, character)
+        BasicState.__init__(self, StateKeys.WIPEOUT, game_object)
         self.time_down = 2000
         self.time_left = 0
         self.time_consumed = False
@@ -122,15 +122,15 @@ class WipeoutState(BasicState):
                 lambda : self.animation_expired())
         
     def enter(self):
-        self.character.set_current_animation_key(StateKeys.WIPEOUT)
-        self.character.set_vertical_speed(0)
+        self.game_object.set_current_animation_key(StateKeys.WIPEOUT)
+        self.game_object.set_vertical_speed(0)
         self.time_left = self.time_down
         self.start_consume_time = False
         self.time_consumed = False
         
     def animation_expired(self):
         self.start_consume_time = True
-        self.character.set_current_animation_key(StateKeys.WIPEOUT,[-1])
+        self.game_object.set_current_animation_key(StateKeys.WIPEOUT,[-1])
         
     def update(self,time_elapsed):
         
@@ -144,17 +144,17 @@ class WipeoutState(BasicState):
         
 class StandupState(BasicState):
     
-    def __init__(self,character):
-        BasicState.__init__(self, StateKeys.STANDUP, character)
+    def __init__(self,game_object):
+        BasicState.__init__(self, StateKeys.STANDUP, game_object)
         
     def enter(self):
-        self.character.set_current_animation_key(StateKeys.STANDUP)
+        self.game_object.set_current_animation_key(StateKeys.STANDUP)
                   
         
 class AlertState(BasicState):
     
-    def __init__(self,character):
-        BasicState.__init__(self,StateKeys.ALERT,character) 
+    def __init__(self,game_object):
+        BasicState.__init__(self,StateKeys.ALERT,game_object) 
         
         self.time_active = 10
         self.time_left = 10
@@ -166,15 +166,17 @@ class AlertState(BasicState):
         
     def setup(self,assets):
         
-        self.time_active = self.character.properties.alert_time
+        self.time_active = self.game_object.properties.alert_time
         
-        pr = self.character.rect
-        self.alert_area_sprite.rect = self.character.properties.sight_area_rect
+        pr = self.game_object.rect
+        self.alert_area_sprite.rect = self.game_object.properties.sight_area_rect
         self.alert_area_sprite.offset = (0,(pr.height - self.alert_area_sprite.rect.height)/2)
         
     def update(self,time_elapsed):
         
         if self.is_player_in_area():
+            
+            self.face_player()
             
             #reset time
             self.time_left = self.time_active
@@ -186,34 +188,45 @@ class AlertState(BasicState):
                 self.time_consumed = True
             #endif
         #endif
+        
+    def face_player(self):
+        ps = self.game_object.target_player
+        cs = self.game_object
+        
+        if ps.rect.centerx > cs.rect.centerx:
+            cs.turn_right(0)
+        elif ps.rect.centerx < cs.rect.centerx:
+            cs.turn_left(0)
+        #endif
+            
     
     def is_player_in_area(self):
         
-        ps = self.target_player
+        ps = self.game_object.target_player
         ar = self.alert_area_sprite
-        cs = self.character
+        cs = self.game_object
         
         ar.rect.centerx = cs.rect.centerx + ar.offset[0]
         ar.rect.centery = cs.rect.centery + ar.offset[1]
         
-        return pygame.sprite.collide_rect(ps, cs)
+        return pygame.sprite.collide_rect(ps, ar)
     
     def enter(self):
         
         self.time_left = self.time_active
         self.time_consumed = False
         
-        self.character.set_vertical_speed(0)
-        self.character.set_current_animation_key(StateKeys.ALERT)
+        self.game_object.set_horizontal_speed(0)
+        self.game_object.set_current_animation_key(StateKeys.ALERT)
         
     
 class PatrolState(SubStateMachine):
     
     class WalkState(BasicState):
     
-        def __init__(self,character):
+        def __init__(self,game_object):
             
-            BasicState.__init__(self,StateKeys.WALK,character)      
+            BasicState.__init__(self,StateKeys.WALK,game_object)      
               
             self.speed = 0 
             self.patrol_rect = None
@@ -221,6 +234,8 @@ class PatrolState(SubStateMachine):
             self.time_left = 10000
             self.time_consumed = False
             self.player_sighted = False
+            self.support_platform = None
+            self.found_obstacle = False
             
               
             self.sight_sprite = pygame.sprite.Sprite()
@@ -229,76 +244,103 @@ class PatrolState(SubStateMachine):
             self.add_action(BasicState.LA.STEP_GAME, lambda time_elapsed: self.update(time_elapsed))    
             self.add_action(BasicState.LA.COLLISION_RIGHT_WALL, lambda platforms : self.turn_around(True))
             self.add_action(BasicState.LA.COLLISION_LEFT_WALL, lambda platforms : self.turn_around(False))
+            self.add_action(BasicState.LA.PLATFORMS_IN_RANGE, lambda platforms : self.set_support_platform(platforms))
+            
             self.add_action(BasicState.LA.PLAYER_IN_RANGE,
                             lambda player,range_sprites : self.check_player_insight(player,range_sprites))
             
         def enter(self):
-            
-            print "Entered PATROL WALK state with %s base location"%(str(self.character.rect.bottom))
-                     
+                                 
             self.time_left = self.time_active
             self.time_consumed = False
+            self.player_sighted = False
+            self.support_platforms = None
+            self.found_obstacle = False
                     
-            self.character.set_current_animation_key(StateKeys.WALK)
-            self.character.range_collision_group.add(self.range_sprite)
-            self.character.range_collision_group.add(self.sight_sprite)
-            self.character.set_horizontal_speed(self.speed)
+            self.game_object.set_current_animation_key(StateKeys.WALK)
+            self.game_object.range_collision_group.add(self.range_sprite)
+            self.game_object.range_collision_group.add(self.sight_sprite)
+            self.game_object.set_horizontal_speed(self.speed)
             
         def exit(self):
-            self.character.range_collision_group.remove(self.range_sprite)
-            self.character.range_collision_group.remove(self.sight_sprite)
-            
-            print "Exit PATROL WALK state"
-            
+            self.game_object.range_collision_group.remove(self.range_sprite)
+            self.game_object.range_collision_group.remove(self.sight_sprite)
+                        
         def setup(self,assets):
             
-            self.speed = self.character.properties.walk_speed  
-            self.patrol_rect  = self.character.properties.patrol_area_rect
-            self.time_active = self.character.properties.patrol_walk_time
+            self.speed = self.game_object.properties.walk_speed  
+            self.patrol_rect  = self.game_object.properties.patrol_area_rect
+            self.time_active = self.game_object.properties.patrol_walk_time
             
             # sight sprite
-            pr = self.character.rect
+            pr = self.game_object.rect
             self.sight_sprite.rect = pygame.Rect(0,0,300,100) 
             self.sight_sprite.offset = (0,(pr.height - self.sight_sprite.rect.height)/2)
             
             # range sprite
             self.range_height_extension = 4
-            self.range_sprite.rect = self.character.rect.copy()
+            self.range_sprite.rect = self.game_object.rect.copy()
             self.range_sprite.rect.height = self.range_sprite.rect.height + self.range_height_extension
             self.range_sprite.offset = (0,0)
             
+        def set_support_platform(self,platforms):
+            go = self.game_object
+            for p in platforms:
+                if abs(go.rect.bottom - p.rect.top) <=2:                    
+                    self.support_platform = p
+                #endif
+            #endfor
+            
         def turn_around(self,collision_right):
             
-            if self.character.facing_right == collision_right:
+            self.found_obstacle = True
+            if self.game_object.facing_right == collision_right:
                 
-                if self.character.facing_right:
-                    self.character.turn_left(-self.speed)
+                if self.game_object.facing_right:
+                    self.game_object.turn_left(-self.speed)
                 else :
-                    self.character.turn_right(self.speed)
+                    self.game_object.turn_right(self.speed)
                 #endif
                 
             #endif
             
+        def return_to_patrol_area(self):
+            
+            ps = self.game_object  
+            if self.support_platform != None:
+                if ps.rect.centerx > self.support_platform.rect.centerx:
+                    ps.turn_left(-self.speed)
+                else:
+                    ps.turn_right(self.speed)
+                #endif
+            #endif
+                
+            
         def is_inside_patrol_area(self):
             
-            ps = self.character
+            ps = self.game_object            
+            in_area = True
+            if self.support_platform != None:
+                self.patrol_rect.bottom = self.support_platform.rect.top
+                self.patrol_rect.centerx = self.support_platform.rect.centerx
+                in_area = self.patrol_rect.colliderect(ps.rect)
+            #endif
             
-            return (ps.rect.left > self.patrol_rect.left) or \
-                (ps.rect.right < self.patrol_rect.right)  
+            return in_area 
                 
         def check_player_insight(self,player,range_sprites):
             
-            cs = self.character
+            go = self.game_object
             ps = player
             for sp in range_sprites:
                 
                 if sp == self.sight_sprite:                    
-                    if self.character.facing_right and (self.rect.centerx < ps.rect.centerx):
-                        self.character.target_player = player
+                    if self.game_object.facing_right and (go.rect.centerx < ps.rect.centerx):
+                        self.game_object.target_player = player
                         self.player_sighted = True
                     
-                    elif self.character.facing_left and (self.rect.centerx > ps.rect.centerx):
-                        self.character.target_player = player
+                    elif (not self.game_object.facing_right) and (go.rect.centerx > ps.rect.centerx):
+                        self.game_object.target_player = player
                         self.player_sighted = True
                         
                     #endif
@@ -314,23 +356,21 @@ class PatrolState(SubStateMachine):
             # update time counter
             self.time_left -= time_elapsed
             
-            if self.is_inside_patrol_area():
-                
                 # check active time
-                if self.time_left <= 0:
-                    self.time_consumed = True
-                #endif
-                
-            else:             
-                self.turn_around()
+            if self.time_left <= 0:
+                self.time_consumed = True
+            else:
             
+                if (not self.found_obstacle) and (not self.is_inside_patrol_area()):                        
+                    self.return_to_patrol_area()
+                #endif        
             #endif
             
     class UnwaryState(BasicState):
         
-        def __init__(self,character):
+        def __init__(self,game_object):
             
-            BasicState.__init__(self,StateKeys.UNWARY,character)
+            BasicState.__init__(self,StateKeys.UNWARY,game_object)
             
             self.time_active = 10000
             self.time_left = 10000 
@@ -338,18 +378,18 @@ class PatrolState(SubStateMachine):
             
             self.add_action(BasicState.LA.STEP_GAME, lambda time_elapsed: self.update(time_elapsed))  
             self.add_action(AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED,
-                            lambda : self.character.set_current_animation_key(StateKeys.UNWARY,[-1]))
+                            lambda : self.game_object.set_current_animation_key(StateKeys.UNWARY,[-1]))
             
         def enter(self):      
             
-            self.character.set_current_animation_key(StateKeys.UNWARY)
+            self.game_object.set_current_animation_key(StateKeys.UNWARY)
             self.time_left = self.time_active
             self.time_consumed = False  
-            self.character.set_horizontal_speed(0) 
+            self.game_object.set_horizontal_speed(0) 
         
         def setup(self,assets):
             
-            self.time_active = self.character.properties.patrol_unwary_time
+            self.time_active = self.game_object.properties.patrol_unwary_time
             
         def update(self,time_elapsed):
             
@@ -361,10 +401,10 @@ class PatrolState(SubStateMachine):
             #endif                
     
     
-    def __init__(self,parent_sm,character):
+    def __init__(self,parent_sm,game_object):
         
         SubStateMachine.__init__(self,StateKeys.PATROL ,parent_sm)
-        self.character = character
+        self.game_object = game_object
         
     def setup(self,assets):
         
@@ -382,9 +422,9 @@ class PatrolState(SubStateMachine):
         
     def create_transition_rules(self):
         
-        self.walk_state = self.WalkState(self.character)
-        self.unwary_state = self.UnwaryState(self.character)
-        self.standup_state = StandupState(self.character)
+        self.walk_state = self.WalkState(self.game_object)
+        self.unwary_state = self.UnwaryState(self.game_object)
+        self.standup_state = StandupState(self.game_object)
         
         # transitions
         self.add_transition(self.start_state, self.ActionKeys.START_SM, self.walk_state.key)
