@@ -18,6 +18,7 @@ class StateKeys(object):
     UNWARY='UNWARY'
     DROP='DROP'
     WIPEOUT='WIPEOUT'
+    STANDUP = 'STANDUP'
     
     
 class BasicState(State):
@@ -140,7 +141,15 @@ class WipeoutState(BasicState):
                 self.time_consumed = True
             #endif
         #endif
-           
+        
+class StandupState(BasicState):
+    
+    def __init__(self,character):
+        BasicState.__init__(self, StateKeys.STANDUP, character)
+        
+    def enter(self):
+        self.character.set_current_animation_key(StateKeys.STANDUP)
+                  
         
 class AlertState(BasicState):
     
@@ -249,7 +258,7 @@ class PatrolState(SubStateMachine):
             
             # sight sprite
             pr = self.character.rect
-            self.sight_sprite.rect = pygame.Rect(0,0,200,100) 
+            self.sight_sprite.rect = pygame.Rect(0,0,300,100) 
             self.sight_sprite.offset = (0,(pr.height - self.sight_sprite.rect.height)/2)
             
             # range sprite
@@ -375,6 +384,7 @@ class PatrolState(SubStateMachine):
         
         self.walk_state = self.WalkState(self.character)
         self.unwary_state = self.UnwaryState(self.character)
+        self.standup_state = StandupState(self.character)
         
         # transitions
         self.add_transition(self.start_state, self.ActionKeys.START_SM, self.walk_state.key)
@@ -382,5 +392,6 @@ class PatrolState(SubStateMachine):
         self.add_transition(self.walk_state, BasicState.LA.STEP_GAME, self.unwary_state.key, lambda: self.walk_state.time_consumed)
         self.add_transition(self.walk_state, BasicState.LA.STEP_GAME, self.stop_state.key, lambda: self.walk_state.player_sighted)
         
-        self.add_transition(self.unwary_state, BasicState.LA.STEP_GAME, self.walk_state.key, lambda: self.unwary_state.time_consumed)
+        self.add_transition(self.unwary_state, BasicState.LA.STEP_GAME, self.standup_state.key, lambda: self.unwary_state.time_consumed)
+        self.add_transition(self.standup_state,AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED, self.walk_state.key)
         

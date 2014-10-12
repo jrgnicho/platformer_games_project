@@ -41,7 +41,8 @@ class EnemyStateMachine(StateMachine,EnemyBase):
         self.patrol_state = PatrolState(self, self)
         self.alert_state = AlertState(self)
         self.drop_state = DropState(self)
-        self.wipeout_state = WipeoutState(self)       
+        self.wipeout_state = WipeoutState(self)    
+        self.standup_state = StandupState(self)   
 
         
         self.add_transition(self.patrol_state,SubStateMachine.ActionKeys.STOP_SM,self.alert_state.key)
@@ -49,8 +50,10 @@ class EnemyStateMachine(StateMachine,EnemyBase):
         
         self.add_transition(self.drop_state,LevelActionKeys.COLLISION_BELOW,self.wipeout_state.key)
         
-        self.add_transition(self.wipeout_state,LevelActionKeys.STEP_GAME,self.patrol_state.key,
+        self.add_transition(self.wipeout_state,LevelActionKeys.STEP_GAME,self.standup_state.key,
                             lambda: self.wipeout_state.time_consumed)
+        
+        self.add_transition(self.standup_state,AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED, self.patrol_state.key)
         
         
         self.add_transition(self.alert_state,LevelActionKeys.STEP_GAME,self.patrol_state.key,lambda: self.alert_state.time_consumed)
