@@ -217,12 +217,14 @@ class SubStateMachine(StateMachine):
         
         START_SM = 'START_SM'
         STOP_SM = 'STOP_SM'
+        __IGNORE_ACTION__ = 'IGNORE_ACTION'
         
         
     class StateKeys(object):
         
         START = 'START'
         STOP = 'STOP'
+        NONE = 'NONE'
         
         
     class StartState(State):
@@ -256,7 +258,14 @@ class SubStateMachine(StateMachine):
         self.parent_sm = parent_state_machine
         self.action_list = []
         self.start_state = SubStateMachine.StartState(self)
-        self.stop_state = SubStateMachine.StopState(self)    
+        self.stop_state = SubStateMachine.StopState(self) 
+        self.finished = False # used to exit the SM from parent State Machine   
+        
+        # adding start and stop sub machine states to transition table
+        self.add_transition(self.start_state, SubStateMachine.ActionKeys.__IGNORE_ACTION__,
+                            SubStateMachine.StateKeys.START, None)
+        self.add_transition(self.stop_state, SubStateMachine.ActionKeys.__IGNORE_ACTION__,
+                    SubStateMachine.StateKeys.STOP, None)
         
     def has_action(self,action_key):
         
@@ -283,22 +292,25 @@ class SubStateMachine(StateMachine):
         #endfor
         
         
-    def start(self):
+    def start(self):        
         
         self.execute(SubStateMachine.ActionKeys.START_SM)  
             
     def stop(self):
         
         self.active_state_key = self.start_state.key
-        self.parent_sm.execute(SubStateMachine.ActionKeys.STOP_SM)
+        self.finished = True
         
-    def enter(self):
+    def enter(self):        
         
+        print "Entering Sub State Machine"
+        self.finished = False
         active_state_obj = self.states_dict[self.active_state_key]
         active_state_obj.enter()
         
         
     def exit(self):
+        print  "Exiting Sub State Machine"
         active_state_obj = self.states_dict[self.active_state_key]
         active_state_obj.exit()
         self.active_state_key = self.start_state.key
