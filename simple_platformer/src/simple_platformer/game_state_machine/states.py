@@ -64,6 +64,10 @@ class State(object):
         
         if self.exit_callback != None:
             self.exit_callback()
+            
+    @property
+    def action_keys(self):
+        return self.actions.keys()
         
 class StateMachine(object):
     
@@ -71,9 +75,7 @@ class StateMachine(object):
         
         self.states_dict={}
         self.active_state_key = None
-        self.transitions={}
-        self.action_queue = [] # list of an action, arguments tuple 
-        #self.enter = self.execute  # will be called when used as a sub state machine        
+        self.transitions={} 
 
         
     def add_state(self,state_obj):
@@ -252,20 +254,33 @@ class SubStateMachine(StateMachine):
         
         self.key = key
         self.parent_sm = parent_state_machine
+        self.action_list = []
         self.start_state = SubStateMachine.StartState(self)
         self.stop_state = SubStateMachine.StopState(self)    
         
     def has_action(self,action_key):
         
-        #print "SM at state %s has not action %s"%(self.active_state_key,action_key)
-        active_state_obj = self.states_dict[self.active_state_key]
-        
         if self.active_state_key == SubStateMachine.StateKeys.START:
-            self.start()
+            #self.start()
             return False
         else:
-           return active_state_obj.has_action(action_key)
+            return (self.action_list.count(action_key) > 0)
         #endif 
+        
+    @property    
+    def action_keys(self):
+        return self.action_list
+        
+    def add_transition(self,state_obj,action_key,next_state_key,condition_cb = lambda: True):
+        StateMachine.add_transition(self, state_obj, action_key, next_state_key, condition_cb)
+        
+        # adding actions to action list
+        action_keys = state_obj.action_keys     
+        for action_key in action_keys:
+            if self.action_list.count(action_key) == 0:
+                self.action_list.append(action_key)
+            #endif
+        #endfor
         
         
     def start(self):
