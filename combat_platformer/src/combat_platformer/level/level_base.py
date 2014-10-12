@@ -22,7 +22,8 @@ class LevelBase(pygame.sprite.Sprite):
         # level objects
         self.player = None # placeholder for PlayerStateMachine object
         self.platforms = pygame.sprite.Group()
-        self.enemies  = []       
+        self.__enemies_group__ = pygame.sprite.Group() 
+        self.__enemies_list__  = []       
         
         # level size
         self.rect = pygame.Rect(0,0,w,h)  
@@ -32,6 +33,25 @@ class LevelBase(pygame.sprite.Sprite):
         
         # background
         self.background = None
+        
+        # collision detection
+        self.__active_enemies_group__ = pygame.sprite.Group()
+        self.__active_enemies_region__ = pygame.sprite.Sprite()
+        self.__active_enemies_region__.rect =self.screen_bounds.rect.copy()
+        
+    def add_enemy(self,enemy):
+        self.__enemies_list__.append(enemy)
+        self.__enemies_group__.add(enemy)
+        
+    def update_active_enemies(self):
+        
+        self.__active_enemies_group__.empty()
+        self.__active_enemies_region__.rect.center = self.player.rect.center
+        active_enemies = pygame.sprite.spritecollide(self.__active_enemies_region__, self.__enemies_group__, False, False)
+        for enemies in active_enemies:
+            self.__active_enemies_group__.add(enemies)
+        #endfor       
+    
         
     def load_background(self,file_name):
         
@@ -220,7 +240,7 @@ class LevelBase(pygame.sprite.Sprite):
         # perform transition or execute action if supported by active state
         self.player.execute(LevelActionKeys.STEP_GAME,[elapsed_time])     
         
-        for enemy in self.enemies:
+        for enemy in self.__enemies_list__:
             enemy.execute(LevelActionKeys.STEP_GAME,[elapsed_time])            
         
         # check user input
@@ -232,7 +252,7 @@ class LevelBase(pygame.sprite.Sprite):
         self.update_enemies()
                    
         # updating objects
-        for enemy in self.enemies:
+        for enemy in self.__enemies_list__:
             enemy.update()  
         #endfor
         
@@ -263,7 +283,7 @@ class LevelBase(pygame.sprite.Sprite):
         
     def update_enemies(self):
         
-        for enemy in self.enemies:            
+        for enemy in self.__enemies_list__:            
             
             # apply gravity
             enemy.execute(LevelActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])   
@@ -296,7 +316,7 @@ class LevelBase(pygame.sprite.Sprite):
         # draw objects
         self.platforms.draw(screen)
         
-        for enemy in self.enemies:
+        for enemy in self.__enemies_list__:
             enemy.draw(screen)
         
         # draw player
@@ -317,7 +337,7 @@ class LevelBase(pygame.sprite.Sprite):
             platform.rect.y -= dy
         #endfor
         
-        for enemy in self.enemies:
+        for enemy in self.__enemies_list__:
             enemy.rect.x += dx
             enemy.rect.y -= dy
         #endfor  

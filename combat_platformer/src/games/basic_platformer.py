@@ -25,9 +25,10 @@ class BasicPlatformer(object):
         
         # enemys
         self.num_enemies = 3
+        self.enemies_list = []
         for i in range(0,self.num_enemies):
             enemy = EnemyStateMachine()
-            self.level.enemies.append(enemy)
+            self.enemies_list.append(enemy)
         #endfor
 
     def exit(self):
@@ -100,7 +101,7 @@ class BasicPlatformer(object):
         keys = ['WALK', 'UNWARY','ALERT','DROP','WIPEOUT', 'STANDUP']
         positions = [(200,200), (400,50), (300,80)]
         counter = 0
-        for enemy in self.level.enemies:
+        for enemy in self.enemies_list:
             
             
             enemy.target_player = self.player
@@ -113,7 +114,8 @@ class BasicPlatformer(object):
                     print "Error loading animation sprites for key %s"%(key)
                     return False
                 #endif
-            #endfor
+            #endfor            
+            self.level.add_enemy(enemy)
             
             print "Added enemy animation keys: %s"%(str(keys))
         #endfor
