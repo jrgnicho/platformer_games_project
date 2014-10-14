@@ -13,8 +13,11 @@ class AnimatableObject(pygame.sprite.Sprite):
     
     class Events:
     
-        ANIMATION_FRAME_COMPLETED = "ANIMATION_FRAME_COMPLETED"
-        ANIMATION_SEQUENCE_COMPLETED = "ANIMATION_SEQUENCE_COMPLETED"
+#         ANIMATION_FRAME_COMPLETED = "ANIMATION_FRAME_COMPLETED"
+#         ANIMATION_SEQUENCE_COMPLETED = "ANIMATION_SEQUENCE_COMPLETED"
+        ANIMATION_FRAME_COMPLETED = pygame.USEREVENT + 1
+        ANIMATION_SEQUENCE_COMPLETED = pygame.USEREVENT + 2       
+        
             
     
     def __init__(self,w = 40,h = 60):
