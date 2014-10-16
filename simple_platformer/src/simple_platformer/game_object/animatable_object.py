@@ -39,12 +39,12 @@ class AnimatableObject(GameObject):
         self.animation_mode = AnimatableObject.ANIMATION_MODE_CYCLE
         self.animation_selected_frames = 0 # only the frames which indices are in this list will be animated 
         self.animation_cycles_counter = 0 # number of times the current animation sequence has been cycled through
-        self.animation_sprite = pygame.sprite.Sprite()
-        self.animation_sprite.image = pygame.Surface([w,h])
-        self.animation_sprite.image.fill(Colors.RED)
-        self.animation_sprite.rect = self.animation_sprite.image.get_rect()
+        self.drawable_sprite = pygame.sprite.Sprite()
+        self.drawable_sprite.image = pygame.Surface([w,h])
+        self.drawable_sprite.image.fill(Colors.RED)
+        self.drawable_sprite.rect = self.drawable_sprite.image.get_rect()
         self.sprite_group = pygame.sprite.Group()
-        self.sprite_group.add(self.animation_sprite)
+        self.sprite_group.add(self.drawable_sprite)
                 
         
         # event handlers
@@ -140,7 +140,7 @@ class AnimatableObject(GameObject):
         
         # resizing drawable sprite
         sprite_set = self.animation_images_right_side_dict[self.animation_set_key]
-        self.animation_sprite.rect.size = sprite_set.sprites[0].get_size()
+        self.drawable_sprite.rect.size = sprite_set.sprites[0].get_size()
         
         return True
     
@@ -182,7 +182,7 @@ class AnimatableObject(GameObject):
             
             # select last frame
             last_frame_index = self.animation_selected_frames[-1]
-            self.animation_sprite.image = sprite_set.sprites[last_frame_index]
+            self.drawable_sprite.image = sprite_set.sprites[last_frame_index]
             
             # reset animation start time
             self.animation_start_time = current_time
@@ -209,17 +209,17 @@ class AnimatableObject(GameObject):
             self.animation_frame_index = self.animation_selected_frames[frame_index_position]         
             
             # select following frame           
-            self.animation_sprite.image = sprite_set.sprites[self.animation_frame_index]
+            self.drawable_sprite.image = sprite_set.sprites[self.animation_frame_index]
             self.event_key = AnimatableObject.Events.ANIMATION_FRAME_COMPLETED
             #self.notify(AnimatableObject.Events.ANIMATION_FRAME_COMPLETED)
             
         #endif 
             
         
-#         self.animation_sprite.rect.bottom = self.rect.bottom 
-#         self.animation_sprite.rect.centerx = self.rect.centerx
-        self.animation_sprite.rect.bottom = self.screen_bottom 
-        self.animation_sprite.rect.centerx = self.screen_centerx        
+#         self.drawable_sprite.rect.bottom = self.rect.bottom 
+#         self.drawable_sprite.rect.centerx = self.rect.centerx
+        self.drawable_sprite.rect.bottom = self.screen_bottom 
+        self.drawable_sprite.rect.centerx = self.screen_centerx        
         
         
         
