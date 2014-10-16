@@ -82,7 +82,7 @@ class DashState(BasicState):
         
         progress_percent = self.player.get_animation_progress_percentage()
         self.player.set_momentum(0.8*self.player.properties.dash_speed 
-                                                      if progress_percent>0.4 else 0)
+                                                      if progress_percent>0.3 else 0)
 
         
         
@@ -107,7 +107,7 @@ class MidairDashState(BasicState):
         plyr.set_current_animation_key(StateKeys.MIDAIR_DASHING),
         plyr.set_horizontal_speed(self.player.properties.dash_speed)
         plyr.set_vertical_speed(0)
-        plyr.midair_dash_countdown -=1
+        plyr.midair_dash_remaining -=1
         
         
     def enter(self):
@@ -174,7 +174,7 @@ class StandState(BasicState):
         self.player.set_horizontal_speed(0)
         self.player.set_current_animation_key(StateKeys.STANDING)
         self.player.set_momentum(0)
-        self.player.midair_dash_countdown = self.player.properties.max_midair_dashes
+        self.player.midair_dash_remaining = self.player.properties.max_midair_dashes
         self.player.range_collision_group.add(self.range_sprite) 
         self.is_standing_on_edge = False
         self.is_beyond_edge = False
@@ -325,7 +325,7 @@ class JumpState(BasicState):
     def enter(self):
         self.player.set_vertical_speed(self.player.properties.jump_speed)
         self.player.set_current_animation_key(StateKeys.JUMPING)
-        self.player.midair_dash_countdown = self.player.properties.max_midair_dashes
+        self.player.midair_dash_remaining = self.player.properties.max_midair_dashes
         self.player.range_collision_group.add(self.range_sprite) 
         
         
@@ -574,7 +574,7 @@ class LandState(BasicState):
         
     def enter(self):                
 
-        self.player.midair_dash_countdown = self.player.properties.max_midair_dashes
+        self.player.midair_dash_remaining = self.player.properties.max_midair_dashes
         
         self.player.set_current_animation_key(StateKeys.LANDING)           
         
