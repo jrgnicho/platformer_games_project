@@ -478,7 +478,7 @@ class LevelBase(GameObject):
          
         # horizontal bounds
         if game_object.rect.right  > self.rect.width:
-            game_object.rect.right = self.rect.right
+            game_object.rect.right = self.rect.width
             
         elif game_object.rect.left < 0:
             game_object.rect.left = 0
