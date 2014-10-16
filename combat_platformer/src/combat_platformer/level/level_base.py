@@ -38,6 +38,9 @@ class LevelBase(pygame.sprite.Sprite):
         self.__active_enemies_region__ = pygame.sprite.Sprite()
         self.__active_enemies_region__.rect =self.screen_bounds.rect.copy()
         
+        # input
+        self.__input_events__ = (pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP)
+        
     def add_enemy(self,enemy):
         self.__enemies_group__.add(enemy)
         
@@ -166,7 +169,7 @@ class LevelBase(pygame.sprite.Sprite):
             - outputs:    True/False (Quit game)
         """ 
         
-        for event in pygame.event.get():
+        for event in pygame.event.get(self.__input_events__):
             
             if event.type  == pygame.QUIT:
                 return False
