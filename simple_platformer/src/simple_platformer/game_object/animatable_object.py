@@ -1,8 +1,9 @@
 import pygame
 
 from simple_platformer.utilities import *
+from simple_platformer.game_object import GameObject
 
-class AnimatableObject(pygame.sprite.Sprite):
+class AnimatableObject(GameObject):
     
     class ActionKeys:
         ACTION_SEQUENCE_EXPIRED = 'ACTION_SEQUENCE_EXPIRED'
@@ -17,10 +18,10 @@ class AnimatableObject(pygame.sprite.Sprite):
         ANIMATION_SEQUENCE_COMPLETED = "ANIMATION_SEQUENCE_COMPLETED"
             
     
-    def __init__(self,w = 40,h = 60):
+    def __init__(self,w = 40,h = 60,parent_object = None):
         
         # superclass constructor
-        pygame.sprite.Sprite.__init__(self)
+        GameObject.__init__(self,0,0,w,h,parent_object)
         
         
         # animation frame management
@@ -42,9 +43,6 @@ class AnimatableObject(pygame.sprite.Sprite):
         self.sprite_group = pygame.sprite.Group()
         self.sprite_group.add(self.animation_sprite)
                 
-        # collision 
-        #self = pygame.sprite.Sprite()
-        self.rect = self.animation_sprite.rect.copy()
         
         # event handlers
         self.event_key = AnimatableObject.Events.ANIMATION_FRAME_COMPLETED
@@ -215,9 +213,10 @@ class AnimatableObject(pygame.sprite.Sprite):
         #endif 
             
         
-        self.animation_sprite.rect.bottom = self.rect.bottom
-        #self.animation_sprite.rect.y += (self.rect.height - self.animation_sprite.rect.height)       
-        self.animation_sprite.rect.centerx = self.rect.centerx      
+#         self.animation_sprite.rect.bottom = self.rect.bottom 
+#         self.animation_sprite.rect.centerx = self.rect.centerx
+        self.animation_sprite.rect.bottom = self.screen_bottom 
+        self.animation_sprite.rect.centerx = self.screen_centerx        
         
         
         
