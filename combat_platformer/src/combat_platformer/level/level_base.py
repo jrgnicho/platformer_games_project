@@ -3,30 +3,29 @@ from simple_platformer.utilities import GameProperties
 from simple_platformer.utilities import ScreenBounds
 from simple_platformer.utilities import Colors, ScreenProperties
 from simple_platformer.game_state_machine import StateMachine
-from simple_platformer.levels import Platform
+from simple_platformer.game_object import GameObject
 from simple_platformer.game_state_machine import *
+from combat_platformer.level import Platform
 from combat_platformer.level.action_keys import *
 from combat_platformer.player.action_keys import *
 from combat_platformer.player import PlayerBase
 from combat_platformer.enemy import EnemyBase
 
 
-class LevelBase(pygame.sprite.Sprite):
+class LevelBase(GameObject):
     
     PLATFORM_CHECK_STEP = 2
     
     def __init__(self,w = ScreenProperties.SCREEN_WIDTH*3,h = ScreenProperties.SCREEN_HEIGHT*4):
         
-        pygame.sprite.Sprite.__init__(self)
+        GameObject.__init__(self,0,0,w,h)
         
         # level objects
-        self.player = None # placeholder for PlayerStateMachine object
+        self.__player__ = None # placeholder for PlayerStateMachine object
         self.__platforms__ = pygame.sprite.Group()
+        self.__platforms_drawables__ = pygame.sprite.Group()
         self.__enemies_group__ = pygame.sprite.Group() 
-        
-        # level size
-        self.rect = pygame.Rect(0,0,w,h)  
-        
+                
         # level screen bounds
         self.screen_bounds = ScreenBounds()
         
@@ -37,14 +36,24 @@ class LevelBase(pygame.sprite.Sprite):
         self.__active_enemies_group__ = pygame.sprite.Group()
         self.__active_enemies_region__ = pygame.sprite.Sprite()
         self.__active_enemies_region__.rect =self.screen_bounds.rect.copy()
+    
+    @property
+    def player(self):
+        return self.__player__
+    
+    @player.setter    
+    def player(self,player):
+        self.__player__ = player
+        self.__player__.parent_object = self
         
     def add_enemy(self,enemy):
+        enemy.parent_object = self
         self.__enemies_group__.add(enemy)
         
     def update_active_enemies(self):
         
         self.__active_enemies_group__.empty()
-        self.__active_enemies_region__.rect.center = self.player.rect.center
+        self.__active_enemies_region__.rect.center = self.__player__.rect.center
         active_enemies = pygame.sprite.spritecollide(self.__active_enemies_region__, self.__enemies_group__, False, None)
         for enemies in active_enemies:
             self.__active_enemies_group__.add(enemies)
@@ -123,24 +132,31 @@ class LevelBase(pygame.sprite.Sprite):
     def setup(self):
         
         # setup player
-        if self.player == None:
+        if self.__player__ == None:
             print "Player has not been added, exiting"
             return False            
         #endif
         
         
         # create lever
-        platforms = [Platform(100, 200,100, 20),
-                     Platform(80, 100,100, 20),
-                     Platform(400, 300,100, 20),
-                     Platform(450, 20,100, 20),
-                     Platform(500, 120,100, 20),
-                     Platform(450 + 80, 400 + 100,100, 20),
-                     Platform(450 + 400, 400 + 300,100, 20),
-                     Platform(450 + 450, 400 + 20,200, 20),
-                     Platform(450 + 500, 400 + 120,100, 20),
-                     Platform(800,200,600,20),
-                     Platform(0,-10,2000,20)] # floor
+        platforms = [Platform(500, 1220,200, 20),
+                     Platform(400 , 1100,100, 20),
+                     Platform(200, 1160,100, 20),
+                     Platform(10, 1500,100, 20),
+                     Platform(400, 1450,100, 20),
+                     Platform(600, 1400,520, 20),
+                     Platform(950, 1000,220, 20),
+                     Platform(200, 1700,460, 20),
+                     Platform(800, 1800,100, 20),
+                     Platform(500,1920,600,20),
+                     Platform(1700, 1600,800, 20),
+                     Platform(2050, 1800,200, 20),
+                     Platform(1400,1400,200,20),
+                     Platform(1600,1900,100,20),
+                     Platform(1560,1700,200,20),
+                     Platform(1300,1300,200,20),
+                     Platform(1800,1200,100,20),
+                     Platform(-500, 2100,3000,20)] # floor
         
         self.add_platforms(platforms)
         
@@ -152,9 +168,9 @@ class LevelBase(pygame.sprite.Sprite):
         for p in platforms:
             
             if type(p) is Platform: 
-                p.rect.centerx = p.rect.centerx + self.rect.x  
-                p.rect.centery = self.rect.centery -  p.rect.y                         
+                p.parent_object = self                      
                 self.__platforms__.add(p) 
+                self.__platforms_drawables__.add(p.drawable_sprite)
             #endif                
         #endfor
         
@@ -180,31 +196,31 @@ class LevelBase(pygame.sprite.Sprite):
                 #endif
                 
                 if event.key == pygame.K_z:
-                    self.player.execute(PlayerActionKeys.DASH) 
+                    self.__player__.execute(PlayerActionKeys.DASH) 
                     
                 #endif
                 
                 if event.key == pygame.K_UP:
-                    self.player.execute(PlayerActionKeys.MOVE_UP) 
+                    self.__player__.execute(PlayerActionKeys.MOVE_UP) 
                     
                 #endif
                     
                 if event.key == pygame.K_x:                    
                     #print "JUMP commanded"
-                    self.player.execute(PlayerActionKeys.JUMP) 
+                    self.__player__.execute(PlayerActionKeys.JUMP) 
                     
                 #endif
                     
             if event.type == pygame.KEYUP:                
                     
                 if event.key == pygame.K_x: #K_UP:
-                    self.player.execute(PlayerActionKeys.CANCEL_JUMP) 
+                    self.__player__.execute(PlayerActionKeys.CANCEL_JUMP) 
                     #print "CANCEL_JUMP commanded"
                     
                 #endif
                 
                 if event.key == pygame.K_z: #K_KP0:
-                    self.player.execute(PlayerActionKeys.CANCEL_DASH) 
+                    self.__player__.execute(PlayerActionKeys.CANCEL_DASH) 
                     
                 #endif
                 
@@ -215,15 +231,15 @@ class LevelBase(pygame.sprite.Sprite):
         # check for pressed keys
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] :
-            self.player.execute(PlayerActionKeys.MOVE_LEFT)  
+            self.__player__.execute(PlayerActionKeys.MOVE_LEFT)  
         #endif          
             
         if keys[pygame.K_RIGHT]:
-            self.player.execute(PlayerActionKeys.MOVE_RIGHT)  
+            self.__player__.execute(PlayerActionKeys.MOVE_RIGHT)  
         #endif 
                     
         if (not keys[pygame.K_LEFT]) and ( not keys[pygame.K_RIGHT]):
-            self.player.execute(PlayerActionKeys.CANCEL_MOVE)  
+            self.__player__.execute(PlayerActionKeys.CANCEL_MOVE)  
         #endif 
             
         return True
@@ -236,7 +252,7 @@ class LevelBase(pygame.sprite.Sprite):
             - outputs: True if successful, False otherwise due to game exit condition or user input
         """
         # perform transition or execute action if supported by active state
-        self.player.execute(LevelActionKeys.STEP_GAME,[elapsed_time])     
+        self.__player__.execute(LevelActionKeys.STEP_GAME,[elapsed_time])     
         
         for enemy in self.__enemies_group__:
             enemy.execute(LevelActionKeys.STEP_GAME,[elapsed_time])            
@@ -255,28 +271,28 @@ class LevelBase(pygame.sprite.Sprite):
         #endfor
         
         self.__platforms__.update()
-        self.player.update()
+        self.__player__.update()
         
         return True
     
     def update_player(self):
         
         # apply gravity
-        self.player.execute(LevelActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])   
+        self.__player__.execute(LevelActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])   
         
         # moving and checking collision           
-        self.player.step_x()
-        self.check_collisions_in_x(self.player)         
+        self.__player__.step_x()
+        self.check_collisions_in_x(self.__player__)         
             
-        self.player.step_y()
-        self.check_collisions_in_y(self.player) 
+        self.__player__.step_y()
+        self.check_collisions_in_y(self.__player__) 
         
         
         # check for platform collisions
-        self.check_platform_support(self.player)
+        self.check_platform_support(self.__player__)
         
         # check screen and level bounds        
-        self.check_level_bounds(self.player)
+        self.check_level_bounds(self.__player__)
         self.check_screen_bounds()
         
     def update_enemies(self):
@@ -311,9 +327,9 @@ class LevelBase(pygame.sprite.Sprite):
                     rs.rect.center = enemy.rect.center
                 #endfor
                 
-                hits = pygame.sprite.spritecollide(self.player, rg, False, None)
+                hits = pygame.sprite.spritecollide(self.__player__, rg, False, None)
                 if len(hits) > 0:
-                    enemy.execute(LevelActionKeys.PLAYER_IN_RANGE,[self.player, hits])
+                    enemy.execute(LevelActionKeys.PLAYER_IN_RANGE,[self.__player__, hits])
                 #endif
             #endfor
             
@@ -330,14 +346,13 @@ class LevelBase(pygame.sprite.Sprite):
             
 
         # draw objects
-        self.__platforms__.draw(screen)
+        self.__platforms_drawables__.draw(screen)
         
         for enemy in self.__enemies_group__:
             enemy.draw(screen)
         
         # draw player
-        self.player.draw(screen)
-        
+        self.__player__.draw(screen)        
         
         
     def scroll(self,dx,dy):
@@ -346,17 +361,7 @@ class LevelBase(pygame.sprite.Sprite):
         """     - incr: Vector2D() value in world coordinates """
                 
         self.rect.x += dx
-        self.rect.y -= dy
-        
-        for platform in self.__platforms__:
-            platform.rect.x += dx
-            platform.rect.y -= dy
-        #endfor
-        
-        for enemy in self.__enemies_group__:
-            enemy.rect.x += dx
-            enemy.rect.y -= dy
-        #endfor  
+        self.rect.y -= dy        
         
     def check_platform_support(self,game_object):
         
@@ -435,23 +440,23 @@ class LevelBase(pygame.sprite.Sprite):
         scroll_y = 0
         
         # vertical bounds
-        if self.player.rect.bottom > self.screen_bounds.rect.bottom : # below ground level
-            scroll_y = -(self.screen_bounds.rect.bottom - self.player.rect.bottom)
-            self.player.rect.bottom = self.screen_bounds.rect.bottom 
+        if self.__player__.screen_bottom > self.screen_bounds.rect.bottom : # below ground level
+            scroll_y = -(self.screen_bounds.rect.bottom - self.__player__.screen_bottom)
+            #self.__player__.screen_bottom = self.screen_bounds.rect.bottom 
             
-        elif self.player.rect.top < self.screen_bounds.rect.top: # above level top
-            scroll_y = -(self.screen_bounds.rect.top - self.player.rect.top)
-            self.player.rect.top = self.screen_bounds.rect.top
+        elif self.__player__.screen_top < self.screen_bounds.rect.top: # above level top
+            scroll_y = -(self.screen_bounds.rect.top - self.__player__.screen_top)
+            #self.__player__.screen_top = self.screen_bounds.rect.top
             
         # horizontal bounds
-        if self.player.rect.right > self.screen_bounds.rect.right : # too far to the right
-            scroll_x = self.screen_bounds.rect.right - self.player.rect.right
-            self.player.rect.right = self.screen_bounds.rect.right 
+        if self.__player__.screen_right > self.screen_bounds.rect.right : # too far to the right
+            scroll_x = self.screen_bounds.rect.right - self.__player__.screen_right
+            #self.__player__.screen_right = self.screen_bounds.rect.right 
             #print "Scrolling right, screen right bound of %d exceeded"%self.screen_bounds.rect.right
             
-        elif self.player.rect.left < self.screen_bounds.rect.left: # too far to the left
-            scroll_x = self.screen_bounds.rect.left - self.player.rect.left
-            self.player.rect.left = self.screen_bounds.rect.left
+        elif self.__player__.screen_left < self.screen_bounds.rect.left: # too far to the left
+            scroll_x = self.screen_bounds.rect.left - self.__player__.screen_left
+            #self.__player__.screen_left = self.screen_bounds.rect.left
             #print "Scrolling left"
             
         # scrolling level 
@@ -460,20 +465,20 @@ class LevelBase(pygame.sprite.Sprite):
     def check_level_bounds(self,game_object):
         
         # vertical bounds
-        if game_object.rect.bottom > self.rect.bottom : # below ground level
-            game_object.rect.bottom = self.rect.bottom
+        if game_object.rect.bottom > self.rect.height : # below ground level
+            game_object.rect.bottom = self.rect.height
             
-        elif game_object.rect.top < self.rect.top: # above level top
-            game_object.rect.top = self.rect.top
+        elif game_object.rect.top < 0: # above level top
+            game_object.rect.top = 0
         
         #endif        
          
         # horizontal bounds
-        if game_object.rect.right  > self.rect.right:
+        if game_object.rect.right  > self.rect.width:
             game_object.rect.right = self.rect.right
             
-        elif game_object.rect.left < self.rect.left:
-            game_object.rect.left = self.rect.left
+        elif game_object.rect.left < 0:
+            game_object.rect.left = 0
             
         #endif
             
