@@ -64,9 +64,9 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         
         
         sm.add_transition(dash_state,PlayerActionKeys.CANCEL_DASH,StateKeys.DASH_BREAKING,
-                          lambda: self.get_animation_progress_percentage()>=0.4)
+                          lambda: self.get_animation_progress_percentage()>=0.3)
         sm.add_transition(dash_state,PlayerActionKeys.CANCEL_DASH,StateKeys.RUNNING,
-                          lambda: self.get_animation_progress_percentage()<0.4)
+                          lambda: self.get_animation_progress_percentage()<0.3)
         sm.add_transition(dash_state,PlayerActionKeys.JUMP,StateKeys.JUMPING)
         sm.add_transition(dash_state,LevelActionKeys.PLATFORM_LOST,StateKeys.FALLING)
         sm.add_transition(dash_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.RUNNING)
@@ -105,7 +105,7 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         sm.add_transition(stand_edge_state,PlayerActionKeys.DASH,StateKeys.DASHING)
         
         sm.add_transition(jump_state,PlayerActionKeys.DASH,StateKeys.MIDAIR_DASHING,
-                          lambda: self.midair_dash_countdown > 0)
+                          lambda: self.midair_dash_remaining > 0)
         sm.add_transition(jump_state,PlayerActionKeys.LAND,StateKeys.LANDING)
         sm.add_transition(jump_state,LevelActionKeys.COLLISION_BELOW,StateKeys.LANDING,
                           lambda : jump_state.has_landed)
@@ -115,7 +115,7 @@ class PlayerStateMachine(StateMachine,PlayerBase):
                           lambda : jump_state.edge_in_reach)
         
         sm.add_transition(fall_state,PlayerActionKeys.DASH,StateKeys.MIDAIR_DASHING,
-                          lambda: self.midair_dash_countdown > 0)
+                          lambda: self.midair_dash_remaining > 0)
         sm.add_transition(fall_state,PlayerActionKeys.LAND,StateKeys.LANDING)
         sm.add_transition(fall_state,LevelActionKeys.COLLISION_BELOW,StateKeys.LANDING,
                           lambda : fall_state.has_landed)

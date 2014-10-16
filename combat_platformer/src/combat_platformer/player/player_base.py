@@ -23,7 +23,7 @@ class PlayerBase(AnimatableObject):
         # auxilary properties
         self.max_delta_x = 0;
         self.momentum_reduction = 0
-        self.midair_dash_counter = 0
+        self.midair_dash_remaining = 0
         self.range_collision_group = pygame.sprite.Group()    
         self.nearby_platforms = pygame.sprite.Group()
         self.active_attacks = []
@@ -35,7 +35,7 @@ class PlayerBase(AnimatableObject):
                                                  self.properties.collision_height)          
         
         # auxilary properties
-        self.midair_dash_counter = self.properties.max_midair_dashes
+        self.midair_dash_remaining = self.properties.max_midair_dashes
         
         self.max_delta_x = self.properties.max_step_x
         self.momentum_reduction = self.properties.inertial_reduction

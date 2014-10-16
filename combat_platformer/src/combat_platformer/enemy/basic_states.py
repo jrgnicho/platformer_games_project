@@ -83,7 +83,7 @@ class JumpState(BasicState):
         
         self.game_object.set_vertical_speed(self.speed)
         self.game_object.set_current_animation_key(StateKeys.JUMPING)
-        self.game_object.midair_dash_countdown = self.game_object.properties.max_midair_dashes
+        self.game_object.midair_dash_remaining = self.game_object.properties.max_midair_dashes
         self.game_object.range_collision_group.add(self.range_sprite) 
         
     def exit(self):

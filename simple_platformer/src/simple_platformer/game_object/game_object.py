@@ -1,15 +1,53 @@
 import pygame
 from pygame.sprite import Sprite
 
-class GameObject(Sprite):
-                
+class GameObject(Sprite):  
     
-    def __init__(self,centerx,centery,w,h,parent_object = None):
+    def __init__(self,x = 0,y = 0,w = 40,h = 60 ,parent_object = None):
         Sprite.__init__(self)
-        self.parent_object = parent_object
-        self.rect = pygame.Rect(0,0,w,h)
-        self.rect.centerx = centerx
-        self.rect.centery = centery
+        self.parent_object = parent_object if parent_object != self else None
+        self.__rect__ = pygame.Rect(x,y,w,h)
+        self.__half_width__ = int(0.5*self.__rect__.width) 
+        self.__half_height__ = int(0.5*self.__rect__.height)
+        
+    @property
+    def rect(self):
+        return self.__rect__
+    
+    @rect.setter
+    def rect(self,r):        
+        if r is not None:
+            self.__rect__ = r
+            self.__half_width__ = int(0.5*self.__rect__.width) 
+            self.__half_height__ = int(0.5*self.__rect__.height)
+        #endif
+        
+    @property
+    def width(self):        
+        if self.__rect__ is not None:
+            return self.__rect__.width
+        else:
+            return -1
+        #endif
+        
+    @width.setter
+    def width(self,w):        
+        self.__rect__.width = w
+        self.__half_width__ = int(0.5*w)
+        
+    @property
+    def height(self):        
+        if self.__rect__ is not None:
+            return self.__rect__.height
+        else:
+            return -1
+        #endif        
+        
+    @height.setter
+    def height(self,h):
+        self.__rect__.height = h
+        self.__half_height__ = int(0.5*h)
+        
         
     @property
     def screen_x(self):
@@ -35,15 +73,15 @@ class GameObject(Sprite):
     
     @property
     def screen_bottom(self):
-        return self.rect.height + self.screen_y()
+        return self.rect.height + self.screen_y
         
     @property
     def screen_top(self):
-        return -self.rect.height + self.screen_y()
+        return self.screen_y
     
     @property
     def screen_left(self):
-        return self.screen_x()
+        return self.screen_x 
     
     @property
     def screen_right(self):
@@ -51,11 +89,13 @@ class GameObject(Sprite):
     
     @property
     def screen_centerx(self):
-        return self.rect.centerx + self.screen_x()
+        return self.__half_width__ + self.screen_x
     
     @property
     def screen_centery(self):
-        return self.rect.centery + self.screen_y()
+        return self.__half_height__ + self.screen_y    
+
+            
             
     
     

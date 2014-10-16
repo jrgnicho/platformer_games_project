@@ -4,7 +4,6 @@ import pygame
 import rospkg
 from simple_platformer.utilities import *
 from simple_platformer.game_state_machine import *
-from simple_platformer.levels import Platform
 from combat_platformer.player import PlayerStateMachine
 from combat_platformer.level import LevelBase
 from combat_platformer.enemy import EnemyBase
@@ -25,7 +24,7 @@ class BasicPlatformer(object):
         
         # enemys
         self.enemies_list = []        
-        self.enemy_start_positions = [(200,200), (600,50), (300,80), (1000,400)]        
+        self.enemy_start_positions = [(200,200), (600,50), (40,80), (1000,400)]        
         self.num_enemies = len(self.enemy_start_positions)
         for i in range(0,self.num_enemies):
             enemy = EnemyStateMachine()
@@ -67,7 +66,7 @@ class BasicPlatformer(object):
         if not self.player.setup():            
             return False        
         
-        self.player.rect.center = (0,500)       
+        self.player.rect.center = (0,200)       
 
         
         keys = self.player.states_dict.keys()
