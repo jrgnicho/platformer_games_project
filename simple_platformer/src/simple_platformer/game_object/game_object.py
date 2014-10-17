@@ -6,6 +6,7 @@ class GameObject(Sprite):
     def __init__(self,x = 0,y = 0,w = 40,h = 60 ,parent_object = None):
         Sprite.__init__(self)
         self.parent_object = parent_object if parent_object != self else None
+        self.target_object = None # reserverd for another instance of GameObject
         self.__rect__ = pygame.Rect(x,y,w,h)
         self.__half_width__ = int(0.5*self.__rect__.width) 
         self.__half_height__ = int(0.5*self.__rect__.height)

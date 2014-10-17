@@ -16,7 +16,7 @@ class LevelBase(GameObject):
     
     PLATFORM_CHECK_STEP = 2
     
-    def __init__(self,w = ScreenProperties.SCREEN_WIDTH*3,h = ScreenProperties.SCREEN_HEIGHT*4):
+    def __init__(self,w = ScreenProperties.SCREEN_WIDTH*4,h = ScreenProperties.SCREEN_HEIGHT*4):
         
         GameObject.__init__(self,0,0,w,h)
         
@@ -159,7 +159,12 @@ class LevelBase(GameObject):
                      Platform(1560,1700,200,20),
                      Platform(1300,1300,200,20),
                      Platform(1800,1200,100,20),
-                     Platform(-500, 2100,3000,20)] # floor
+                     Platform(-500, 2100,400,20),
+                     Platform(-100, 2100,1100,20),
+                     Platform(1000, 2100,500,20),
+                     Platform(1500, 2100,500,20),
+                     Platform(2000, 2100,1000,20),
+                     Platform(3000, 2100,600,20)]  # floor
         
         self.add_platforms(platforms)
         

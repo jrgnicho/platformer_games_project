@@ -190,7 +190,7 @@ class AlertState(BasicState):
         #endif
         
     def face_player(self):
-        ps = self.game_object.target_player
+        ps = self.game_object.target_object
         cs = self.game_object
         
         if ps.rect.centerx > cs.rect.centerx:
@@ -202,7 +202,7 @@ class AlertState(BasicState):
     
     def is_player_in_area(self):
         
-        ps = self.game_object.target_player
+        ps = self.game_object.target_object
         ar = self.alert_area_sprite
         cs = self.game_object
         
@@ -336,11 +336,11 @@ class PatrolState(SubStateMachine):
                 
                 if sp == self.sight_sprite:                    
                     if self.game_object.facing_right and (go.rect.centerx < ps.rect.centerx):
-                        self.game_object.target_player = player
+                        self.game_object.target_object = player
                         self.player_sighted = True
                     
                     elif (not self.game_object.facing_right) and (go.rect.centerx > ps.rect.centerx):
-                        self.game_object.target_player = player
+                        self.game_object.target_object = player
                         self.player_sighted = True
                         
                     #endif

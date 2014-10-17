@@ -14,10 +14,6 @@ class PlayerBase(AnimatableObject):
         self.vertical_speed = 0
         self.horizontal_speed = 0   
         self.momentum = 0  #"amount of resistance to change in velocity"
-                               
-        
-        # collision detection objects
-        self.rect = None
         
         
         # auxilary properties

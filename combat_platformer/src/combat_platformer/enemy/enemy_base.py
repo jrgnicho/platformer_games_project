@@ -7,7 +7,7 @@ class EnemyBase(PlayerBase):
     def __init__(self):
         PlayerBase.__init__(self)
         self.properties = EnemyProperties()
-        self.target_player = None
+        self.target_object = None
         
     def setup(self):
         
@@ -17,8 +17,8 @@ class EnemyBase(PlayerBase):
         
         self.max_delta_x = self.properties.max_step_x  
         
-        if self.target_player == None:
-            print "The 'target_player' member in the EnemyBase class has not been set"
+        if self.target_object == None:
+            print "The 'target_object' member in the EnemyBase class has not been set"
             return False
         #endif
         

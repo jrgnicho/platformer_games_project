@@ -39,12 +39,14 @@ class AnimatableObject(GameObject):
         self.animation_mode = AnimatableObject.ANIMATION_MODE_CYCLE
         self.animation_selected_frames = 0 # only the frames which indices are in this list will be animated 
         self.animation_cycles_counter = 0 # number of times the current animation sequence has been cycled through
+        
+        # draw members
         self.drawable_sprite = pygame.sprite.Sprite()
         self.drawable_sprite.image = pygame.Surface([w,h])
         self.drawable_sprite.image.fill(Colors.RED)
         self.drawable_sprite.rect = self.drawable_sprite.image.get_rect()
-        self.sprite_group = pygame.sprite.Group()
-        self.sprite_group.add(self.drawable_sprite)
+        self.drawable_group = pygame.sprite.Group()
+        self.drawable_group.add(self.drawable_sprite)
                 
         
         # event handlers
@@ -147,7 +149,7 @@ class AnimatableObject(GameObject):
     def draw(self,screen):
                 
         self.animate_next_frame()
-        self.sprite_group.draw(screen)
+        self.drawable_group.draw(screen)
         self.notify(self.event_key)
         #pygame.sprite.Sprite.draw(self,screen)
             
