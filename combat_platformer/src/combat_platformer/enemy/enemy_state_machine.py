@@ -14,7 +14,8 @@ class EnemyStateMachine(StateMachine,EnemyBase):
         EnemyBase.__init__(self)
         
         # registering handler
-        self.add_event_handler(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED,self.action_sequence_expired_handler)
+        self.add_event_handler(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED,self,
+                               self.action_sequence_expired_handler)
         
         # states
         self.patrol_state = None
@@ -46,7 +47,7 @@ class EnemyStateMachine(StateMachine,EnemyBase):
 
         
         self.add_transition(self.patrol_state,LevelActionKeys.STEP_GAME,self.alert_state.key,lambda: self.patrol_state.finished)
-        self.add_transition(self.patrol_state,LevelActionKeys.PLATFORM_LOST,self.drop_state.key)
+        self.add_transition(self.patrol_state,LevelActionKeys.PLATFORM_SUPPORT_LOST,self.drop_state.key)
         
         self.add_transition(self.drop_state,LevelActionKeys.COLLISION_BELOW,self.wipeout_state.key)
         

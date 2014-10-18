@@ -571,7 +571,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         
         sm.add_transition(run_state,ActionKeys.CANCEL_MOVE,PlayerStateMachine.StateKeys.STANDING)
         sm.add_transition(run_state,ActionKeys.JUMP,PlayerStateMachine.StateKeys.JUMPING)
-        sm.add_transition(run_state,ActionKeys.PLATFORM_LOST,PlayerStateMachine.StateKeys.FALLING)
+        sm.add_transition(run_state,ActionKeys.PLATFORM_SUPPORT_LOST,PlayerStateMachine.StateKeys.FALLING)
         sm.add_transition(run_state,ActionKeys.DASH,PlayerStateMachine.StateKeys.DASHING)
         sm.add_transition(run_state,ActionKeys.MOVE_LEFT,PlayerStateMachine.StateKeys.DASH_BREAKING,
                           lambda: self.current_inertia > 0)
@@ -584,7 +584,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         sm.add_transition(dash_state,ActionKeys.CANCEL_DASH,PlayerStateMachine.StateKeys.RUNNING,
                           lambda: not (self.get_animation_progress_percentage()>0.2))
         sm.add_transition(dash_state,ActionKeys.JUMP,PlayerStateMachine.StateKeys.JUMPING)
-        sm.add_transition(dash_state,ActionKeys.PLATFORM_LOST,PlayerStateMachine.StateKeys.FALLING)
+        sm.add_transition(dash_state,ActionKeys.PLATFORM_SUPPORT_LOST,PlayerStateMachine.StateKeys.FALLING)
         sm.add_transition(dash_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,PlayerStateMachine.StateKeys.RUNNING)
         
         
@@ -596,14 +596,14 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         sm.add_transition(dash_breaking_state,ActionKeys.MOVE_RIGHT,PlayerStateMachine.StateKeys.RUNNING,
                           lambda: self.facing_right)
         sm.add_transition(dash_breaking_state,ActionKeys.JUMP,PlayerStateMachine.StateKeys.JUMPING)
-        sm.add_transition(dash_breaking_state,ActionKeys.PLATFORM_LOST,PlayerStateMachine.StateKeys.FALLING)
+        sm.add_transition(dash_breaking_state,ActionKeys.PLATFORM_SUPPORT_LOST,PlayerStateMachine.StateKeys.FALLING)
         sm.add_transition(dash_breaking_state,ActionKeys.STEP_GAME,PlayerStateMachine.StateKeys.STANDING,
                           lambda: self.current_inertia == 0)
         
         
         sm.add_transition(stand_state,ActionKeys.RUN,PlayerStateMachine.StateKeys.RUNNING)
         sm.add_transition(stand_state,ActionKeys.JUMP,PlayerStateMachine.StateKeys.JUMPING)
-        sm.add_transition(stand_state,ActionKeys.PLATFORM_LOST,PlayerStateMachine.StateKeys.FALLING)
+        sm.add_transition(stand_state,ActionKeys.PLATFORM_SUPPORT_LOST,PlayerStateMachine.StateKeys.FALLING)
         sm.add_transition(stand_state,ActionKeys.MOVE_LEFT,PlayerStateMachine.StateKeys.RUNNING)
         sm.add_transition(stand_state,ActionKeys.MOVE_RIGHT,PlayerStateMachine.StateKeys.RUNNING)
         sm.add_transition(stand_state,ActionKeys.DASH,PlayerStateMachine.StateKeys.DASHING)
@@ -615,7 +615,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         
         sm.add_transition(stand_edge_state,ActionKeys.RUN,PlayerStateMachine.StateKeys.RUNNING)
         sm.add_transition(stand_edge_state,ActionKeys.JUMP,PlayerStateMachine.StateKeys.JUMPING)
-        sm.add_transition(stand_edge_state,ActionKeys.PLATFORM_LOST,PlayerStateMachine.StateKeys.FALLING)
+        sm.add_transition(stand_edge_state,ActionKeys.PLATFORM_SUPPORT_LOST,PlayerStateMachine.StateKeys.FALLING)
         sm.add_transition(stand_edge_state,ActionKeys.MOVE_LEFT,PlayerStateMachine.StateKeys.RUNNING)
         sm.add_transition(stand_edge_state,ActionKeys.MOVE_RIGHT,PlayerStateMachine.StateKeys.RUNNING)
         sm.add_transition(stand_edge_state,ActionKeys.DASH,PlayerStateMachine.StateKeys.DASHING)
@@ -651,7 +651,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                           lambda : self.get_animation_progress_percentage()>0.2)  
         sm.add_transition(land_state,ActionKeys.DASH,PlayerStateMachine.StateKeys.DASHING,
                           lambda : self.get_animation_progress_percentage()>0.2)
-        sm.add_transition(land_state,ActionKeys.PLATFORM_LOST,PlayerStateMachine.StateKeys.FALLING) 
+        sm.add_transition(land_state,ActionKeys.PLATFORM_SUPPORT_LOST,PlayerStateMachine.StateKeys.FALLING) 
         
         
         

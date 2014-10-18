@@ -297,7 +297,7 @@ class GameLevel(pygame.sprite.Sprite,StateMachine):
         
         ps = self.player
         if len(platforms) == 0:
-            self.player.execute(ActionKeys.PLATFORM_LOST)                   
+            self.player.execute(ActionKeys.PLATFORM_SUPPORT_LOST)                   
         #endif  
             
         

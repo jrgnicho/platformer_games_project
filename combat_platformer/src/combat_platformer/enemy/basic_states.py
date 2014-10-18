@@ -246,7 +246,7 @@ class PatrolState(SubStateMachine):
             self.add_action(BasicState.LA.COLLISION_LEFT_WALL, lambda platforms : self.turn_around(False))
             self.add_action(BasicState.LA.PLATFORMS_IN_RANGE, lambda platforms : self.set_support_platform(platforms))
             
-            self.add_action(BasicState.LA.PLAYER_IN_RANGE,
+            self.add_action(BasicState.LA.GAME_OBJECT_IN_RANGE,
                             lambda player,range_sprites : self.check_player_insight(player,range_sprites))
             
         def enter(self):
