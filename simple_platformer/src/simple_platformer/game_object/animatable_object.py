@@ -14,10 +14,9 @@ class AnimatableObject(GameObject):
     
     class Events:
     
-#         ANIMATION_FRAME_COMPLETED = "ANIMATION_FRAME_COMPLETED"
-#         ANIMATION_SEQUENCE_COMPLETED = "ANIMATION_SEQUENCE_COMPLETED"
         ANIMATION_FRAME_COMPLETED = pygame.USEREVENT + 1
-        ANIMATION_SEQUENCE_COMPLETED = pygame.USEREVENT + 2       
+        ANIMATION_SEQUENCE_COMPLETED = pygame.USEREVENT + 2            
+        EVENTS_LIST = [ANIMATION_FRAME_COMPLETED,ANIMATION_SEQUENCE_COMPLETED]   
         
             
     
@@ -51,32 +50,47 @@ class AnimatableObject(GameObject):
         
         # event handlers
         self.event_key = AnimatableObject.Events.ANIMATION_FRAME_COMPLETED
-        self.event_handlers = {} # dictionary of lists
-        self.event_handlers[AnimatableObject.Events.ANIMATION_FRAME_COMPLETED]=[]
-        self.event_handlers[AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED]=[]
+        self.event_handlers = {} # dictionary with event keys
+        self.event_handlers[AnimatableObject.Events.ANIMATION_FRAME_COMPLETED]={} # dictionary with (game_object, event) pairs
+        self.event_handlers[AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED]={}
         
-    def add_event_handler(self,event_key,handler_cb):
-        
-        if self.event_handlers.has_key(event_key):
-            handlers = self.event_handlers[event_key]
-            handlers.append(handler_cb)
-            return True
-        else:
-            return False
-    
-    def remove_event_handlers(self,event_key):
+    def add_event_handler(self,event_key,game_obj,handler_cb):
         
         if self.event_handlers.has_key(event_key):
-            self.event_handlers.pop(event_key)
-            return True
-        else:
-            return False
-        
-    def notify(self,event_key):
-        
-        for handler in self.event_handlers[event_key]:
-            handler()
             
+            event_dict = self.event_handlers[event_key]
+            
+            # create event and save
+            event = pygame.event.Event(event_key,{'notify':handler_cb})
+            event_dict[game_obj] = event
+            return True
+        else:
+            return False
+        
+    def remove_event_handler(self,event_key,game_obj):
+        
+        if self.event_handlers.has_key(event_key):
+            event_dict = self.event_handlers[event_key]
+            
+            if event_dict.has(game_obj):
+                del event_dict[game_obj]
+            #endif
+        #endif
+        
+    
+    def remove_all_event_handlers(self,event_key):
+        
+        if self.event_handlers.has_key(event_key):
+            del self.event_handlers[event_key]
+            return True
+        else:
+            return False
+        
+    def post_events(self,event_key):
+        
+        event_dict = self.event_handlers[event_key]
+        for event in event_dict.values():
+            pygame.event.post(event)          
         #endfor    
         
     def add_animation_sets(self,animation_set_key,sprite_set_right_side,sprite_set_left_side):
@@ -150,8 +164,7 @@ class AnimatableObject(GameObject):
                 
         self.animate_next_frame()
         self.drawable_group.draw(screen)
-        self.notify(self.event_key)
-        #pygame.sprite.Sprite.draw(self,screen)
+        self.post_events(self.event_key)
             
     def animate_next_frame(self):
         
