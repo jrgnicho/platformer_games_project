@@ -1,5 +1,7 @@
 import pygame
 from pygame.sprite import Sprite
+from simple_platformer.utilities import Colors
+from simple_platformer.game_object import CollisionMasks
 
 class GameObject(Sprite):  
     
@@ -10,6 +12,22 @@ class GameObject(Sprite):
         self.__rect__ = pygame.Rect(x,y,w,h)
         self.__half_width__ = int(0.5*self.__rect__.width) 
         self.__half_height__ = int(0.5*self.__rect__.height)
+        self.collision_mask = CollisionMasks.DEFAULT
+        
+        # drawing
+        self.drawable_sprite = pygame.sprite.Sprite()
+        self.drawable_sprite.image = pygame.Surface([w,h])
+        self.drawable_sprite.image.fill(Colors.RED)
+        self.drawable_sprite.rect = self.drawable_sprite.image.get_rect()
+        self.drawable_group = pygame.sprite.Group()
+        self.drawable_group.add(self.drawable_sprite)
+        
+    def draw(self,screen):            
+        self.drawable_group.draw(screen)
+        
+    def update(self):        
+        self.drawable_sprite.rect.x = self.screen_x
+        self.drawable_sprite.rect.y = self.screen_y
         
     @property
     def rect(self):
@@ -22,6 +40,37 @@ class GameObject(Sprite):
             self.__half_width__ = int(0.5*self.__rect__.width) 
             self.__half_height__ = int(0.5*self.__rect__.height)
         #endif
+        
+    @property
+    def x(self):
+        if self.parent_object is None:            
+            return self.__rect__.x
+        else:            
+            return self.__rect__.x + self.parent_object.x
+        #endif
+        
+    @property
+    def centerx(self):
+        if self.parent_object is None:            
+            return self.__rect__.centerx
+        else:            
+            return self.__rect__.centerx + self.parent_object.x
+        #end
+        
+    @property
+    def y(self):
+        if self.parent_object is None:            
+            return self.__rect__.y
+        else:            
+            return self.__rect__.y + self.parent_object.y
+        #endif
+        
+    @property    
+    def centery(self):
+        if self.parent_object is None:
+            return self.__rect__.centery
+        else:
+            return self.__rect__.centery + self.parent_object.y
         
     @property
     def width(self):        
