@@ -10,6 +10,7 @@ from combat_platformer.level.action_keys import *
 from combat_platformer.player.action_keys import *
 from combat_platformer.player import PlayerBase
 from combat_platformer.enemy import EnemyBase
+from simple_platformer.game_object.animatable_object import AnimatableObject
 
 
 class LevelBase(GameObject):
@@ -33,9 +34,18 @@ class LevelBase(GameObject):
         self.background = None
         
         # collision detection
+        self.__game_objects__ = pygame.sprite.Group()        
         self.__active_enemies_group__ = pygame.sprite.Group()
         self.__active_enemies_region__ = pygame.sprite.Sprite()
         self.__active_enemies_region__.rect =self.screen_bounds.rect.copy()
+        
+        # drawing
+        self.__screen_objects__ = pygame.sprite.OrderedUpdates() # will be updated to hold all objects in the screen
+        self.__screen_region__ = pygame.sprite.Sprite()
+        self.__screen_region__.rect = self.screen_bounds.rect.copy()
+                
+        # input
+        self.__input_events__ = (pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP)
     
     @property
     def player(self):
@@ -46,8 +56,6 @@ class LevelBase(GameObject):
         self.__player__ = player
         self.__player__.parent_object = self
         
-        # input
-        self.__input_events__ = (pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP)
         
     def add_enemy(self,enemy):
         enemy.parent_object = self
@@ -58,10 +66,29 @@ class LevelBase(GameObject):
         self.__active_enemies_group__.empty()
         self.__active_enemies_region__.rect.center = self.__player__.rect.center
         active_enemies = pygame.sprite.spritecollide(self.__active_enemies_region__, self.__enemies_group__, False, None)
-        for enemies in active_enemies:
-            self.__active_enemies_group__.add(enemies)
+        for enemy in active_enemies:
+            self.__active_enemies_group__.add(enemy)
         #endfor       
-    
+        
+    def update_screen_objects(self):
+        
+        self.__screen_objects__.empty()
+        self.__screen_region__.rect.center = self.__player__.rect.center
+        
+        # find enemies on screen
+        active_objects = pygame.sprite.spritecollide(self.__screen_region__, self.__enemies_group__, False, None)
+        for obj in active_objects:
+            self.__screen_objects__.add(obj)
+        #endif
+        
+        # find platforms on screen
+        active_objects = pygame.sprite.spritecollide(self.__screen_region__, self.__platforms__, False, None)
+        for obj in active_objects:
+            self.__screen_objects__.add(obj)
+        #endif
+        
+        # add player last
+        self.__screen_objects__.add(player)   
         
     def load_background(self,file_name):
         
@@ -182,6 +209,12 @@ class LevelBase(GameObject):
             #endif                
         #endfor
         
+    def process_animation_events(self):
+        
+        for event in pygame.event.get(AnimatableObject.Events.EVENTS_LIST):
+            event.notify()
+        #endif
+        
         
     def check_input(self):
         """
@@ -283,6 +316,24 @@ class LevelBase(GameObject):
         
         return True
     
+    def process_game_object(self,game_object):
+        
+        # apply gravity
+        game_object.execute(LevelActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])
+        
+        # moving and checking collision with level platforms
+        game_object.step_x()
+        self.check_collisions_in_x(game_object)
+        game_object.step_y()
+        self.check_collisions_in_y(game_object)
+        
+        # check for platform collisions
+        self.check_platform_support(game_object)
+        
+        # check screen and level bounds        
+        self.check_level_bounds(game_object)
+        
+    
     def update_player(self):
         
         # apply gravity
@@ -337,7 +388,7 @@ class LevelBase(GameObject):
                 
                 hits = pygame.sprite.spritecollide(self.__player__, rg, False, None)
                 if len(hits) > 0:
-                    enemy.execute(LevelActionKeys.PLAYER_IN_RANGE,[self.__player__, hits])
+                    enemy.execute(LevelActionKeys.GAME_OBJECT_IN_RANGE,[self.__player__, hits])
                 #endif
             #endfor
             
@@ -360,7 +411,9 @@ class LevelBase(GameObject):
             enemy.draw(screen)
         
         # draw player
-        self.__player__.draw(screen)        
+        self.__player__.draw(screen)    
+        
+        self.process_animation_events()    
         
         
     def scroll(self,dx,dy):
@@ -377,9 +430,8 @@ class LevelBase(GameObject):
         platform_found = pygame.sprite.spritecollideany(game_object,self.__platforms__)
         game_object.rect.y -= LevelBase.PLATFORM_CHECK_STEP
         
-        ps = game_object
         if not platform_found:
-            game_object.execute(LevelActionKeys.PLATFORM_LOST)                   
+            game_object.execute(LevelActionKeys.PLATFORM_SUPPORT_LOST)                   
         #endif  
             
         
