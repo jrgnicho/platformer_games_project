@@ -162,11 +162,14 @@ class AnimatableObject(GameObject):
     
     def draw(self,screen):
                 
-        self.animate_next_frame()
         self.drawable_group.draw(screen)
+        
+    def update(self):
+        
+        self.update_animation_frame()        
         self.post_events(self.event_key)
             
-    def animate_next_frame(self):
+    def update_animation_frame(self):
         
         sprite_set = None
         if self.facing_right:
@@ -177,19 +180,6 @@ class AnimatableObject(GameObject):
         current_time = pygame.time.get_ticks()
         self.animation_time_elapsed = current_time - self.animation_start_time
         frame_index_position = (self.animation_time_elapsed)//sprite_set.rate_change
-        
-        
-        """
-        # debugging
-        if self.animation_set_key == AnimatedPlayer.WALK_ACTION :
-            self.last_action_key_used = self.animation_set_key
-            print "Selected WALK_ACTION with animation_frame_index %i"%(self.animation_frame_index)
-        else: 
-            if self.last_action_key_used == AnimatedPlayer.WALK_ACTION:
-                self.last_action_key_used = self.animation_set_key
-                print "Switch WALK_ACTION for frame "+ str(self.animation_set_key)
-        #endif
-        """
             
         
         # check if current sprite set has been fully animated
@@ -210,14 +200,12 @@ class AnimatableObject(GameObject):
                 
             elif self.animation_mode == AnimatableObject.ANIMATION_MODE_CONSUME:  # do not continue animating expired sequence
                 self.animation_time_elapsed = 0
-                self.animation_finished = True
-                
+                self.animation_finished = True                
             #endif
             
             #print "Notifying %s event"%(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
             self.animation_cycles_counter +=1
             self.event_key = AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED
-            #self.notify(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
             
         else: 
             
@@ -226,13 +214,9 @@ class AnimatableObject(GameObject):
             # select following frame           
             self.drawable_sprite.image = sprite_set.sprites[self.animation_frame_index]
             self.event_key = AnimatableObject.Events.ANIMATION_FRAME_COMPLETED
-            #self.notify(AnimatableObject.Events.ANIMATION_FRAME_COMPLETED)
             
-        #endif 
-            
+        #endif             
         
-#         self.drawable_sprite.rect.bottom = self.rect.bottom 
-#         self.drawable_sprite.rect.centerx = self.rect.centerx
         self.drawable_sprite.rect.bottom = self.screen_bottom 
         self.drawable_sprite.rect.centerx = self.screen_centerx        
         

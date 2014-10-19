@@ -1,5 +1,6 @@
 from simple_platformer.game_object import *
 from simple_platformer.players import PlayerProperties
+from simple_platformer.game_object import CollisionMasks
 
 class PlayerBase(AnimatableObject):
     
@@ -21,6 +22,11 @@ class PlayerBase(AnimatableObject):
         self.momentum_reduction = 0
         self.midair_dash_remaining = 0
         self.active_attacks = []
+        
+        # collision masks
+        self.collision_bitmask = CollisionMasks.ENEMY
+        self.type_bitmask = CollisionMasks.PLAYER
+        
         
     def setup(self):
         
@@ -84,8 +90,7 @@ class PlayerBase(AnimatableObject):
             self.momentum+=self.momentum_reduction 
             
             if self.momentum > 0:
-                self.momentum = 0
-                
+                self.momentum = 0                
             #endif
             
         #endif
@@ -93,10 +98,7 @@ class PlayerBase(AnimatableObject):
     def step_x(self):
         
         dx = self.horizontal_speed
-        
-#         dx = self.horizontal_speed+ self.momentum
-#         self.step_momentum()
-        
+                
         if dx > self.max_delta_x:
             dx = self.max_delta_x
         elif dx < -self.max_delta_x:
@@ -104,8 +106,8 @@ class PlayerBase(AnimatableObject):
                         
         #endif
                
-        self.rect.centerx+=dx
+        self.__rect__.centerx+=dx
     
     def step_y(self):
         
-        self.rect.centery+=self.vertical_speed       
+        self.__rect__.centery+=self.vertical_speed       

@@ -35,14 +35,12 @@ class LevelBase(GameObject):
         
         # collision detection
         self.__game_objects__ = pygame.sprite.Group()        
-        self.__active_enemies_group__ = pygame.sprite.Group()
-        self.__active_enemies_region__ = pygame.sprite.Sprite()
-        self.__active_enemies_region__.rect =self.screen_bounds.rect.copy()
         
         # drawing
         self.__screen_objects__ = pygame.sprite.OrderedUpdates() # will be updated to hold all objects in the screen
         self.__screen_region__ = pygame.sprite.Sprite()
         self.__screen_region__.rect = self.screen_bounds.rect.copy()
+        self.__screen_region__.rect.size = (ScreenProperties.SCREEN_WIDTH,ScreenProperties.SCREEN_HEIGHT)
                 
         # input
         self.__input_events__ = (pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP)
@@ -56,39 +54,72 @@ class LevelBase(GameObject):
         self.__player__ = player
         self.__player__.parent_object = self
         
+        self.__game_objects__.add(player)
+        
         
     def add_enemy(self,enemy):
         enemy.parent_object = self
         self.__enemies_group__.add(enemy)
         
-    def update_active_enemies(self):
+        self.__game_objects__.add(enemy)
         
-        self.__active_enemies_group__.empty()
-        self.__active_enemies_region__.rect.center = self.__player__.rect.center
-        active_enemies = pygame.sprite.spritecollide(self.__active_enemies_region__, self.__enemies_group__, False, None)
-        for enemy in active_enemies:
-            self.__active_enemies_group__.add(enemy)
-        #endfor       
+    def select_screen_objects(self):
         
-    def update_screen_objects(self):
-        
+        # set coordinates for screen region
         self.__screen_objects__.empty()
-        self.__screen_region__.rect.center = self.__player__.rect.center
-        
-        # find enemies on screen
-        active_objects = pygame.sprite.spritecollide(self.__screen_region__, self.__enemies_group__, False, None)
-        for obj in active_objects:
-            self.__screen_objects__.add(obj)
-        #endif
-        
+        self.__screen_region__.rect.top = -self.rect.top
+        self.__screen_region__.rect.left = -self.rect.left
+                  
         # find platforms on screen
-        active_objects = pygame.sprite.spritecollide(self.__screen_region__, self.__platforms__, False, None)
-        for obj in active_objects:
-            self.__screen_objects__.add(obj)
-        #endif
-        
+        self.__screen_objects__.add(pygame.sprite.spritecollide(self.__screen_region__,
+                                                                 self.__platforms__,
+                                                                  False, None))        
+        # find enemies on screen
+        self.__screen_objects__.add(pygame.sprite.spritecollide(self.__screen_region__,
+                                                                 self.__enemies_group__,
+                                                                  False, None))
         # add player last
-        self.__screen_objects__.add(player)   
+        self.__screen_objects__.add(self.__player__)
+        
+        
+    def process_object_collisions(self):   
+        
+        game_objects = pygame.sprite.Group()
+        collision_group = pygame.sprite.Group()
+        for game_object in self.__game_objects__:
+            
+            
+            # creating group without current object            
+            game_objects.empty()
+            game_objects.add(self.__game_objects__.sprites())
+            game_objects.remove(game_object)
+            
+            # check masks                     
+            collision_group.empty()         
+            for obj in iter(game_objects):
+                if any(game_object.collision_bitmask & obj.type_bitmask):
+                    collision_group.add(obj)
+                #endif
+            #endif
+            
+            # check collisions
+            if pygame.sprite.spritecollideany(game_object, collision_group):              
+                # check collisions
+                in_collision = pygame.sprite.spritecollide(game_object, collision_group,False, None)
+                if len(in_collision) > 0:
+                    game_object.execute(LevelActionKeys.GAME_OBJECT_COLLISION,[in_collision])
+                #endfor
+            #endif
+            
+            # check range collisions
+            for obj in iter(collision_group):
+                in_collision = pygame.sprite.spritecollide(obj,game_object.range_collision_group, False, None)
+                if len(in_collision) > 0:
+                    game_object.execute(LevelActionKeys.GAME_OBJECT_IN_RANGE,[obj,in_collision])
+                #endif
+            #endfor
+            
+        #endfor            
         
     def load_background(self,file_name):
         
@@ -216,7 +247,7 @@ class LevelBase(GameObject):
         #endif
         
         
-    def check_input(self):
+    def process_input_events(self):
         """
             Checks user input and executes the appropriate action
             
@@ -291,108 +322,48 @@ class LevelBase(GameObject):
             Checks user input and steps game.  Also calls the update method on all game objects including the player  
             
             - outputs: True if successful, False otherwise due to game exit condition or user input
-        """
-        # perform transition or execute action if supported by active state
-        self.__player__.execute(LevelActionKeys.STEP_GAME,[elapsed_time])     
-        
-        for enemy in self.__enemies_group__:
-            enemy.execute(LevelActionKeys.STEP_GAME,[elapsed_time])            
-        
-        # check user input
-        if not self.check_input():
-            return False       
+        """       
 
+        # check user input
+        if not self.process_input_events():
+            return False 
         
-        self.update_player()
-        self.update_enemies()
-                   
-        # updating objects
-        for enemy in self.__enemies_group__:
-            enemy.update()  
-        #endfor
+        # process all game objects interactions with the level objects and rules (enemies, player, etc)
+        for game_object in iter(self.__game_objects__):
+            self.process_level_rules(game_object, elapsed_time)
+            
+        # checks player position on the screen in order to scroll the level
+        self.process_screen_bounds()
         
+        # processing all collisions amongst game objects
+        self.process_object_collisions()
+        
+        # update all objects
         self.__platforms__.update()
-        self.__player__.update()
+        self.__game_objects__.update()        
         
         return True
     
-    def process_game_object(self,game_object):
+    def process_level_rules(self,game_object,elapsed_time):
+        
+        # step game object
+        game_object.execute(LevelActionKeys.STEP_GAME,[elapsed_time])
         
         # apply gravity
         game_object.execute(LevelActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])
         
         # moving and checking collision with level platforms
         game_object.step_x()
-        self.check_collisions_in_x(game_object)
+        self.process_x_collisions(game_object)
         game_object.step_y()
-        self.check_collisions_in_y(game_object)
+        self.process_y_collisions(game_object)
         
         # check for platform collisions
-        self.check_platform_support(game_object)
+        self.process_platform_support(game_object)
         
         # check screen and level bounds        
-        self.check_level_bounds(game_object)
-        
-    
-    def update_player(self):
-        
-        # apply gravity
-        self.__player__.execute(LevelActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])   
-        
-        # moving and checking collision           
-        self.__player__.step_x()
-        self.check_collisions_in_x(self.__player__)         
-            
-        self.__player__.step_y()
-        self.check_collisions_in_y(self.__player__) 
-        
-        
-        # check for platform collisions
-        self.check_platform_support(self.__player__)
-        
-        # check screen and level bounds        
-        self.check_level_bounds(self.__player__)
-        self.check_screen_bounds()
-        
-    def update_enemies(self):
-        
-        for enemy in self.__enemies_group__:            
-            
-            # apply gravity
-            enemy.execute(LevelActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])   
-            
-            # moving and checking collision           
-            enemy.step_x()
-            self.check_collisions_in_x(enemy)         
-                
-            enemy.step_y()
-            self.check_collisions_in_y(enemy) 
-            
-            
-            # check for platform collisions
-            self.check_platform_support(enemy)
-            
-            # check screen and level bounds        
-            self.check_level_bounds(enemy)
-            
-            #check for player presence
-            self.update_active_enemies()
-            
-            for enemy in iter(self.__active_enemies_group__):
-                rg = enemy.range_collision_group
-                
-                # updating range sprite positions
-                for rs in iter(rg):
-                    rs.rect.center = enemy.rect.center
-                #endfor
-                
-                hits = pygame.sprite.spritecollide(self.__player__, rg, False, None)
-                if len(hits) > 0:
-                    enemy.execute(LevelActionKeys.GAME_OBJECT_IN_RANGE,[self.__player__, hits])
-                #endif
-            #endfor
-            
-        
+        self.process_level_bounds(game_object)
+   
         
     def draw(self,screen):        
         
@@ -402,29 +373,25 @@ class LevelBase(GameObject):
             
             (x,y) = self.interp_background_position(self.rect.x,self.rect.y)
             screen.blit(self.background,(int(x),int(y)))
-            
+        #endif    
 
-        # draw objects
-        self.__platforms_drawables__.draw(screen)
-        
-        for enemy in self.__enemies_group__:
-            enemy.draw(screen)
-        
-        # draw player
-        self.__player__.draw(screen)    
+
+        # selecting objects in screen for drawing
+        self.select_screen_objects()  
+        for game_object in iter(self.__screen_objects__):
+            game_object.draw(screen)
+        #endfor 
         
         self.process_animation_events()    
         
         
     def scroll(self,dx,dy):
-        """ Shifts the world and its objects by incr """
-        """ inputs:"""
-        """     - incr: Vector2D() value in world coordinates """
+        """ Shifts the world and its objects by (dx,dy)"""
                 
         self.rect.x += dx
-        self.rect.y -= dy        
+        self.rect.y += dy        
         
-    def check_platform_support(self,game_object):
+    def process_platform_support(self,game_object):
         
         game_object.rect.y += LevelBase.PLATFORM_CHECK_STEP
         platform_found = pygame.sprite.spritecollideany(game_object,self.__platforms__)
@@ -432,11 +399,9 @@ class LevelBase(GameObject):
         
         if not platform_found:
             game_object.execute(LevelActionKeys.PLATFORM_SUPPORT_LOST)                   
-        #endif  
-            
+        #endif              
         
-    def check_collisions_in_y(self,game_object):        
-     
+    def process_y_collisions(self,game_object):     
         
         # find colliding platforms in the y direction         
         platforms = pygame.sprite.spritecollide(game_object,self.__platforms__,False)   
@@ -461,11 +426,9 @@ class LevelBase(GameObject):
             platforms = pygame.sprite.spritecollide(rs,self.__platforms__,False)
             if len(platforms) > 0:
                 game_object.execute(LevelActionKeys.PLATFORMS_IN_RANGE,[platforms])   
-
                 
                 
-    def check_collisions_in_x(self,game_object): 
-            
+    def process_x_collisions(self,game_object):             
                 
         # find colliding platforms in the x direction            
         platforms = pygame.sprite.spritecollide(game_object,self.__platforms__,False)     
@@ -490,22 +453,20 @@ class LevelBase(GameObject):
             platforms = pygame.sprite.spritecollide(rs,self.__platforms__,False)
             if len(platforms) > 0:
                 game_object.execute(LevelActionKeys.PLATFORMS_IN_RANGE,[platforms])
-                
+  
         
-         
-        
-    def check_screen_bounds(self):
+    def process_screen_bounds(self):
         
         scroll_x = 0
         scroll_y = 0
         
         # vertical bounds
         if self.__player__.screen_bottom > self.screen_bounds.rect.bottom : # below ground level
-            scroll_y = -(self.screen_bounds.rect.bottom - self.__player__.screen_bottom)
+            scroll_y = (self.screen_bounds.rect.bottom - self.__player__.screen_bottom)
             #self.__player__.screen_bottom = self.screen_bounds.rect.bottom 
             
         elif self.__player__.screen_top < self.screen_bounds.rect.top: # above level top
-            scroll_y = -(self.screen_bounds.rect.top - self.__player__.screen_top)
+            scroll_y = (self.screen_bounds.rect.top - self.__player__.screen_top)
             #self.__player__.screen_top = self.screen_bounds.rect.top
             
         # horizontal bounds
@@ -522,7 +483,7 @@ class LevelBase(GameObject):
         # scrolling level 
         self.scroll(scroll_x,scroll_y)
         
-    def check_level_bounds(self,game_object):
+    def process_level_bounds(self,game_object):
         
         # vertical bounds
         if game_object.rect.bottom > self.rect.height : # below ground level
