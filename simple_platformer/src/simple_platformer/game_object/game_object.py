@@ -12,7 +12,8 @@ class GameObject(Sprite):
         self.__rect__ = pygame.Rect(x,y,w,h)
         self.__half_width__ = int(0.5*self.__rect__.width) 
         self.__half_height__ = int(0.5*self.__rect__.height)
-        self.collision_mask = CollisionMasks.DEFAULT
+        self.collision_bitmask = CollisionMasks.DEFAULT
+        self.type_bitmask = CollisionMasks.DEFAULT
         
         # drawing
         self.drawable_sprite = pygame.sprite.Sprite()
@@ -21,6 +22,10 @@ class GameObject(Sprite):
         self.drawable_sprite.rect = self.drawable_sprite.image.get_rect()
         self.drawable_group = pygame.sprite.Group()
         self.drawable_group.add(self.drawable_sprite)
+        
+        # collision detection support        
+        self.range_collision_group = pygame.sprite.Group()    
+        self.nearby_platforms = pygame.sprite.Group()
         
     def draw(self,screen):            
         self.drawable_group.draw(screen)

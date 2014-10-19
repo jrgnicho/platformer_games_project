@@ -20,8 +20,6 @@ class PlayerBase(AnimatableObject):
         self.max_delta_x = 0;
         self.momentum_reduction = 0
         self.midair_dash_remaining = 0
-        self.range_collision_group = pygame.sprite.Group()    
-        self.nearby_platforms = pygame.sprite.Group()
         self.active_attacks = []
         
     def setup(self):
