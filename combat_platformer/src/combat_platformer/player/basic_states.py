@@ -264,10 +264,10 @@ class JumpState(BasicState):
         self.add_action(PlayerActionKeys.CANCEL_MOVE,lambda : self.cancel_move())
         self.add_action(PlayerActionKeys.CANCEL_JUMP,lambda : self.cancel_jump())
         self.add_action(LevelActionKeys.APPLY_GRAVITY,lambda g: self.player.apply_gravity(g))    
-        self.add_action(LevelActionKeys.COLLISION_ABOVE,lambda platform : self.player.set_vertical_speed(0))
+        self.add_action(LevelActionKeys.PLATFORM_PLATFORM_COLLISION_BELOW,lambda platform : self.player.set_vertical_speed(0))
         self.add_action(LevelActionKeys.COLLISION_BELOW,self.check_landing)
-        self.add_action(LevelActionKeys.COLLISION_RIGHT_WALL,lambda platform : self.player.set_momentum(0))
-        self.add_action(LevelActionKeys.COLLISION_LEFT_WALL,lambda platform : self.player.set_momentum(0)) 
+        self.add_action(LevelActionKeys.PLATFORM_COLLISION_RIGHT,lambda platform : self.player.set_momentum(0))
+        self.add_action(LevelActionKeys.PLATFORM_COLLISION_LEFT,lambda platform : self.player.set_momentum(0)) 
         self.add_action(LevelActionKeys.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms))  
         
     def setup(self,asset):
@@ -424,8 +424,8 @@ class FallState(BasicState):
         self.add_action(PlayerActionKeys.MOVE_LEFT,lambda : self.turn_left())
         self.add_action(PlayerActionKeys.MOVE_RIGHT,lambda : self.turn_right())   
         self.add_action(LevelActionKeys.COLLISION_BELOW,self.check_landing)
-        self.add_action(LevelActionKeys.COLLISION_RIGHT_WALL,lambda platform : self.player.set_momentum(0))
-        self.add_action(LevelActionKeys.COLLISION_LEFT_WALL,lambda platform : self.player.set_momentum(0)) 
+        self.add_action(LevelActionKeys.PLATFORM_COLLISION_RIGHT,lambda platform : self.player.set_momentum(0))
+        self.add_action(LevelActionKeys.PLATFORM_COLLISION_LEFT,lambda platform : self.player.set_momentum(0)) 
         self.add_action(LevelActionKeys.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms))  
         
         

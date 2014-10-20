@@ -414,7 +414,7 @@ class LevelBase(GameObject):
                               
             else:
                 game_object.rect.top = platform.rect.bottom
-                game_object.execute(LevelActionKeys.COLLISION_ABOVE,[platform])
+                game_object.execute(LevelActionKeys.PLATFORM_PLATFORM_COLLISION_BELOW,[platform])
             #endif
     
         #endfor    
@@ -436,14 +436,12 @@ class LevelBase(GameObject):
             
             if game_object.rect.centerx > platform.rect.centerx:
                 game_object.rect.left = platform.rect.right
-                game_object.execute(LevelActionKeys.COLLISION_LEFT_WALL,[platform])
+                game_object.execute(LevelActionKeys.PLATFORM_COLLISION_LEFT,[platform])
                 
             else:
                 game_object.rect.right = platform.rect.left
-                game_object.execute(LevelActionKeys.COLLISION_RIGHT_WALL,[platform])
-                
-            #endif          
-            
+                game_object.execute(LevelActionKeys.PLATFORM_COLLISION_RIGHT,[platform])                
+            #endif        
         #endfor 
         
         # checking range collision sprites
@@ -453,6 +451,8 @@ class LevelBase(GameObject):
             platforms = pygame.sprite.spritecollide(rs,self.__platforms__,False)
             if len(platforms) > 0:
                 game_object.execute(LevelActionKeys.PLATFORMS_IN_RANGE,[platforms])
+            #endif
+        #endfor
   
         
     def process_screen_bounds(self):
@@ -463,22 +463,18 @@ class LevelBase(GameObject):
         # vertical bounds
         if self.__player__.screen_bottom > self.screen_bounds.rect.bottom : # below ground level
             scroll_y = (self.screen_bounds.rect.bottom - self.__player__.screen_bottom)
-            #self.__player__.screen_bottom = self.screen_bounds.rect.bottom 
             
         elif self.__player__.screen_top < self.screen_bounds.rect.top: # above level top
             scroll_y = (self.screen_bounds.rect.top - self.__player__.screen_top)
-            #self.__player__.screen_top = self.screen_bounds.rect.top
+        #endif
             
         # horizontal bounds
         if self.__player__.screen_right > self.screen_bounds.rect.right : # too far to the right
-            scroll_x = self.screen_bounds.rect.right - self.__player__.screen_right
-            #self.__player__.screen_right = self.screen_bounds.rect.right 
-            #print "Scrolling right, screen right bound of %d exceeded"%self.screen_bounds.rect.right
-            
+            scroll_x = self.screen_bounds.rect.right - self.__player__.screen_right     
+                   
         elif self.__player__.screen_left < self.screen_bounds.rect.left: # too far to the left
             scroll_x = self.screen_bounds.rect.left - self.__player__.screen_left
-            #self.__player__.screen_left = self.screen_bounds.rect.left
-            #print "Scrolling left"
+        #endif
             
         # scrolling level 
         self.scroll(scroll_x,scroll_y)
@@ -490,8 +486,7 @@ class LevelBase(GameObject):
             game_object.rect.bottom = self.rect.height
             
         elif game_object.rect.top < 0: # above level top
-            game_object.rect.top = 0
-        
+            game_object.rect.top = 0        
         #endif        
          
         # horizontal bounds
@@ -499,7 +494,6 @@ class LevelBase(GameObject):
             game_object.rect.right = self.rect.width
             
         elif game_object.rect.left < 0:
-            game_object.rect.left = 0
-            
+            game_object.rect.left = 0            
         #endif
             

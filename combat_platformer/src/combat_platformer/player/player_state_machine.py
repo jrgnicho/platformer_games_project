@@ -110,7 +110,7 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         sm.add_transition(jump_state,LevelActionKeys.COLLISION_BELOW,StateKeys.LANDING,
                           lambda : jump_state.has_landed)
         sm.add_transition(jump_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.FALLING)
-        sm.add_transition(jump_state,LevelActionKeys.COLLISION_ABOVE,StateKeys.FALLING)
+        sm.add_transition(jump_state,LevelActionKeys.PLATFORM_PLATFORM_COLLISION_BELOW,StateKeys.FALLING)
         sm.add_transition(jump_state,LevelActionKeys.PLATFORMS_IN_RANGE,StateKeys.HANGING,
                           lambda : jump_state.edge_in_reach)
         

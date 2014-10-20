@@ -72,9 +72,9 @@ class JumpState(BasicState):
         
         self.add_action(BasicState.LA.STEP_GAME, lambda time_elapsed: self.update())  
         self.add_action(BasicState.LA.APPLY_GRAVITY,lambda g: self.game_object.apply_gravity(g))    
-        self.add_action(BasicState.LA.COLLISION_ABOVE,lambda platform : self.game_object.set_vertical_speed(0))
-        self.add_action(BasicState.LA.COLLISION_RIGHT_WALL,lambda platform : self.game_object.set_momentum(0))
-        self.add_action(BasicState.LA.COLLISION_LEFT_WALL,lambda platform : self.game_object.set_momentum(0)) 
+        self.add_action(BasicState.LA.PLATFORM_COLLISION_ABOVE,lambda platform : self.game_object.set_vertical_speed(0))
+        self.add_action(BasicState.LA.PLATFORM_COLLISION_RIGHT,lambda platform : self.game_object.set_momentum(0))
+        self.add_action(BasicState.LA.PLATFORM_COLLISION_LEFT,lambda platform : self.game_object.set_momentum(0)) 
 
     def update(self):
         pass
@@ -242,8 +242,8 @@ class PatrolState(SubStateMachine):
             self.range_sprite = pygame.sprite.Sprite()              
             
             self.add_action(BasicState.LA.STEP_GAME, lambda time_elapsed: self.update(time_elapsed))    
-            self.add_action(BasicState.LA.COLLISION_RIGHT_WALL, lambda platforms : self.turn_around(True))
-            self.add_action(BasicState.LA.COLLISION_LEFT_WALL, lambda platforms : self.turn_around(False))
+            self.add_action(BasicState.LA.PLATFORM_COLLISION_RIGHT, lambda platforms : self.turn_around(True))
+            self.add_action(BasicState.LA.PLATFORM_COLLISION_LEFT, lambda platforms : self.turn_around(False))
             self.add_action(BasicState.LA.PLATFORMS_IN_RANGE, lambda platforms : self.set_support_platform(platforms))
             
             self.add_action(BasicState.LA.GAME_OBJECT_IN_RANGE,
