@@ -124,7 +124,7 @@ class LevelBase(GameObject):
     def load_background(self,file_name):
         
         self.background = pygame.image.load(file_name).convert()
-        self.background.set_colorkey(Colors.WHITE)  
+        #self.background.set_colorkey(Colors.WHITE)  
         self.background = self.scale_background(self.background) 
         background_rect = self.background.get_rect().copy()    
         
@@ -191,6 +191,10 @@ class LevelBase(GameObject):
         return scaled_image    
         
     def setup(self):
+        
+        # event setup (must be done here once the display has been initialized)
+        pygame.event.set_allowed(self.__input_events__)
+        pygame.event.set_allowed(AnimatableObject.Events.EVENTS_LIST)
         
         # setup player
         if self.__player__ == None:
@@ -383,6 +387,9 @@ class LevelBase(GameObject):
         #endfor 
         
         self.process_animation_events()    
+        
+        # remove all events from queue
+        pygame.event.pump()
         
         
     def scroll(self,dx,dy):
