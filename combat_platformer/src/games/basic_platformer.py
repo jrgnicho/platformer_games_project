@@ -150,7 +150,7 @@ class BasicPlatformer(object):
         pygame.init()
         
         size = [ScreenProperties.SCREEN_WIDTH,ScreenProperties.SCREEN_HEIGHT]
-        self.screen = pygame.display.set_mode(size)
+        self.screen = pygame.display.set_mode(size,pygame.SWSURFACE )
         pygame.display.set_caption("Don't mess with this dragon [x: jump , z: dash, <-: left, ->: right")        
         
         if not self.setup():
@@ -163,9 +163,10 @@ class BasicPlatformer(object):
             
             clock.tick(GameProperties.FRAME_RATE)                     
             pygame.display.flip()
-       #endwhile     
             
+       #endwhile     
         
+        print str(pygame.display.Info())
         pygame.quit()
     
 if __name__ == "__main__":
