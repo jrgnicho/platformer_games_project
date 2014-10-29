@@ -107,17 +107,17 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         sm.add_transition(jump_state,PlayerActionKeys.DASH,StateKeys.MIDAIR_DASHING,
                           lambda: self.midair_dash_remaining > 0)
         sm.add_transition(jump_state,PlayerActionKeys.LAND,StateKeys.LANDING)
-        sm.add_transition(jump_state,LevelActionKeys.COLLISION_BELOW,StateKeys.LANDING,
+        sm.add_transition(jump_state,LevelActionKeys.PLATFORM_COLLISION_BELOW,StateKeys.LANDING,
                           lambda : jump_state.has_landed)
         sm.add_transition(jump_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.FALLING)
-        sm.add_transition(jump_state,LevelActionKeys.PLATFORM_PLATFORM_COLLISION_BELOW,StateKeys.FALLING)
+        sm.add_transition(jump_state,LevelActionKeys.PLATFORM_COLLISION_ABOVE,StateKeys.FALLING)
         sm.add_transition(jump_state,LevelActionKeys.PLATFORMS_IN_RANGE,StateKeys.HANGING,
                           lambda : jump_state.edge_in_reach)
         
         sm.add_transition(fall_state,PlayerActionKeys.DASH,StateKeys.MIDAIR_DASHING,
                           lambda: self.midair_dash_remaining > 0)
         sm.add_transition(fall_state,PlayerActionKeys.LAND,StateKeys.LANDING)
-        sm.add_transition(fall_state,LevelActionKeys.COLLISION_BELOW,StateKeys.LANDING,
+        sm.add_transition(fall_state,LevelActionKeys.PLATFORM_COLLISION_BELOW,StateKeys.LANDING,
                           lambda : fall_state.has_landed)
         sm.add_transition(fall_state,LevelActionKeys.PLATFORMS_IN_RANGE,StateKeys.HANGING,
                           lambda : fall_state.edge_in_reach)
