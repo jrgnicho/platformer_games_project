@@ -24,7 +24,7 @@ class GameObject(Sprite):
         self.drawable_group.add(self.drawable_sprite)
         
         # collision detection support        
-        self.range_collision_group = pygame.sprite.Group()    
+        self.__range_collision_group__ = pygame.sprite.Group()    
         self.nearby_platforms = pygame.sprite.Group()
         
     def draw(self,screen):            
@@ -33,6 +33,16 @@ class GameObject(Sprite):
     def update(self):        
         self.drawable_sprite.rect.x = self.screen_x
         self.drawable_sprite.rect.y = self.screen_y
+       
+    @property
+    def range_collision_group(self):
+        
+        for sp in iter(self.__range_collision_group__):
+            sp.rect.center = self.__rect__.center
+        #endfor
+        
+        return self.__range_collision_group__
+        
         
     @property
     def rect(self):
