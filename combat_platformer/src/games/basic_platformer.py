@@ -24,7 +24,7 @@ class BasicPlatformer(object):
         
         # enemys
         self.enemies_list = []        
-        self.enemy_start_positions = [(200,200), (2100,50), (40,80), (3000,80),(1400,400),
+        self.enemy_start_positions = [(200,200), (2100,50), (80,80), (3000,80),(1400,400),
                                       (800,-200), (1600,-300), (1200,-400), (2540,-100),(3200,-400)]        
         self.num_enemies = len(self.enemy_start_positions)
         for i in range(0,self.num_enemies):
@@ -67,7 +67,7 @@ class BasicPlatformer(object):
         if not self.player.setup():            
             return False        
         
-        self.player.rect.center = (0,200)       
+        self.player.rect.center = (50,200)       
 
         
         keys = self.player.states_dict.keys()
@@ -99,7 +99,7 @@ class BasicPlatformer(object):
             return False
         #endif
         
-        keys = ['WALK', 'UNWARY','ALERT','DROP','WIPEOUT', 'STANDUP']
+        keys = ['WALK', 'UNWARY','ALERT','DROP','WIPEOUT', 'STANDUP', 'STAND']
         counter = 0
         for enemy in self.enemies_list:
             
