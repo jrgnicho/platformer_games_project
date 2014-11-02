@@ -11,7 +11,7 @@ class EnemyBase(PlayerBase):
         self.target_object = None
         
         # collision masks
-        self.collision_bitmask = CollisionMasks.PLAYER
+        self.collision_bitmask = CollisionMasks.PLAYER | CollisionMasks.ENEMY
         self.type_bitmask = CollisionMasks.ENEMY
         
     def setup(self):
