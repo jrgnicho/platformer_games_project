@@ -18,7 +18,7 @@ class PlayerProperties(object):
     
     # Environment thresholds
     MAX_DISTANCE_FROM_EDGE = 0.80 # percentage of width
-    MIN_DISTANCE_FROM_EDGE = 0.15 # percentage of width
+    MIN_DISTANCE_FROM_EDGE = 0.0 # percentage of width
     
     HANG_RADIUS = 5 # radius of circle use to check if an edge is near for hanging during fall
     HANG_DISTANCE_FROM_TOP = 12 # Used to set the distance from the top of the hanging platform to the top of the collision sprite
