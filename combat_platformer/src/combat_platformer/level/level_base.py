@@ -181,12 +181,10 @@ class LevelBase(GameObject):
                      Platform(1560,1700,200,20),
                      Platform(1300,1300,200,20),
                      Platform(1800,1200,100,20),
-                     Platform(-500, 2100,400,20),
-                     Platform(-100, 2100,1100,20),
-                     Platform(1000, 2100,500,20),
-                     Platform(1500, 2100,500,20),
-                     Platform(2000, 2100,1000,20),
-                     Platform(3000, 2100,600,20)]  # floor
+                     Platform(3600,1940,100,180),
+                     Platform(-20,10,40,2090),
+                     Platform(2200,1940,40,160),                     
+                     Platform(-500, 2100,4100,20)]  
         
         self.add_platforms(platforms)
         
