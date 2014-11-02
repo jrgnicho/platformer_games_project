@@ -37,8 +37,9 @@ class BasicState(State):
         print "setup(...) method for state %s unimplemented"%(self.key)
     
     
-class RunState(BasicState):
+class RunState(BasicState):    
 
+    STATE_WIDTH = 60
     def __init__(self,player):
         
         BasicState.__init__(self,StateKeys.RUNNING,player)        
@@ -53,11 +54,13 @@ class RunState(BasicState):
     
     def enter(self):
         
+        self.player.width = RunState.STATE_WIDTH
         self.player.max_delta_x = self.speed            
         self.player.set_current_animation_key(StateKeys.RUNNING),
         self.player.set_horizontal_speed(self.speed)  
         
     def exit(self):
+        self.player.width = self.player.properties.collision_width
         self.player.max_delta_x = self.player.properties.dash_speed  
         
         
@@ -78,7 +81,7 @@ class DashState(BasicState):
        self.player.set_horizontal_speed(self.player.properties.dash_speed)
        
     
-    def exit(self):
+    def exit(self):        
         
         progress_percent = self.player.get_animation_progress_percentage()
         self.player.set_momentum(0.8*self.player.properties.dash_speed 
@@ -203,17 +206,24 @@ class StandState(BasicState):
             on_platform_right = ps.rect.centerx > platform.rect.centerx
             
             # standing on left edge
-            distance  = abs(platform.rect.right - ps.rect.left ) \
-            if on_platform_right else abs(ps.rect.right - platform.rect.left)
+            distance  = abs(platform.rect.right - ps.rect.left ) if on_platform_right else abs(ps.rect.right - platform.rect.left)
 
             
             if distance < max and distance > min:
                 self.is_standing_on_edge = (on_platform_right == self.player.facing_right)
+                if self.is_standing_on_edge:
+                    if on_platform_right:
+                        ps.rect.centerx=platform.rect.right
+                    else:
+                        ps.rect.centerx=platform.rect.left
+                    #endif
+                #endif
+                
                 break
                 
             elif distance <= min :                        
                 self.is_beyond_edge = True
-                
+                              
                 if on_platform_right:
                     ps.rect.left = platform.rect.right
                 else:
@@ -235,9 +245,8 @@ class StandOnEdgeState(BasicState):
         BasicState.__init__(self,StateKeys.STANDING_ON_EDGE,player)
         
         move_speed = self.player.properties.run_speed
-        self.add_action(PlayerActionKeys.MOVE_LEFT,lambda : self.player.turn_left(-move_speed))
-        self.add_action(PlayerActionKeys.MOVE_RIGHT,lambda : self.player.turn_right(move_speed))
         self.add_action(PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,lambda : self.player.set_current_animation_key(StateKeys.STANDING_ON_EDGE,[-1]))
+
         
     def enter(self):
         
@@ -385,7 +394,7 @@ class JumpState(BasicState):
         # must be below platform top                
         self.edge_in_reach = False   
         for platform in platforms:
-            if (ps.rect.bottom > platform.rect.bottom):
+            if (ps.rect.centery > platform.rect.top):
                 
                 if self.player.facing_right and hs.rect.collidepoint(platform.rect.topleft) :                            
                     self.edge_in_reach = True  
@@ -540,7 +549,7 @@ class FallState(BasicState):
         # must be below platform top
         self.edge_in_reach = False 
         for platform in platforms:
-            if (ps.rect.bottom > platform.rect.bottom):
+            if (ps.rect.centery > platform.rect.top):
                 
                 if self.player.facing_right and hs.rect.collidepoint(platform.rect.topleft) :
                     self.edge_in_reach = True
@@ -583,7 +592,7 @@ class LandState(BasicState):
         self.player.set_momentum(0)       
         
 class HangingState(BasicState):
-    
+        
     def __init__(self,player):
         
         BasicState.__init__(self,StateKeys.HANGING,player)
@@ -616,7 +625,7 @@ class HangingState(BasicState):
         self.player.set_current_animation_key(StateKeys.HANGING)
         self.player.set_horizontal_speed(0)
         self.player.set_vertical_speed(0)
-        self.player.set_momentum(0)
+        self.player.set_momentum(0)        
         self.hang(self.player.nearby_platforms.sprites()[0])
         
     def exit(self):
