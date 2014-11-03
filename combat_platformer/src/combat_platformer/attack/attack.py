@@ -1,3 +1,5 @@
+from simple_platformer.utilities import Colors
+from simple_platformer.game_object import GameObject
 from combat_platformer.combat import *
 import pygame
 from pygame.sprite import Sprite
@@ -9,8 +11,7 @@ class StrikeProperties(object):
         
         self.force_applied = (0,0) # (x,y) tuple
         self.damage_points = 0
-        self.max_strikes = 0
-        self.strike_rects = []
+        self.max_hits = 0
         
 class MotionProperties(object):
     
@@ -39,41 +40,94 @@ class LifeSpanProperties(object):
                                         # image frame with this index is being played
                                         
                                         
+class Hit(pygame.sprite.Sprite):
+    
+    """ 
+    Hit(parent,rect,offset)
+        - parent: Parent game object that spawns the attack (usually the player or an enemy
+        - rect: The pygame.Rect object that will be used to check the hit.  
+        - offset: tuple (x,y) indicating the position of the rect relative to the parent object's center
+    """    
+    def __init__(self,parent,rect,offset):
+        
+        pygame.sprite.Sprite.__init__(self)
+        self.parent_object = parent
+        self.__rect__ = pygame.Rect(rect)
+        self.__offset__ = offset
+        self.image = pygame.Surface([self.__rect__.width,self.__rect__.height])
+        self.image.fill(Colors.WHITE)
+        
+    @property
+    def rect(self):
+        
+        cx = self.parent_object.centerx + self.__offset__[0]
+        cy = self.parent_object.centery + self.__offset__[1]
+        self.__rect__.center = (cx,cy)
+        
+class Strike(pygame.sprite.OrderedUpdates):
+    
+    def __init__(self,parent,mask_surface,properties = StrikeProperties()):
+        pygame.sprite.OrderedUpdates.__init__(self)
+        self.parent_object = parent
+        
+        # sprite that represents the reach of all hit rectangles
+        self.range_sprite = None
+        
+        ## creating hit objects and range sprite
+        mask = pygame.mask.from_surface(mask_surface, 127)
+        parent_rect = mask_surface.get_rect()
+        
+        rects = mask.get_bounding_rects()
+        for r in iter(rects):
+            offsetx = r.centerx  - parent_rect.centerx 
+            offsety = r.centery - parent_rect.centery 
+            hit = Hit(self.parent_object,r,(offsetx,offsety))
+            self.add(hit)
+        #endfor  
+        
+        # creating range sprite 
+        if len(rects) > 0:
+            self.range_sprite = pygame.sprite.Sprite()
+            self.range_sprite.rect = pygame.Rect.unionall(rects)
+        #endif
+                                       
 
 class Attack(object) :
+    """
+    Attack(parent,mask_images)
+    - parent: Parent game object that spawns the attack (usually the player or an enemy
+    - mask_images: The images containing the pixels from which the attack collision masks will be created.  
+    - strike_properties: (optional) Property object used in each strike in this attack.
+    """
     
-    def __init__(self):
+    def __init__(self,parent,images,strike_properties = StrikeProperties()):
         
-        State.__init__(self)        
+        State.__init__(self)         
         
-        self.__collision_sprite = pygame.sprite.Sprite() # Use the pygame.sprite.groupcollide() to detect when the strike lands
-        self.__collision_sprite.rect = pygame.Rect(0,0,0,0)
-        self.parent_object = None # reference to object that spawned this attack, when set it shold be of type Animatable object
+        self.parent_object = None # reference to object that spawned this attack, it should be a GameObject type      
         
         # attack attributes
         self.type = AttackTypes.SUBORDINATE
         self.strikes = [] # array of strike property objects, one per animation frame
-        self.motion = MotionProperties()
-        self.life_span = LifeSpanProperties()
-        self.current_index = 0; # used to index into the "strikes" member
-    
-    """
-        Collision Sprite property which is the unions of all strike rectangles
-    """
-    @property    
-    def collision_sprite(self):
+        self.motion_properties = MotionProperties()
+        self.life_span_properties = LifeSpanProperties()
+        self.strike_index = 0; # used to index into the "strikes" member
         
-        # used union of all active strike rectangles
-        self.__collision_sprite.rect.unionall_ip(self.strikes[0].strike_rects)
-        
-        # set location using parents location
-        parent_rect = self.parent_object.collision_sprite.rect
-        if self.parent_object != None:            
-            self.__collision_sprite.rect.topleft = parent_rect.topleft
+        # initializing strikes array
+        for im in iter(images):
             
-        #endif
+            strk = Strike(parent, im, strike_properties)
+            self.strikes.append(strk)
+        #endfor
         
-        return self.__collision_sprite
+    def select_next_strike(self):
+        
+        if self.strike_index < len(self.strikes):
+            pass
+            
+            
+        
+
     
     """
     update : Empty placeholder for subclass that performs some custom logic
