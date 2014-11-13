@@ -24,7 +24,6 @@ class LevelBase(GameObject):
         # level objects
         self.__player__ = None # placeholder for PlayerStateMachine object
         self.__platforms__ = pygame.sprite.Group()
-        self.__platforms_drawables__ = pygame.sprite.Group()
         self.__enemies_group__ = pygame.sprite.Group() 
                 
         # level screen bounds
@@ -198,7 +197,6 @@ class LevelBase(GameObject):
             if type(p) is Platform: 
                 p.parent_object = self                      
                 self.__platforms__.add(p) 
-                self.__platforms_drawables__.add(p.drawable_sprite)
             #endif                
         #endfor
         
@@ -349,7 +347,7 @@ class LevelBase(GameObject):
             for obj in iter(collision_group):
                 
                 if pygame.sprite.spritecollideany(obj,range_sprites, None):            
-                    collided = pygame.sprite.spritecollide(obj,range_sprites, False, None)
+                    collided = pygame.sprite.spritecollide(obj,range_sprites, False)
                     game_object.execute(LevelActionKeys.GAME_OBJECT_IN_RANGE,[obj,collided])
                 #endif
             #endfor     
