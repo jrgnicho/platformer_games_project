@@ -4,6 +4,7 @@ from combat_platformer.combat import *
 import pygame
 from pygame.sprite import Sprite
 from pygame import Rect
+from orca.dbusserver import obj
 
 class StrikeProperties(object):
     
@@ -56,6 +57,7 @@ class Hit(pygame.sprite.Sprite):
         self.__offset__ = offset
         self.image = pygame.Surface([self.__rect__.width,self.__rect__.height])
         self.image.fill(Colors.WHITE)
+        self.layer = GameObject.Layer.FRONT
         
     @property
     def rect(self):
@@ -63,8 +65,10 @@ class Hit(pygame.sprite.Sprite):
         cx = self.parent_object.centerx + self.__offset__[0]
         cy = self.parent_object.centery + self.__offset__[1]
         self.__rect__.center = (cx,cy)
+        return self.__rect__
         
-class Strike(pygame.sprite.OrderedUpdates):
+        
+class Strike(object):
     
     def __init__(self,parent,mask_surface,properties = StrikeProperties()):
         pygame.sprite.OrderedUpdates.__init__(self)
@@ -72,6 +76,10 @@ class Strike(pygame.sprite.OrderedUpdates):
         
         # sprite that represents the reach of all hit rectangles
         self.range_sprite = None
+        
+        # hits array
+        self.hits = []
+        
         
         ## creating hit objects and range sprite
         mask = pygame.mask.from_surface(mask_surface, 127)
@@ -82,7 +90,7 @@ class Strike(pygame.sprite.OrderedUpdates):
             offsetx = r.centerx  - parent_rect.centerx 
             offsety = r.centery - parent_rect.centery 
             hit = Hit(self.parent_object,r,(offsetx,offsety))
-            self.add(hit)
+            self.hits.append(hit)
         #endfor  
         
         # creating range sprite 
@@ -101,10 +109,9 @@ class Attack(object) :
     """
     
     def __init__(self,parent,images,strike_properties = StrikeProperties()):
+               
         
-        State.__init__(self)         
-        
-        self.parent_object = None # reference to object that spawned this attack, it should be a GameObject type      
+        self.parent_object = parent # reference to object that spawned this attack, it should be a GameObject type      
         
         # attack attributes
         self.type = AttackTypes.SUBORDINATE
@@ -113,6 +120,9 @@ class Attack(object) :
         self.life_span_properties = LifeSpanProperties()
         self.strike_index = 0; # used to index into the "strikes" member
         
+        # active hits (sprites)
+        self.active_hits = pygame.sprite.Group()
+        
         # initializing strikes array
         for im in iter(images):
             
@@ -120,26 +130,57 @@ class Attack(object) :
             self.strikes.append(strk)
         #endfor
         
-    def select_next_strike(self):
+    def activate(self):
         
-        if self.strike_index < len(self.strikes):
-            pass
-            
-            
+        self.strike_index = 0
+        self.active_hits.empty()        
+        self.select_strike(self.paren_object.animation_frame_index)
         
+    def deactivate(self):
+        
+        if len(self.strikes) > 0:
+                        
+            # cleanup
+            strike = self.strikes[self.strike_index]
+            for hit in strike.hits:                
+                hit.kill()
+            #endfor
+            
+            self.parent_object.remove_range_sprite(strike.range_sprite)
+        #endif
+        
+    
+    """
+    This method should be called when an animation sprite changes
+    """    
+    def select_strike(self,index):
+        
+        if len(self.strikes) > index:
+            
+            # activating strike's hit objects
+            self.strike_index = index
+            strk = self.strikes[index]
+            self.active_hits.empty()
+            self.active_hits.add(strk.hits)
+            
+            # adding hit objects to game object drawable sprites
+            self.parent_object.drawable_group.add(strk.hits)
+            
+            # remove last strike range sprite
+            if self.strike_index >0:
+                prev_strike = self.strikes[index - 1]
+                self.parent_object.remove_range_sprite(prev_strike.range_sprite)
+            
+            # add strike range sprite            
+            self.parent_object.add_range_sprite(strk.range_sprite)
+            
+    def check_hits(self,game_object):
+        
+        hits = pygame.sprite.spritecollide(game_object, self.active_hits, False)
+        for hit in iter(hits):
+            hit.kill()
+        #end
 
-    
-    """
-    update : Empty placeholder for subclass that performs some custom logic
-    """
-    def update(self):
-        pass
-    
-    """
-    draw : Empty placeholder for subclass attacks that have animation sequences while the attack is active
-    """
-    def draw(self):
-        pass
         
         
         
