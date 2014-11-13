@@ -5,6 +5,16 @@ from simple_platformer.game_object import CollisionMasks
 
 class GameObject(Sprite):  
     
+    """
+    Layer is a nested class that holds constants that allow drawing a sprite 
+    at a given layer within a pygame.sprite.LayeredUpdates object
+    """
+    class Layer(object):
+        
+        REAR = 1
+        MIDDLE = 2
+        FRONT = 3
+    
     def __init__(self,x = 0,y = 0,w = 40,h = 60 ,parent_object = None):
         Sprite.__init__(self)
         self.parent_object = parent_object if parent_object != self else None
@@ -20,7 +30,8 @@ class GameObject(Sprite):
         self.drawable_sprite.image = pygame.Surface([w,h])
         self.drawable_sprite.image.fill(Colors.RED)
         self.drawable_sprite.rect = self.drawable_sprite.image.get_rect()
-        self.drawable_group = pygame.sprite.Group()
+        self.drawable_sprite.layer = GameObject.Layer.MIDDLE
+        self.drawable_group = pygame.sprite.LayeredUpdates()
         self.drawable_group.add(self.drawable_sprite)
         
         # collision detection support        
@@ -30,7 +41,7 @@ class GameObject(Sprite):
     def draw(self,screen):            
         self.drawable_group.draw(screen)
         
-    def update(self):        
+    def update(self):             
         self.drawable_sprite.rect.x = self.screen_x
         self.drawable_sprite.rect.y = self.screen_y
        
@@ -43,6 +54,11 @@ class GameObject(Sprite):
         
         return self.__range_collision_group__
         
+    def add_range_sprite(self,sp):        
+        self.__range_collision_group__.add(sp)
+        
+    def remove_range_sprite(self,sp):
+        self.__range_collision_group__.remove(sp)
         
     @property
     def rect(self):
