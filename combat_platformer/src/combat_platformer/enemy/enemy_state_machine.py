@@ -39,7 +39,7 @@ class EnemyStateMachine(StateMachine,EnemyBase):
             
     def create_transition_rules(self):        
         
-        self.patrol_state = PatrolState(self, self)
+        self.patrol_state = PatrolState(self)
         self.alert_state = AlertState(self)
         self.drop_state = DropState(self)
         self.wipeout_state = WipeoutState(self)    

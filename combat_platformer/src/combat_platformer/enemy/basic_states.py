@@ -478,9 +478,9 @@ class PatrolState(SubStateMachine):
                 self.time_consumed = True              
     
     
-    def __init__(self,parent_sm,game_object):
+    def __init__(self,game_object):
         
-        SubStateMachine.__init__(self,StateKeys.PATROL ,parent_sm)
+        SubStateMachine.__init__(self,StateKeys.PATROL)
         self.game_object = game_object
         
     def setup(self,assets):
