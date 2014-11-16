@@ -41,7 +41,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         return True
         
     def action_sequence_expired_handler(self):
-            self.execute(ActionKeys.ACTION_SEQUENCE_EXPIRED)
+            self.execute(ActionKeys.ANIMATION_SEQUENCE_COMPLETED)
         
         
     def create_transition_rules(self):
@@ -87,7 +87,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         dash_breaking_state = State(PlayerStateMachine.StateKeys.DASH_BREAKING)
         dash_breaking_state.set_entry_callback(lambda:self.dash_break( self.player_properties.run_speed))
         dash_breaking_state.set_exit_callback(lambda: self.set_inertia(0))
-        dash_breaking_state.add_action(ActionKeys.ACTION_SEQUENCE_EXPIRED,
+        dash_breaking_state.add_action(ActionKeys.ANIMATION_SEQUENCE_COMPLETED,
                                     lambda : self.set_current_animation_key(ActionKeys.DASH_BREAK,[-1])) #last frame
         
         
@@ -173,7 +173,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         stand_edge_state.set_entry_callback(lambda: (
                                        self.set_current_animation_key(ActionKeys.STAND_EDGE),
                                        self.set_forward_speed(0)))
-        stand_edge_state.add_action(ActionKeys.ACTION_SEQUENCE_EXPIRED,
+        stand_edge_state.add_action(ActionKeys.ANIMATION_SEQUENCE_COMPLETED,
                                     lambda : self.set_current_animation_key(ActionKeys.STAND_EDGE,[-1])) #last frame
 
         # jump state
@@ -457,7 +457,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                 self.player = player
                 self.platform_rect = None
                 
-                self.add_action(ActionKeys.ACTION_SEQUENCE_EXPIRED,
+                self.add_action(ActionKeys.ANIMATION_SEQUENCE_COMPLETED,
                                     lambda : self.player.set_current_animation_key(ActionKeys.HANG,[-1])) 
                 
                 
@@ -585,11 +585,11 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
                           lambda: not (self.get_animation_progress_percentage()>0.2))
         sm.add_transition(dash_state,ActionKeys.JUMP,PlayerStateMachine.StateKeys.JUMPING)
         sm.add_transition(dash_state,ActionKeys.PLATFORM_SUPPORT_LOST,PlayerStateMachine.StateKeys.FALLING)
-        sm.add_transition(dash_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,PlayerStateMachine.StateKeys.RUNNING)
+        sm.add_transition(dash_state,ActionKeys.ANIMATION_SEQUENCE_COMPLETED,PlayerStateMachine.StateKeys.RUNNING)
         
         
         sm.add_transition(midair_dash_state,ActionKeys.CANCEL_DASH,PlayerStateMachine.StateKeys.FALLING)
-        sm.add_transition(midair_dash_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,PlayerStateMachine.StateKeys.FALLING)
+        sm.add_transition(midair_dash_state,ActionKeys.ANIMATION_SEQUENCE_COMPLETED,PlayerStateMachine.StateKeys.FALLING)
         
         sm.add_transition(dash_breaking_state,ActionKeys.MOVE_LEFT,PlayerStateMachine.StateKeys.RUNNING,
                           lambda: not self.facing_right)
@@ -625,7 +625,7 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         sm.add_transition(jump_state,ActionKeys.LAND,PlayerStateMachine.StateKeys.LANDING)
         sm.add_transition(jump_state,ActionKeys.COLLISION_BELOW,PlayerStateMachine.StateKeys.LANDING,
                           lambda : jump_state.has_landed)
-        sm.add_transition(jump_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,PlayerStateMachine.StateKeys.FALLING)
+        sm.add_transition(jump_state,ActionKeys.ANIMATION_SEQUENCE_COMPLETED,PlayerStateMachine.StateKeys.FALLING)
         sm.add_transition(jump_state,ActionKeys.COLLISION_ABOVE,PlayerStateMachine.StateKeys.FALLING)
         sm.add_transition(jump_state,ActionKeys.PLATFORMS_IN_RANGE,PlayerStateMachine.StateKeys.HANGING,
                           lambda : jump_state.edge_in_reach)
@@ -643,10 +643,10 @@ class PlayerStateMachine(AnimatablePlayer,StateMachine):
         sm.add_transition(hanging_state,ActionKeys.MOVE_UP,PlayerStateMachine.StateKeys.CLIMBING,
                           lambda : self.get_animation_progress_percentage()>=1) 
         
-        sm.add_transition(climbing_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,PlayerStateMachine.StateKeys.STANDING) 
+        sm.add_transition(climbing_state,ActionKeys.ANIMATION_SEQUENCE_COMPLETED,PlayerStateMachine.StateKeys.STANDING) 
         
         
-        sm.add_transition(land_state,ActionKeys.ACTION_SEQUENCE_EXPIRED,PlayerStateMachine.StateKeys.STANDING)  
+        sm.add_transition(land_state,ActionKeys.ANIMATION_SEQUENCE_COMPLETED,PlayerStateMachine.StateKeys.STANDING)  
         sm.add_transition(land_state,ActionKeys.JUMP,PlayerStateMachine.StateKeys.JUMPING,
                           lambda : self.get_animation_progress_percentage()>0.2)  
         sm.add_transition(land_state,ActionKeys.DASH,PlayerStateMachine.StateKeys.DASHING,

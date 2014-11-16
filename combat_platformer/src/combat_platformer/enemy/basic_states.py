@@ -98,7 +98,7 @@ class DropState(BasicState):
         BasicState.__init__(self, StateKeys.DROP , game_object)
                         
         self.add_action(LevelActionKeys.APPLY_GRAVITY,lambda g: self.game_object.apply_gravity(g))
-        self.add_action(AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED,
+        self.add_action(AnimatableObject.ActionKeys.ANIMATION_SEQUENCE_COMPLETED,
                 lambda : self.game_object.set_current_animation_key(StateKeys.DROP,[-1]))
         
     def setup(self,asset):
@@ -120,7 +120,7 @@ class WipeoutState(BasicState):
         self.start_consume_time = False
         
         self.add_action(BasicState.LA.STEP_GAME, lambda time_elapsed: self.update(time_elapsed))
-        self.add_action(AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED,
+        self.add_action(AnimatableObject.ActionKeys.ANIMATION_SEQUENCE_COMPLETED,
                 lambda : self.animation_expired())
         
     def enter(self):
@@ -419,7 +419,7 @@ class PatrolState(SubStateMachine):
             self.time_consumed = False
             
             self.add_action(BasicState.LA.STEP_GAME, lambda time_elapsed: self.update(time_elapsed))  
-            self.add_action(AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED,
+            self.add_action(AnimatableObject.ActionKeys.ANIMATION_SEQUENCE_COMPLETED,
                             lambda : self.game_object.set_current_animation_key(StateKeys.UNWARY,[-1]))
             
         def enter(self):      
@@ -513,5 +513,5 @@ class PatrolState(SubStateMachine):
         
         self.add_transition(self.unwary_state, BasicState.LA.STEP_GAME, self.standup_state.key, lambda: self.unwary_state.time_consumed)
         self.add_transition(self.stand_state, BasicState.LA.STEP_GAME, self.walk_state.key, lambda: self.stand_state.time_consumed)
-        self.add_transition(self.standup_state,AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED, self.walk_state.key)
+        self.add_transition(self.standup_state,AnimatableObject.ActionKeys.ANIMATION_SEQUENCE_COMPLETED, self.walk_state.key)
         

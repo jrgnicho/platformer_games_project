@@ -1,5 +1,5 @@
 
-class ActionKeys(object):
+class StateMachineActionKeys(object):
     
     # action keys
     MOVE_LEFT = "MOVE_LEFT"
@@ -21,7 +21,7 @@ class ActionKeys(object):
     STAND_EDGE = "STAND_EDGE"
     HANG = "HANG"
     CLIMB = "CLIMB"
-    ACTION_SEQUENCE_EXPIRED = "ACTION_SEQUENCE_EXPIRED"
+    ANIMATION_SEQUENCE_COMPLETED = "ANIMATION_SEQUENCE_COMPLETED"
     LEFT_EDGE_NEAR = "LEFT_EDGE_NEAR"
     RIGHT_EDGE_NEAR = "RIGHT_EDGE_NEAR"
     PLATFORM_LEFT_END_NEAR = "PLATFORM_LEFT_END_NEAR"

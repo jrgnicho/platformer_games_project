@@ -35,7 +35,7 @@ class EnemyStateMachine(StateMachine,EnemyBase):
         return True
         
     def action_sequence_expired_handler(self):
-            self.execute(AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED)
+            self.execute(AnimatableObject.ActionKeys.ANIMATION_SEQUENCE_COMPLETED)
             
     def create_transition_rules(self):        
         
@@ -54,7 +54,7 @@ class EnemyStateMachine(StateMachine,EnemyBase):
         self.add_transition(self.wipeout_state,LevelActionKeys.STEP_GAME,self.standup_state.key,
                             lambda: self.wipeout_state.time_consumed)
         
-        self.add_transition(self.standup_state,AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED, self.patrol_state.key)
+        self.add_transition(self.standup_state,AnimatableObject.ActionKeys.ANIMATION_SEQUENCE_COMPLETED, self.patrol_state.key)
         
         
         self.add_transition(self.alert_state,LevelActionKeys.STEP_GAME,self.patrol_state.key,lambda: self.alert_state.time_consumed)

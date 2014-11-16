@@ -32,7 +32,7 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         return True
         
     def action_sequence_expired_handler(self):
-            self.execute(AnimatableObject.ActionKeys.ACTION_SEQUENCE_EXPIRED)
+            self.execute(AnimatableObject.ActionKeys.ANIMATION_SEQUENCE_COMPLETED)
             
             
     def create_transition_rules(self):
@@ -69,11 +69,11 @@ class PlayerStateMachine(StateMachine,PlayerBase):
                           lambda: self.get_animation_progress_percentage()<0.3)
         sm.add_transition(dash_state,PlayerActionKeys.JUMP,StateKeys.JUMPING)
         sm.add_transition(dash_state,LevelActionKeys.PLATFORM_SUPPORT_LOST,StateKeys.FALLING)
-        sm.add_transition(dash_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.RUNNING)
+        sm.add_transition(dash_state,PlayerActionKeys.ANIMATION_SEQUENCE_COMPLETED,StateKeys.RUNNING)
         
         
         sm.add_transition(midair_dash_state,PlayerActionKeys.CANCEL_DASH,StateKeys.FALLING)
-        sm.add_transition(midair_dash_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.FALLING)
+        sm.add_transition(midair_dash_state,PlayerActionKeys.ANIMATION_SEQUENCE_COMPLETED,StateKeys.FALLING)
         
         sm.add_transition(dash_breaking_state,PlayerActionKeys.MOVE_LEFT,StateKeys.RUNNING,
                           lambda: not self.facing_right)
@@ -109,7 +109,7 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         sm.add_transition(jump_state,PlayerActionKeys.LAND,StateKeys.LANDING)
         sm.add_transition(jump_state,LevelActionKeys.PLATFORM_COLLISION_BELOW,StateKeys.LANDING,
                           lambda : jump_state.has_landed)
-        sm.add_transition(jump_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.FALLING)
+        sm.add_transition(jump_state,PlayerActionKeys.ANIMATION_SEQUENCE_COMPLETED,StateKeys.FALLING)
         sm.add_transition(jump_state,LevelActionKeys.PLATFORM_COLLISION_ABOVE,StateKeys.FALLING)
         sm.add_transition(jump_state,LevelActionKeys.PLATFORMS_IN_RANGE,StateKeys.HANGING,
                           lambda : jump_state.edge_in_reach)
@@ -127,10 +127,10 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         sm.add_transition(hanging_state,PlayerActionKeys.MOVE_UP,StateKeys.CLIMBING,
                           lambda : self.get_animation_progress_percentage()>=1) 
         
-        sm.add_transition(climbing_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.STANDING) 
+        sm.add_transition(climbing_state,PlayerActionKeys.ANIMATION_SEQUENCE_COMPLETED,StateKeys.STANDING) 
         
         
-        sm.add_transition(land_state,PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,StateKeys.STANDING)  
+        sm.add_transition(land_state,PlayerActionKeys.ANIMATION_SEQUENCE_COMPLETED,StateKeys.STANDING)  
         sm.add_transition(land_state,PlayerActionKeys.JUMP,StateKeys.JUMPING,
                           lambda : self.get_animation_progress_percentage()>0.2)  
         sm.add_transition(land_state,PlayerActionKeys.DASH,StateKeys.DASHING,

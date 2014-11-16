@@ -129,7 +129,7 @@ class DashBreakingState(BasicState):
         
         BasicState.__init__(self, StateKeys.DASH_BREAKING, player)
         
-        self.add_action(PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,
+        self.add_action(PlayerActionKeys.ANIMATION_SEQUENCE_COMPLETED,
                             lambda : self.player.set_current_animation_key(StateKeys.DASH_BREAKING,[-1])) 
         self.add_action(LevelActionKeys.STEP_GAME,lambda time_elapsed :self.update())
         
@@ -245,7 +245,7 @@ class StandOnEdgeState(BasicState):
         BasicState.__init__(self,StateKeys.STANDING_ON_EDGE,player)
         
         move_speed = self.player.properties.run_speed
-        self.add_action(PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,lambda : self.player.set_current_animation_key(StateKeys.STANDING_ON_EDGE,[-1]))
+        self.add_action(PlayerActionKeys.ANIMATION_SEQUENCE_COMPLETED,lambda : self.player.set_current_animation_key(StateKeys.STANDING_ON_EDGE,[-1]))
 
         
     def enter(self):
@@ -599,7 +599,7 @@ class HangingState(BasicState):
         
         self.platform_rect = None
         
-        self.add_action(PlayerActionKeys.ACTION_SEQUENCE_EXPIRED,
+        self.add_action(PlayerActionKeys.ANIMATION_SEQUENCE_COMPLETED,
                             lambda : self.player.set_current_animation_key(StateKeys.HANGING,[-1]))        
         
         

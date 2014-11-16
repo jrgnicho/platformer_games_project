@@ -6,7 +6,8 @@ from simple_platformer.game_object import GameObject
 class AnimatableObject(GameObject):
     
     class ActionKeys:
-        ACTION_SEQUENCE_EXPIRED = 'ACTION_SEQUENCE_EXPIRED'
+        ANIMATION_FRAME_ENTERED = 'ANIMATION_FRAME_ENTERED'
+        ANIMATION_SEQUENCE_COMPLETED = 'ANIMATION_SEQUENCE_COMPLETED'
     
     # animation modes
     ANIMATION_MODE_CYCLE = 1
