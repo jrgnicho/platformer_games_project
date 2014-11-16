@@ -29,10 +29,4 @@ class PlayerActionKeys(object):
  
 
     
-class AttackActionKeys(object):
-    
-    LIGHT_PUNCH = "LIGHT_PUNCH"
-    MEDIUM_PUNCH = "MEDIUM_PUNCH"
-    HEAVY_PUNCH = "HEAVY_PUNCH"
-    
     
