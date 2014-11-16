@@ -173,7 +173,10 @@ class Attack(object) :
             
             # add strike range sprite            
             self.parent_object.add_range_sprite(strk.range_sprite)
-            
+    
+    """
+        This method is meant to be called when collisions with other game objects are reported
+    """        
     def check_hits(self,game_object):
         
         hits = pygame.sprite.spritecollide(game_object, self.active_hits, False)
