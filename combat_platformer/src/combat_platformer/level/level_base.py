@@ -206,6 +206,12 @@ class LevelBase(GameObject):
             event.notify()
         #endif
         
+    def process_state_machine_events(self):
+        
+        for event in pygame.event.get(StateMachine.Events.EVENTS_LIST):
+            event.notify()
+        #endif
+        
         
     def process_input_events(self):
         """
@@ -287,6 +293,17 @@ class LevelBase(GameObject):
         # check user input
         if not self.process_input_events():
             return False 
+        #endif
+        
+        # common game actions
+        for game_object in self.__game_objects__:    
+            # step game object
+            game_object.execute(LevelActionKeys.STEP_GAME,[elapsed_time])
+            # apply gravity
+            game_object.execute(LevelActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])
+        #endfor
+        
+        self.process_state_machine_events()
         
         # process all game objects interactions with the level objects and rules (enemies, player, etc)
         self.process_game_collisions(elapsed_time)
@@ -307,10 +324,10 @@ class LevelBase(GameObject):
         for game_object in self.__game_objects__:       
         
             # step game object
-            game_object.execute(LevelActionKeys.STEP_GAME,[elapsed_time])
+            #game_object.execute(LevelActionKeys.STEP_GAME,[elapsed_time])
             
             # apply gravity
-            game_object.execute(LevelActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])
+            #game_object.execute(LevelActionKeys.APPLY_GRAVITY,[GameProperties.GRAVITY_ACCELERATION])
             
             game_objects.empty()
             game_objects.add(self.__game_objects__.sprites())

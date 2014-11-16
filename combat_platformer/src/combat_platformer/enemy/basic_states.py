@@ -1,4 +1,5 @@
 import pygame
+from simple_platformer.game_state_machine import StateMachineActionKeys
 from simple_platformer.game_state_machine import State
 from simple_platformer.game_state_machine import SubStateMachine
 from simple_platformer.game_object import AnimatableObject
@@ -480,7 +481,7 @@ class PatrolState(SubStateMachine):
     
     def __init__(self,game_object):
         
-        SubStateMachine.__init__(self,StateKeys.PATROL)
+        SubStateMachine.__init__(self,StateKeys.PATROL,game_object)
         self.game_object = game_object
         
     def setup(self,assets):
@@ -505,7 +506,7 @@ class PatrolState(SubStateMachine):
         self.standup_state = StandupState(self.game_object)
         
         # transitions
-        self.add_transition(self.start_state, self.ActionKeys.START_SM, self.walk_state.key)
+        self.add_transition(self.start_state, StateMachineActionKeys.SUBMACHINE_START, self.walk_state.key)
         
         self.add_transition(self.walk_state, BasicState.LA.STEP_GAME, self.unwary_state.key, lambda: self.walk_state.time_consumed)
         self.add_transition(self.walk_state, BasicState.LA.STEP_GAME, self.stand_state.key, lambda: self.walk_state.pause_walk)

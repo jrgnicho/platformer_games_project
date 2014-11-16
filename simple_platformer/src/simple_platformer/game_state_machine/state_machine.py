@@ -1,4 +1,5 @@
 import pygame.event
+from simple_platformer.game_state_machine import StateMachineActionKeys
 from simple_platformer.game_state_machine import State
        
 class StateMachine(object):
@@ -9,15 +10,15 @@ class StateMachine(object):
         EVENTS_LIST = [SUBMACHINE_ACTION]   
         
     #static method
-    def create_action_event(sm,action_key,event_type):               
+    def post_action_event(sm,action_key,event_type):               
         
         if StateMachine.Events.EVENTS_LIST.count(event_type) > 0:                    
-            event = pygame.event.Event(event_key,{'notify':lambda : sm.execute(action_key)})
+            event = pygame.event.Event(event_type,{'notify':lambda : sm.execute(action_key)})
             pygame.event.post(event)
         else:
             print 'ERROR: event type \'%s\' not supported by StateMachine'%(event_type)
         #endif
-    
+            
     def __init__(self):
         
         self.states_dict={}
@@ -158,21 +159,20 @@ class StateMachine(object):
         
         return True
     
-class SubStateMachine(StateMachine):
-    
-    class ActionKeys(object):
-        
-        START_SM = 'START_SM'
-        STOP_SM = 'STOP_SM'
-        __IGNORE_ACTION__ = 'IGNORE_ACTION'
-        
+class SubStateMachine(StateMachine):           
         
     class StateKeys(object):
         
-        START = 'START'
-        STOP = 'STOP'
+        START = 'SUBMACHINE_START_STATE'
+        STOP = 'SUBMACHINE_STOP_STATE'
         NONE = 'NONE'
         
+        """
+    StopState:
+        Internal state of a Submachine used to indicate that the submachine has just started with it tasks.
+        When this state is reached the 'SUBMACHINE_STOP' action execution will be schedule in the pygame.event
+        queue.  It should not be used outside the containing Submachine
+    """  
         
     class StartState(State):
         
@@ -182,9 +182,15 @@ class SubStateMachine(StateMachine):
             self.parent_sm = parent_sm
             
         def enter(self):    
-            print "SM START state enter method invoked"        
-            self.parent_sm.start()
-            
+            print "SM START state entered"     
+    
+    """
+    StopState:
+        Internal state of a Submachine used to indicate that the submachine has been entered.
+        When an action is executed in the scope of the submachine in order to transition into the user
+        defined start state.
+        queue.  It should not be used outside the containing Submachine
+    """        
             
     class StopState(State):
         
@@ -194,29 +200,28 @@ class SubStateMachine(StateMachine):
             self.parent_sm = parent_sm
             
         def enter(self):   
-            print 'SM STOP state enter method invoked'         
+            print 'SM STOP state entered'         
             self.parent_sm.stop()
             
     
-    def __init__(self,key):
+    def __init__(self,key,parent_sm = None):
         StateMachine.__init__(self)
         
         self.key = key
+        self.parent_state_machine = parent_sm
         self.action_list = []
         self.start_state = SubStateMachine.StartState(self)
-        self.stop_state = SubStateMachine.StopState(self) 
-        self.finished = False # used to exit the SM from parent State Machine   
+        self.stop_state = SubStateMachine.StopState(self)  
         
         # adding start and stop sub machine states to transition table
-        self.add_transition(self.start_state, SubStateMachine.ActionKeys.__IGNORE_ACTION__,
+        self.add_transition(self.start_state, StateMachineActionKeys.__IGNORE_ACTION__,
                             SubStateMachine.StateKeys.START, None)
-        self.add_transition(self.stop_state, SubStateMachine.ActionKeys.__IGNORE_ACTION__,
+        self.add_transition(self.stop_state, StateMachineActionKeys.__IGNORE_ACTION__,
                     SubStateMachine.StateKeys.STOP, None)
         
     def has_action(self,action_key):
         
         if self.active_state_key == SubStateMachine.StateKeys.START:
-            #self.start()
             return False
         else:
             return (self.action_list.count(action_key) > 0)
@@ -236,27 +241,26 @@ class SubStateMachine(StateMachine):
                 self.action_list.append(action_key)
             #endif
         #endfor
-        
-        
-    def start(self):        
-        
-        self.execute(SubStateMachine.ActionKeys.START_SM)  
             
     def stop(self):
         
         self.active_state_key = self.start_state.key
-        self.finished = True
+        
+        if self.parent_state_machine != None:
+            StateMachine.post_action_event(self.parent_state_machine,
+                                           StateMachineActionKeys.SUBMACHINE_STOP,
+                                            StateMachine.Events.SUBMACHINE_ACTION)
         
     def enter(self):        
         
-        print "Entering Sub State Machine"
-        self.finished = False
+        print "Entering '%s' SubMachine"%(self.key)
         active_state_obj = self.states_dict[self.active_state_key]
         active_state_obj.enter()
+        self.execute(StateMachineActionKeys.SUBMACHINE_START) 
         
         
     def exit(self):
-        print  "Exiting Sub State Machine"
+        print  "Exiting '%s' SubMachine"%(self.key)
         active_state_obj = self.states_dict[self.active_state_key]
         active_state_obj.exit()
         self.active_state_key = self.start_state.key
