@@ -130,6 +130,9 @@ class Attack(object) :
             self.strikes.append(strk)
         #endfor
         
+    def strike_count(self):        
+        return len(self.strikes)
+        
     def activate(self):
         
         self.strike_index = 0
@@ -155,7 +158,7 @@ class Attack(object) :
     """    
     def select_strike(self,index):
         
-        if len(self.strikes) > index:
+        if (len(self.strikes) > index) and (self.strike_index != index):
             
             # activating strike's hit objects
             self.strike_index = index
