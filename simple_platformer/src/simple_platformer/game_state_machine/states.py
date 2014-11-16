@@ -1,4 +1,5 @@
 import sys
+import pygame.event.EventType
     
 class State(object):
     
@@ -70,6 +71,22 @@ class State(object):
         return self.actions.keys()
         
 class StateMachine(object):
+    
+    class Events:
+    
+        SUBMACHINE_ACTION = pygame.USEREVENT + 3         
+        EVENTS_LIST = [SUBMACHINE_ACTION]   
+        
+    #static method
+    def create_action_event(sm,action_key,event_type):
+               
+        
+        if StateMachine.Events.EVENTS_LIST.count(event_type) > 0:                    
+            event = pygame.event.Event(event_key,{'notify':lambda : sm.execute(action_key)})
+            pygame.event.post(event)
+        else:
+            print 'ERROR: event type \'%s\' not supported by StateMachine'%(event_type)
+        #endif
     
     def __init__(self):
         
