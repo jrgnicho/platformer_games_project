@@ -251,11 +251,10 @@ class SubStateMachine(StateMachine):
             self.parent_sm.stop()
             
     
-    def __init__(self,key,parent_state_machine):
+    def __init__(self,key):
         StateMachine.__init__(self)
         
         self.key = key
-        self.parent_sm = parent_state_machine
         self.action_list = []
         self.start_state = SubStateMachine.StartState(self)
         self.stop_state = SubStateMachine.StopState(self) 

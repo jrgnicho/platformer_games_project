@@ -49,7 +49,7 @@ class AnimatableObject(GameObject):
                 
         
         # event handlers
-        self.event_key = AnimatableObject.Events.ANIMATION_FRAME_COMPLETED
+        self.event_queue = [AnimatableObject.Events.ANIMATION_FRAME_COMPLETED]
         self.event_handlers = {} # dictionary with event keys
         self.event_handlers[AnimatableObject.Events.ANIMATION_FRAME_COMPLETED]={} # dictionary with (game_object, event) pairs
         self.event_handlers[AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED]={}
@@ -65,6 +65,7 @@ class AnimatableObject(GameObject):
             event_dict[game_obj] = event
             return True
         else:
+            print 'Event %s is not a supported animation event'%(event_key)
             return False
         
     def remove_event_handler(self,event_key,game_obj):
@@ -166,8 +167,11 @@ class AnimatableObject(GameObject):
         
     def update(self):
         
-        self.update_animation_frame()        
-        self.post_events(self.event_key)
+        self.update_animation_frame()
+        for evnt in iter(self.event_queue):        
+            self.post_events(evnt)
+        #endfor
+        self.event_queue = []
             
     def update_animation_frame(self):
         
@@ -205,7 +209,7 @@ class AnimatableObject(GameObject):
             
             #print "Notifying %s event"%(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
             self.animation_cycles_counter +=1
-            self.event_key = AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED
+            self.event_queue.append( AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
             
         else: 
             
@@ -213,7 +217,7 @@ class AnimatableObject(GameObject):
             
             # select following frame           
             self.drawable_sprite.image = sprite_set.sprites[self.animation_frame_index]
-            self.event_key = AnimatableObject.Events.ANIMATION_FRAME_COMPLETED
+            self.event_queue.append(AnimatableObject.Events.ANIMATION_FRAME_COMPLETED)
             
         #endif             
         
