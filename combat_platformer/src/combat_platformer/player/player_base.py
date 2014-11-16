@@ -1,6 +1,6 @@
 from simple_platformer.game_object import *
-from simple_platformer.players import PlayerProperties
 from simple_platformer.game_object import CollisionMasks
+from combat_platformer.player import PlayerProperties
 
 class PlayerBase(AnimatableObject):
     
