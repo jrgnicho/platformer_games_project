@@ -1,75 +1,6 @@
-import sys
-import pygame.event.EventType
-    
-class State(object):
-    
-    def __init__(self,state_key,entry_cb = None,exit_cb = None):
-        
-        self.key = state_key
-        self.actions = {} # dictionary of actions (keys) and their corresponding callbacks
-        self.entry_callback= entry_cb
-        self.exit_callback = exit_cb
-        
-    def set_entry_callback(self,entry_cb):
-        
-        self.entry_callback = entry_cb
-        
-    def set_exit_callback(self,exit_cb):
-        
-        self.exit_callback = exit_cb        
-        
-    def add_action(self,action_key,
-                       action_cb = lambda: sys.stdout.write("No action callback\n")):
-                        # ,condition_cb = lambda: True):
-        """
-        Adds supported action to the state
-        
-        Inputs:
-        - action_key: action key for the action that can be executed during this state
-        - action_cb: method that is invoked when this action is requested through the execute() method.
-        """
-        self.actions[action_key] = action_cb
-        
-    def has_action(self,action_key):
-        
-        return self.actions.has_key(action_key)
-        
-    def execute(self,action_key,action_cb_args=()):
-        """
-            Invokes the callback corresponding to this action upon entering this state.  
-            
-            Inputs:
-            - action_key: action to be executed.
-            - action_cb_args: tuple containing optional arguments to the registered action_callback
-            Outputs:
-            - Succeeded: True when action is registered within state.  False otherwise
-                    
-        """
-        
-        if self.actions.has_key(action_key):
-            
-            action_cb = self.actions[action_key]
-            action_cb(*action_cb_args)
-            #condition_cb = action_tuple[1]
-            return True
-        else:
-            #print "State %s does not support %s action"%(self.key,action_key)
-            return False
-        
-    def enter(self):
-        
-        if self.entry_callback != None:
-            self.entry_callback()
-        
-    def exit(self):
-        
-        if self.exit_callback != None:
-            self.exit_callback()
-            
-    @property
-    def action_keys(self):
-        return self.actions.keys()
-        
+import pygame.event
+from simple_platformer.game_state_machine import State
+       
 class StateMachine(object):
     
     class Events:
@@ -78,8 +9,7 @@ class StateMachine(object):
         EVENTS_LIST = [SUBMACHINE_ACTION]   
         
     #static method
-    def create_action_event(sm,action_key,event_type):
-               
+    def create_action_event(sm,action_key,event_type):               
         
         if StateMachine.Events.EVENTS_LIST.count(event_type) > 0:                    
             event = pygame.event.Event(event_key,{'notify':lambda : sm.execute(action_key)})
@@ -330,12 +260,6 @@ class SubStateMachine(StateMachine):
         active_state_obj = self.states_dict[self.active_state_key]
         active_state_obj.exit()
         self.active_state_key = self.start_state.key
-        
-    
-        
-        
-        
-    
         
     
         
