@@ -187,6 +187,54 @@ class Attack(object) :
             hit.kill()
         #end
 
+
+"""
+Convenience class for handling multiple attacks that belong to a sequence (combo)
+"""   
+class AttackGroup(object):
+    
+    def __init__(self,game_object,attacks):
+        
+        self.__game_object__ = game_object
+        self.__attacks__ = attacks
+        self.__attack_index__ = 0
+        self.__active_attack__ = None
+        
+        self.reset()
+        
+    def reset(self):
+        
+        # cleanup
+        if self.__active_attack__ != None:
+            self.__active_attack__.deactivate()
+        #endif
+        self.__active_attack__ = None        
+        self.__attack_index__ = -1
+            
+    
+    def select_next_attack(self):
+        
+        #deactivating current attack
+        if self.__active_attack__ != None:
+            self.__active_attack__.deactivate()
+        #endif
+        
+        self.__attack_index__+=1
+        if self.__attack_index__ < len(self.__attacks__):
+            self.__active_attack__ = self.__attacks__[self.__attack_index__]
+            self.__active_attack__.activate()
+        #endif
+        
+    def update_attack_strike(self):
+        
+        if self.__active_attack__ != None:
+            self.__active__attack__.select_strike(self.__game_object__.animation_frame_index)
+        #endif
+    
+    @property
+    def active_attack(self):
+        return self.__active_attack__
+
         
         
         
