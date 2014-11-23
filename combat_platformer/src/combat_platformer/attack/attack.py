@@ -106,9 +106,11 @@ class Attack(object) :
     - parent: Parent game object that spawns the attack (usually the player or an enemy
     - mask_images: The images containing the pixels from which the attack collision masks will be created.  
     - strike_properties: (optional) Property object used in each strike in this attack.
+    - index_strike_bounds: (optional) A 2 element tuple of the form (min_index,max_index) that limits the number of strikes
+        that can be active.  Defaults to (0,len(mask_images) - 1)
     """
     
-    def __init__(self,parent,images,strike_properties = StrikeProperties()):
+    def __init__(self,parent,images,strike_properties = StrikeProperties(),strike_index_bounds = None):
                
         
         self.parent_object = parent # reference to object that spawned this attack, it should be a GameObject type      
@@ -119,6 +121,7 @@ class Attack(object) :
         self.motion_properties = MotionProperties()
         self.life_span_properties = LifeSpanProperties()
         self.strike_index = 0; # used to index into the "strikes" member
+        self.strike_index_bounds = (0,len(images)-1) if strike_index_bounds == None else strike_index_bounds.copy()
         
         # active hits (sprites)
         self.active_hits = pygame.sprite.Group()
@@ -139,7 +142,7 @@ class Attack(object) :
         self.active_hits.empty()        
         self.select_strike(self.paren_object.animation_frame_index)
         
-    def deactivate(self):
+    def deactivate(self):        
         
         if len(self.strikes) > 0:
                         
@@ -151,14 +154,23 @@ class Attack(object) :
             
             self.parent_object.remove_range_sprite(strike.range_sprite)
         #endif
-        
+                
     
     """
     This method should be called when an animation sprite changes
     """    
     def select_strike(self,index):
         
-        if (len(self.strikes) > index) and (self.strike_index != index):
+        
+        if self.strike_index_bounds[0] > index or self.strike_index_bounds[1] < index:
+            return False
+        #endif
+        
+        if self.strike_index == index:
+            return True;
+        #endif
+        
+        if (len(self.strikes) > index) :
             
             # activating strike's hit objects
             self.strike_index = index
@@ -176,6 +188,12 @@ class Attack(object) :
             
             # add strike range sprite            
             self.parent_object.add_range_sprite(strk.range_sprite)
+            
+        else:
+            return False
+        #endif
+        
+        return True
     
     """
         This method is meant to be called when collisions with other game objects are reported
@@ -225,15 +243,25 @@ class AttackGroup(object):
             self.__active_attack__.activate()
         #endif
         
-    def update_attack_strike(self):
-        
+    def len(self):
+        return len(self.__attacks__)    
+  
+    def update_active_attack(self):
+        """
+            Sets the attack frame (strike) to the animation frame corresponding to this attack
+        """          
         if self.__active_attack__ != None:
-            self.__active__attack__.select_strike(self.__game_object__.animation_frame_index)
+            return self.__active__attack__.select_strike(self.__game_object__.animation_frame_index)
+        else:
+            return False
         #endif
     
     @property
     def active_attack(self):
         return self.__active_attack__
+    
+    def active_index(self):
+        return self.__attacks__.index(self.__active_attack__)
 
         
         
