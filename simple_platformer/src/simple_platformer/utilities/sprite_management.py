@@ -136,6 +136,9 @@ class SpriteLoader():
     def __init__(self):
         self.sprite_sets = {}
         
+    def has_set(self,key):
+        return self.sprite_sets.has_key(key)        
+        
     def load_sets(self,desc_file_path):
         """
             Loads all of the sprites into a dictionary of sprite sets 
