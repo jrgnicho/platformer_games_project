@@ -39,6 +39,7 @@ class AnimatableObject(GameObject):
         self.animation_mode = AnimatableObject.ANIMATION_MODE_CYCLE
         self.animation_selected_frames = 0 # only the frames which indices are in this list will be animated 
         self.animation_cycles_counter = 0 # number of times the current animation sequence has been cycled through
+        self.animation_keys_queue = []
         
         # draw members
         self.drawable_sprite = pygame.sprite.Sprite()
@@ -106,6 +107,30 @@ class AnimatableObject(GameObject):
         self.animation_images_left_side_dict[animation_set_key] = sprite_set_left_side
         
         return True
+    
+    def queue_animation_keys(self,keys):
+        
+        for k in keys:
+            if  self.animation_images_right_side_dict.has_key(k):
+                self.animation_keys_queue.append(k)
+            else:
+                print "ERROR: animation key %s can not be queued"%(k)
+            #endif
+        #endfor
+    
+    def select_next_queued(self):
+        
+        if len(self.animation_keys_queue) > 0:
+            key = self.animation_keys_queue.pop(0)
+            self.set_current_animation_key(key)
+        else:
+            return False
+        #endif
+        
+        return True
+    
+    def clear_queue(self):
+        self.animation_keys_queue = []
         
     def set_current_animation_key(self,animation_set_key, selected_frames = None):
         """
@@ -150,7 +175,6 @@ class AnimatableObject(GameObject):
                 
             else:
                 self.animation_selected_frames = selected_frames
-            
             
             #endif
         
