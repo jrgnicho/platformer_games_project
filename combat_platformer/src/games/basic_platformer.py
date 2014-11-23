@@ -20,7 +20,8 @@ class BasicPlatformer(object):
     def __init__(self):  
         
         # assets
-        self.player_assets = SimpleGameAssets()      
+        self.player_assets = SimpleGameAssets()   
+        self.enemy_assets = SimpleGameAssets()   
         
         # player 
         self.player = PlayerStateMachine()
@@ -84,42 +85,36 @@ class BasicPlatformer(object):
         return True
     
     def load_enemy_sprites(self):
+        
         rospack = rospkg.RosPack()
         sprite_list_file = rospack.get_path('simple_platformer') + '/resources/enemy_sprites/guardians_enemy17/sprite_list.txt'
                 
-        self.sprite_loader = SpriteLoader()
-        self.sprite_loader.sprite_sets.clear()
-        if self.sprite_loader.load_sets(sprite_list_file):
+        sprite_loader = self.enemy_assets.sprite_loader
+        sprite_loader.sprite_sets.clear()
+        if sprite_loader.load_sets(sprite_list_file):
             print "Enemy sprites successfully loaded"
         else:
             print "Enemy sprites failed to load"
             return False
         #endif
         
-        keys = ['WALK', 'UNWARY','ALERT','DROP','WIPEOUT', 'STANDUP', 'STAND']
         counter = 0
         for enemy in self.enemies_list:
             
             
             enemy.target_object = self.player
-            enemy.setup()
+            if not enemy.setup(self.enemy_assets):
+                return False
+            #endif
+            
             enemy.rect.center= self.enemy_start_positions[counter]
-            counter+=1
-            for key in keys:
-                if (not enemy.add_animation_sets(key,self.sprite_loader.sprite_sets[key].invert_set(),
-                                                 self.sprite_loader.sprite_sets[key])):
-                    print "Error loading animation sprites for key %s"%(key)
-                    return False
-                #endif
-            #endfor            
+            counter+=1           
             self.level.add_enemy(enemy)
             
-            print "Added enemy animation keys: %s"%(str(keys))
         #endfor
         
-        return True      
-        
-          
+        return True     
+    
     def setup(self):
         
         if not self.load_resources():

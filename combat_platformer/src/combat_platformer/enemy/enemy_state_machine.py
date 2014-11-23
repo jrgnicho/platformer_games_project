@@ -21,14 +21,17 @@ class EnemyStateMachine(StateMachine,EnemyBase):
         self.patrol_state = None
         self.alert_state = None
         
-    def setup(self):
+    def setup(self, assets):
         
         EnemyBase.setup(self)
         self.create_transition_rules()   
         
         # invoking setup method for each state
         for state in self.states_dict.values():
-            state.setup(None)
+            if not state.setup(assets):
+                print "ERROR: state %s setup failed"%(state.key)
+                return False
+            #endif
         #endfor
         
              

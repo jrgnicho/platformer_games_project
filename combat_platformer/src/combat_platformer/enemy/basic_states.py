@@ -37,7 +37,20 @@ class BasicState(State):
         
     def setup(self,assets):
         
-        print "setup method for state %s is unimplemented"%(self.key)    
+        if assets.sprite_loader.has_set(self.key):
+            if(self.game_object.add_animation_sets(self.key,assets.sprite_loader.sprite_sets[self.key].invert_set(),
+                                                assets.sprite_loader.sprite_sets[self.key])):
+                print "Added %s animation to game_object"%(self.key)
+            else:
+                print "ERROR: adding %s animation to game_object"%(self.key)
+                return False
+            #endif
+        else:
+            print "ERROR: %s animation was not found in assets"%(self.key)
+            return False
+        #endif
+        
+        return True  
 
 
         
@@ -48,17 +61,21 @@ class RunState(BasicState):
         BasicState.__init__(self,StateKeys.RUN,self.game_object)        
         self.speed = 0 
         
+        
+        
     def enter(self):
                  
         self.game_object.set_current_animation_key(StateKeys.RUN)
         
     def setup(self,assets):
         
-        self.speed = self.game_object.properties.run_speed
-        self.add_action(BasicState.LA.STEP_GAME, lambda : self.update())   
+        if not BasicState.setup(self,assets):
+            return False
+        #endif
         
-    def update(self):
-        pass
+        self.speed = self.game_object.properties.run_speed
+        
+        return True
         
 class JumpState(BasicState):
     
@@ -69,18 +86,19 @@ class JumpState(BasicState):
         self.has_landed = False
                       
         
-    def setup(self,asset):
-        
+    def setup(self,assets):
+        if not BasicState.setup(self,assets):
+            return False
+        #endif
+                
         self.speed = self.game_object.properties.jump_speed 
         
-        self.add_action(BasicState.LA.STEP_GAME, lambda time_elapsed: self.update())  
         self.add_action(BasicState.LA.APPLY_GRAVITY,lambda g: self.game_object.apply_gravity(g))    
         self.add_action(BasicState.LA.PLATFORM_COLLISION_ABOVE,lambda platform : self.game_object.set_vertical_speed(0))
         self.add_action(BasicState.LA.PLATFORM_COLLISION_RIGHT,lambda platform : self.game_object.set_momentum(0))
         self.add_action(BasicState.LA.PLATFORM_COLLISION_LEFT,lambda platform : self.game_object.set_momentum(0)) 
 
-    def update(self):
-        pass
+        return True
     
     def enter(self):        
         
@@ -102,8 +120,8 @@ class DropState(BasicState):
         self.add_action(AnimatableObject.ActionKeys.ANIMATION_SEQUENCE_COMPLETED,
                 lambda : self.game_object.set_current_animation_key(StateKeys.DROP,[-1]))
         
-    def setup(self,asset):
-        pass
+    def setup(self,assets):
+        return BasicState.setup(self,assets)
     
     def enter(self):
             
@@ -169,11 +187,17 @@ class AlertState(BasicState):
         
     def setup(self,assets):
         
+        if not BasicState.setup(self,assets):
+            return False
+        #endif        
+        
         self.time_active = self.game_object.properties.alert_time
         
         pr = self.game_object.rect
         self.alert_area_sprite.rect = self.game_object.properties.sight_area_rect
         self.alert_area_sprite.offset = (0,(pr.height - self.alert_area_sprite.rect.height)/2)
+        
+        return True
         
     def update(self,time_elapsed):
         
@@ -281,6 +305,10 @@ class PatrolState(SubStateMachine):
                         
         def setup(self,assets):
             
+            if not BasicState.setup(self,assets):
+                return False
+            #endif            
+            
             self.speed = self.game_object.properties.walk_speed  
             self.patrol_rect  = self.game_object.properties.patrol_area_rect
             self.time_active = self.game_object.properties.patrol_walk_time
@@ -295,6 +323,8 @@ class PatrolState(SubStateMachine):
             self.range_sprite.rect = self.game_object.rect.copy()
             self.range_sprite.rect.height = self.range_sprite.rect.height + self.range_height_extension
             self.range_sprite.offset = (0,0)
+            
+            return True
             
         def set_support_platform(self,platforms):
             go = self.game_object
@@ -436,8 +466,14 @@ class PatrolState(SubStateMachine):
             self.game_object.width = self.game_object.properties.collision_width
         
         def setup(self,assets):
-            
+
+            if not BasicState.setup(self,assets):
+                return False
+            #endif
+                    
             self.time_active = self.game_object.properties.patrol_unwary_time
+            
+            return True
             
         def update(self,time_elapsed):
             
@@ -468,7 +504,7 @@ class PatrolState(SubStateMachine):
             self.game_object.set_horizontal_speed(0) 
         
         def setup(self,assets):
-            pass
+            return BasicState.setup(self,assets)
             
         def update(self,time_elapsed):
             
@@ -494,9 +530,13 @@ class PatrolState(SubStateMachine):
             if (state.key == SubStateMachine.StateKeys.START) or (state.key == SubStateMachine.StateKeys.STOP):
                 continue
             else:
-                state.setup(assets)
+                if not state.setup(assets):
+                    print "ERROR: state %s setup failed"%(state.key)
+                    return False
             #endif
         #endfor
+        
+        return True
         
     def create_transition_rules(self):
         
