@@ -28,7 +28,7 @@ class PlayerBase(AnimatableObject):
         self.type_bitmask = CollisionMasks.PLAYER
         
         
-    def setup(self):
+    def setup(self,assets):
         
         # collision detection objects
         self.rect = pygame.Rect(0,0,self.properties.collision_width,
@@ -40,6 +40,7 @@ class PlayerBase(AnimatableObject):
         self.max_delta_x = self.properties.max_step_x
         self.momentum_reduction = self.properties.inertial_reduction
         
+        return True
         
     def turn_right(self,dx):        
         self.facing_right = True

@@ -18,16 +18,18 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         self.add_event_handler(AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED,self,self.action_sequence_expired_handler)
         
         
-    def setup(self):
+    def setup(self,assets):
         
-        PlayerBase.setup(self)
+        PlayerBase.setup(self,assets)
         self.create_transition_rules()   
         
         # invoking setup method for each state
         for state in self.states_dict.values():
-            state.setup(None)
-        #endfor
-        
+            if not state.setup(assets):
+                print "ERROR: state %s setup failed"%(state.key)
+                return False
+            #endif
+        #endfor        
              
         return True
         

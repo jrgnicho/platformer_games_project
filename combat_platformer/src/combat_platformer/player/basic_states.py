@@ -33,9 +33,22 @@ class BasicState(State):
     """
     This method shall be implemented by all subclasses in order to load the corresponding game assets for that state
     """   
-    def setup(self,asset):
-        print "setup(...) method for state %s unimplemented"%(self.key)
-    
+    def setup(self,assets):
+        
+        if assets.sprite_loader.has_set(self.key):
+            if(self.player.add_animation_sets(self.key,assets.sprite_loader.sprite_sets[self.key],
+                                                assets.sprite_loader.sprite_sets[self.key].invert_set())):
+                print "Added %s animation to player"%(self.key)
+            else:
+                print "ERROR: adding %s animation to player"%(self.key)
+                return False
+            #endif
+        else:
+            print "ERROR: %s animation was not found in assets"%(self.key)
+            return False
+        #endif
+        
+        return True
     
 class RunState(BasicState):    
 
@@ -68,19 +81,17 @@ class DashState(BasicState):
     
     def __init__(self,player):
         
-        BasicState.__init__(self,StateKeys.DASHING,player)
-                
-    def setup(self,asset):     
-                
-        pass
+        BasicState.__init__(self,StateKeys.DASHING,player)    
         
+    def setup(self,assets):                       
+        return BasicState.setup(self, assets)
+       
     def enter(self):
         
        # perform dash
        self.player.set_current_animation_key(StateKeys.DASHING),
        self.player.set_horizontal_speed(self.player.properties.dash_speed)
-       
-    
+
     def exit(self):        
         
         progress_percent = self.player.get_animation_progress_percentage()
@@ -94,15 +105,11 @@ class MidairDashState(BasicState):
     
     def __init__(self,player):
         
-        BasicState.__init__(self,StateKeys.MIDAIR_DASHING,player)
-    
+        BasicState.__init__(self,StateKeys.MIDAIR_DASHING,player)    
         
         
-    def setup(self,asset):       
-                
-        # creating collision rectangle
-        pass
-        
+    def setup(self,assets):                       
+        return BasicState.setup(self, assets)
         
     def midair_dash(self):
         
@@ -162,7 +169,11 @@ class StandState(BasicState):
         
         self.add_action(LevelActionKeys.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms)) 
         
-    def setup(self,asset):
+    def setup(self,assets):
+        
+        if not BasicState.setup(self, assets):
+            return False
+        #endif
         
         # creating range rectangle
         self.range_height_extension = 4
@@ -170,7 +181,7 @@ class StandState(BasicState):
         self.range_sprite.rect = self.player.rect.copy()
         self.range_sprite.rect.height = self.range_sprite.rect.height + self.range_height_extension
 
-        
+        return True
         
     def enter(self):
         
@@ -279,7 +290,11 @@ class JumpState(BasicState):
         self.add_action(LevelActionKeys.PLATFORM_COLLISION_LEFT,lambda platform : self.player.set_momentum(0)) 
         self.add_action(LevelActionKeys.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms))  
         
-    def setup(self,asset):
+    def setup(self,assets):
+        
+        if not BasicState.setup(self, assets):
+            return False
+        #endif
         
         self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player.properties.hang_radius,
                                                  2*self.player.properties.hang_radius) 
@@ -291,6 +306,8 @@ class JumpState(BasicState):
         self.range_sprite.rect = self.player.rect.copy()
         self.range_sprite.rect.width = self.range_sprite.rect.width + self.hang_sprite.rect.width
         self.range_sprite.rect.height = self.range_sprite.rect.height + self.hang_sprite.rect.height
+        
+        return True
         
     def turn_right(self):
         
@@ -438,7 +455,11 @@ class FallState(BasicState):
         self.add_action(LevelActionKeys.PLATFORMS_IN_RANGE,lambda platforms: self.check_near_edge(platforms))  
         
         
-    def setup(self,asset):
+    def setup(self,assets):
+        
+        if not BasicState.setup(self, assets):
+            return False
+        #endif
         
         self.hang_sprite.rect =  pygame.Rect(0,0,2*self.player.properties.hang_radius,
                                                  2*self.player.properties.hang_radius) 
@@ -451,6 +472,8 @@ class FallState(BasicState):
         self.range_sprite.rect = self.player.rect.copy()
         self.range_sprite.rect.width = self.range_sprite.rect.width + self.hang_sprite.rect.width
         self.range_sprite.rect.height = self.range_sprite.rect.height + self.hang_sprite.rect.height 
+        
+        return True
         
     def turn_right(self):
         
