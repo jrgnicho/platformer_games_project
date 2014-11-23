@@ -9,9 +9,18 @@ from combat_platformer.level import LevelBase
 from combat_platformer.enemy import EnemyBase
 from combat_platformer.enemy import EnemyStateMachine
 
-class BasicPlatformer(object):
+class SimpleGameAssets(object):
     
     def __init__(self):        
+        self.sprite_loader = SpriteLoader()
+        self.attacks_dict = []
+
+class BasicPlatformer(object):
+    
+    def __init__(self):  
+        
+        # assets
+        self.player_assets = SimpleGameAssets()      
         
         # player 
         self.player = PlayerStateMachine()
@@ -24,8 +33,8 @@ class BasicPlatformer(object):
         
         # enemys
         self.enemies_list = []        
-        self.enemy_start_positions = [(200,200), (2100,50), (80,80), (3000,80),(1400,400),
-                                      (800,-200), (1600,-300), (1200,-400), (2540,-100),(3200,-400)]        
+        self.enemy_start_positions = [(200,200), (2100,50), (80,80), (3000,80),(1400,400)
+                                    ,(800,-200), (1600,-300), (1200,-400), (2540,-100),(3200,-400)]        
         self.num_enemies = len(self.enemy_start_positions)
         for i in range(0,self.num_enemies):
             enemy = EnemyStateMachine()
@@ -52,9 +61,9 @@ class BasicPlatformer(object):
         sprites_list_file = rospack.get_path('simple_platformer') + '/resources/hiei_sprites/sprite_list.txt' 
         
           
-        self.sprite_loader = SpriteLoader() 
+        sprite_loader = self.player_assets.sprite_loader 
         
-        if self.sprite_loader.load_sets(sprites_list_file):
+        if sprite_loader.load_sets(sprites_list_file):
             print "Sprites successfully loaded"
         else:
             print "Sprites failed to load"
@@ -64,24 +73,11 @@ class BasicPlatformer(object):
         
         self.player.properties.collision_width = 42
         self.player.properties.collision_height = 75        
-        if not self.player.setup():            
+        if not self.player.setup(self.player_assets):       
+            print "ERROR: Player setup failed"     
             return False        
         
         self.player.rect.center = (50,200)       
-
-        
-        keys = self.player.states_dict.keys()
-        print "Adding player animation keys: " + str(keys)
-        
-        for key in keys:
-            
-            if (not self.player.add_animation_sets(key,self.sprite_loader.sprite_sets[key],
-                                                    self.sprite_loader.sprite_sets[key].invert_set())) :
-                print "Error loading animation for animation key %s"%(key)
-                return False
-            #endif
-            
-        #endfor
         
         print "Added all animation sprites"
 
@@ -90,8 +86,9 @@ class BasicPlatformer(object):
     def load_enemy_sprites(self):
         rospack = rospkg.RosPack()
         sprite_list_file = rospack.get_path('simple_platformer') + '/resources/enemy_sprites/guardians_enemy17/sprite_list.txt'
+                
+        self.sprite_loader = SpriteLoader()
         self.sprite_loader.sprite_sets.clear()
-        
         if self.sprite_loader.load_sets(sprite_list_file):
             print "Enemy sprites successfully loaded"
         else:
@@ -127,9 +124,7 @@ class BasicPlatformer(object):
         
         if not self.load_resources():
             return False 
-        
-
-        
+             
         if not self.level.setup():
             return False
             
