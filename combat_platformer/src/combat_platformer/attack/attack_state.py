@@ -14,74 +14,114 @@ class AttackState(SubStateMachine):
         ACTIVE = 'ATTACK_ACTIVE'
         CONTINUE = 'ATTACK_CONTINUE'
     
-    class ActiveState(State):
+    class BaseAttackState(State):
+        """
+        BaseAttackState(game_object,attacks,interrupt_indices)
+            game_object: Object that spawns the attack
+            attacks : Array of attack objects
+            interrupt_indices: Array of indices at which each attack frame will end and continue onto the next attack.
+                Defaults to [-1, ..., -1] same size as the attacks array.
+        """
         
-        def __init__(self,game_object):            
+        def __init__(self,game_object,attack_group, interrupt_indices = None):            
             State.__init__(self,AttackState.StateKeys.ACTIVE)
             self.__game_object__ = game_object
-            self.__attacks__ = None
-            self.__attack_index__ = 0
-            self.__active_attack__ = None
+            self.__attack_group__ = attack_group
             
-            # transition members
-            self.continue_next = False
-            self.finished = False
+            if interrupt_indices == None:
+                interrupt_indices = []
+                for at in attacks:
+                    interrupt_indices.append(at.strike_count() - 1)
+                #endfor
+            #endif            
             
-            self.add_action(AnimatableObject.ActionKeys.ANIMATION_FRAME_ENTERED,
-                            lambda : self.update_attack())
+            self.__interrupt_indices__ = interrupt_indices            
             
         def reset(self):
-            self.__attack_index__ = 0
-            self.__active_attack__ = None
+            self.__attack_group__.reset()          
+        
+    class ActiveState(State):
+        
+        def __init__(self,game_object,attack_group, interrupt_indices = None): 
+            AttackState.BaseAttackState.__init__(self,game_object,attacks,interrupt_indices)
             
-        @attacks.setter
-        def attacks(self,attacks):
-            self.__attacks__ = attacks
+            self.add_action(AnimatableObject.ActionKeys.ANIMATION_FRAME_ENTERED,
+                lambda : self.frame_entered_callback())
+            self.add_action(PlayerActionKeys.ATTACK,
+                lambda : self.attack_action_callback())
             
         def enter(self):
-            if self.__attack_index__ < len(self.__attacks__):
-                self.__active_attack__ = self.__attacks__[self.__attack_index__]
-                self.__active_attack__.activate()
-        
-        def exit(self):
-            self.__attack_index__+=1
-            self.__active_attack__.deactivate()
+            self.__attack_group__.select_next_attack()
             
-            if self.__attack_index__ >= len(self.__attacks__):
-                self.__attack_index__ = 0
-            #endif
-            
-        def update_attack(self):
-            if self.__active_attack__:
-                self.__active__attack__.select_strike(self.__game_object__.animation_frame_index)
-            #endif
-            
-        def queue_attack(self):            
-            if self.__game_object__.animation_frame_index> 0.5*self.__active_attack__.get_strike_count():
-                self.continue_next = True
+        def frame_entered_callback(self):            
+            self.__attack_group__.update_active_attack()
+
+        def attack_action_callback(self):            
+            if self.__game_object__.animation_frame_index> 0.5*self.__attack_group__.active_attack.get_strike_count():
+                StateMachine.post_action_event(self.__game_object__,
+                               AttackStateActionKeys.QUEUE_NEXT,
+                                StateMachine.Events.SUBMACHINE_ACTION)
             #endif       
         
             
     class ContinueState(State):
         
-        def __init__(self,game_object):            
-            State.__init__(self,AttackState.StateKeys.CONTINUE)
-            self.__game_object__ = game_object
-            self.__attacks__ = None
+        def __init__(self,game_object,attack_group, interrupt_indices = None): 
+            AttackState.BaseAttackState.__init__(self,game_object,attacks,interrupt_indices)
             
-        @attacks.setter
-        def attacks(self,attacks):
-            self.__attacks__
+            self.add_action(AnimatableObject.ActionKeys.ANIMATION_FRAME_ENTERED,
+                lambda : self.frame_entered_callback())
+            self.add_action(AnimatableObject.ActionKeys.ANIMATION_SEQUENCE_COMPLETED,
+                lambda : self.sequence_completed_callback())
+            self.add_action(PlayerActionKeys.ATTACK,
+                lambda : self.attack_action_callback())
             
+        def frame_entered_callback(self):            
+            active_index = self.__attack_group__.active_index()
+            if self.__interrupt_indices__[active_index] == self.__game_object__.animation_frame_index:
+                StateMachine.post_action_event(self.__game_object__,
+                               AttackStateActionKeys.ENTER_NEXT,
+                                StateMachine.Events.SUBMACHINE_ACTION)
+            else:
+                self.__attack_group__.update_active_attack()
+            #endif
+            
+        def sequence_completed_callback(self):
+            
+            if len(self.__attack_group__) > (self.__attack_group__.active_index()+1):
+                StateMachine.post_action_event(self.__game_object__,
+                               AttackStateActionKeys.ENTER_NEXT,
+                                StateMachine.Events.SUBMACHINE_ACTION)  
+            else:
+                StateMachine.post_action_event(self.__game_object__,
+                               AttackStateActionKeys.SEQUENCE_COMPLETED,
+                                StateMachine.Events.SUBMACHINE_ACTION)    
+            #endif                                   
+
     
-    def __init__(self,key,game_object):
+    def __init__(self,key,game_object,attack_keys):
         
         SubStateMachine.__init__(self,key)
         self.__game_object__ = game_object
         self.__attacks__ = None
+        self.__attack_group__ = None
+        self.__attack_keys__ = attack_keys
         
-        # creating states
-        self.__activate_state = AttackState.ActiveState(self.__game_object__)
-        self.__continue_state = AttackState.ContinueState(self.__game_object__)
+        # state place holders
+        self.activate_state = None
+        self.continue_state = None
+        
+    def setup(self,assets):
+        pass
+    
+    def create_transition_rules(self):        
+                
+        # transitions
+        self.add_transition(self.start_state, StateMachineActionKeys.SUBMACHINE_START, self.activate_state.key)
+        self.add_transition(self.active_state, AttackStateActionKeys.QUEUE_NEXT, self.continue_state.key)
+        self.add_transition(self.continue_state, AttackStateActionKeys.ENTER_NEXT, self.active_state.key)
+        self.add_transition(self.continue_state, AttackStateActionKeys.SEQUENCE_COMPLETED, self.stop_state.key)
+        
+
         
     
