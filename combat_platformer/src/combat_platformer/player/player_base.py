@@ -98,7 +98,7 @@ class PlayerBase(AnimatableObject):
             
     def step_x(self):
         
-        dx = self.horizontal_speed
+        dx = self.horizontal_speed + self.momentum
                 
         if dx > self.max_delta_x:
             dx = self.max_delta_x

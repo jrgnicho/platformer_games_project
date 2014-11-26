@@ -311,37 +311,34 @@ class JumpState(BasicState):
         
     def turn_right(self):
         
-        pl = self.player
-        if pl.momentum >0:
-        
-            pl.turn_right(pl.momentum if pl.momentum > self.speed else self.speed)
-        else:
-            pl.turn_right(self.speed + pl.momentum)                
-            pl.step_momentum()
-                
-            #endif
-        #endif
-            
+         pl = self.player
+         pl.step_momentum()
+         pl.turn_right(self.speed)     
         
     def turn_left(self):
         
-        pl = self.player
-        if pl.momentum <0:
-        
-            pl.turn_left(pl.momentum if abs(pl.momentum) > self.speed else -self.speed)
-        else:
-            pl.turn_left(-self.speed + pl.momentum)                
-            pl.step_momentum()
-                
-            #endif
-        #endif
+         pl = self.player
+         pl.step_momentum()
+         pl.turn_left(-self.speed)        
         
     def cancel_move(self):
         
         pl = self.player
-        pl.set_horizontal_speed(abs(pl.momentum))
-        pl.step_momentum()            
+
+        if pl.momentum==0:
+            pl.set_horizontal_speed(0)  
+        else:
         
+            pd = (-1,1)[pl.facing_right]
+            md = (-1,1)[pl.momentum > 0]
+            if pd == md:
+                pl.set_horizontal_speed(0)            
+            else:
+                pl.set_horizontal_speed(self.speed)    
+            #endif  
+             
+            pl.step_momentum() 
+        #endif    
         
     def cancel_jump(self):
         
@@ -466,7 +463,6 @@ class FallState(BasicState):
         
         self.speed = self.player.properties.run_speed
         
-        
         # creating range rectangle
         self.range_sprite = pygame.sprite.Sprite()
         self.range_sprite.rect = self.player.rect.copy()
@@ -477,37 +473,34 @@ class FallState(BasicState):
         
     def turn_right(self):
         
-        pl = self.player
-        if pl.momentum >0:
-        
-            pl.turn_right(pl.momentum if pl.momentum > self.speed else self.speed)
-        else:
-            pl.turn_right(self.speed + pl.momentum)                
-            pl.step_momentum()
-                
-            #endif
-        #endif
-            
+         pl = self.player
+         pl.step_momentum()
+         pl.turn_right(self.speed)     
         
     def turn_left(self):
         
-        pl = self.player
-        if pl.momentum <0:
+         pl = self.player
+         pl.step_momentum()
+         pl.turn_left(-self.speed)
         
-            pl.turn_left(pl.momentum if abs(pl.momentum) > self.speed else -self.speed)
+    def cancel_move(self):    
+        
+        pl = self.player
+        
+        if pl.momentum==0:
+            pl.set_horizontal_speed(0)  
         else:
-            pl.turn_left(-self.speed + pl.momentum)                
-            pl.step_momentum()
-                
-            #endif
-        #endif  
         
-    def cancel_move(self):        
-        
-        pl = self.player
-        pl.set_horizontal_speed(abs(pl.momentum))
-        pl.step_momentum()  
-
+            pd = (-1,1)[pl.facing_right]
+            md = (-1,1)[pl.momentum > 0]
+            if pd == md:
+                pl.set_horizontal_speed(0)            
+            else:
+                pl.set_horizontal_speed(self.speed)    
+            #endif  
+             
+            pl.step_momentum() 
+        #endif     
     
     def enter(self):
             
