@@ -3,14 +3,23 @@
 import pygame
 from simple_platformer.utilities import *
 import rospkg
+import sys
 
 
 G_Sprite_Loader = SpriteLoader()
 
 def load_sprites():
     
-    rospack = rospkg.RosPack()
-    desc_file = rospack.get_path('simple_platformer') + '/resources/hiei_sprites/sprite_details.txt'
+    # checking if file provided in command line
+    desc_file = ''
+    if len(sys.argv) > 1:
+        desc_file = sys.argv[1]
+        print "Opening sprite list file %s"%(desc_file)
+    else:
+        rospack = rospkg.RosPack()
+        desc_file = rospack.get_path('simple_platformer') + '/resources/hiei_sprites/sprite_list.txt'
+    #endif 
+        
     if G_Sprite_Loader.load_sets(desc_file):
         print "Sprites successfully loaded"
         return True
@@ -114,19 +123,19 @@ if __name__ == "__main__":
         #endif
         
         # updating rectangle position and size
-        sp.rect.y = rect2.y
-        sp.rect.y += rect2.height - sp.image.get_height()
-        sp.rect.height = sp.image.get_height()
         
+        sp.rect.height = sp.image.get_height()
+        sp.rect.bottom = rect2.centery
+        
+        sp.rect.width = sp.image.get_width()        
         sp.rect.centerx = rect2.centerx
-        sp.rect.width = sp.image.get_width()
              
         active_sprites.update()
         screen.blit(background.image,(0,0))
         active_sprites.draw(screen)       
  
         
-        clock.tick(20)
+        clock.tick(60)
         
         pygame.display.flip()        
         
