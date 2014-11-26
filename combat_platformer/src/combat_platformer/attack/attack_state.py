@@ -51,6 +51,7 @@ class AttackState(SubStateMachine):
                 lambda : self.attack_action_callback())
             
         def enter(self):
+            self.__game_object__.select_next_queued()
             self.__attack_group__.select_next_attack()
             
         def frame_entered_callback(self):            
@@ -108,16 +109,45 @@ class AttackState(SubStateMachine):
         self.__attack_keys__ = attack_keys
         
         # state place holders
-        self.activate_state = None
+        self.active_state = None
         self.continue_state = None
         
+    def enter(self):        
+        self.__game_object__.queue_animation_keys(self.__attack_keys)
+        
+    def exit(self):
+        self.__game_object__.clear_queue()
+        
     def setup(self,assets):
-        pass
+        
+        # creating attacks
+        attacks = []
+        for k in self.__attack_keys:
+            
+            if assets.attack_images.has_key(k):
+                a = Attack(self.__game_object__, assets.attack_images[k])
+                attacks.append(a)
+            else:
+                print "ERROR: attack image for key %s was not found"%(k)
+                return False
+            #endif
+        #endfor
+        
+        # create attack group
+        self.__attack_group__ = AttackGroup(self.__game_object__, attacks)
+        
+        # create states
+        self.active_state = AttackState.ActiveState(self.__game_object__,self.__attack_group__)
+        self.continue_state = AttackState.ContinueState(self.__game_object__,self.__attack_group__)
+        
+        self.create_transition_rules()
+        
+        return True
     
     def create_transition_rules(self):        
                 
         # transitions
-        self.add_transition(self.start_state, StateMachineActionKeys.SUBMACHINE_START, self.activate_state.key)
+        self.add_transition(self.start_state, StateMachineActionKeys.SUBMACHINE_START, self.active_state.key)
         self.add_transition(self.active_state, AttackStateActionKeys.QUEUE_NEXT, self.continue_state.key)
         self.add_transition(self.continue_state, AttackStateActionKeys.ENTER_NEXT, self.active_state.key)
         self.add_transition(self.continue_state, AttackStateActionKeys.SEQUENCE_COMPLETED, self.stop_state.key)

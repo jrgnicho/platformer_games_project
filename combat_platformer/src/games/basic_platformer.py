@@ -13,7 +13,7 @@ class SimpleGameAssets(object):
     
     def __init__(self):        
         self.sprite_loader = SpriteLoader()
-        self.attacks_dict = []
+        self.attacks_images = []
 
 class BasicPlatformer(object):
     
