@@ -10,8 +10,10 @@ class SpriteSet(object):
         
         self.sprites = [] # Sprites
         self.rate_change = 0
+        self.offsetx = 0 # x offset from center
+        self.offsety = 0 # y offset from bottom
         
-    def load(self,file_name,details,rate,sx = 1,sy = 1):
+    def load(self,file_name,details,rate,sx = 1,sy = 1,offsetx = 0, offsety = 0):
         """
             Loads sprites from an image file
             - file : path to the image file
@@ -30,6 +32,8 @@ class SpriteSet(object):
             return False
 
         self.rate_change = rate;
+        self.offsetx = offsetx
+        self.offsety = offsety
         sheet = pygame.image.load(file_name).convert()
         
         columns = details[0]
@@ -60,8 +64,9 @@ class SpriteSet(object):
             #endfor
         #endfor
         
-        print "Loaded %i %ix%i sprites at scale %f x %f from image sheet %s "%(len(self.sprites),w,h,
-                                                                               sx,sy,file_name)
+        print "Loaded %i %ix%i sprites at scale (%f x %f) offset (%i,%i) from image sheet %s "%(len(self.sprites),w,h,
+                                                                               sx,sy,self.offsetx,self.offsety,
+                                                                               file_name)
         
         return True
         
@@ -73,13 +78,15 @@ class SpriteSet(object):
         
         return self.sprites[index]
     
-    def invert_set(self):
+    def invert_set(self,xflip = True, yflip = False):
         
         inv_set = SpriteSet();
         inv_set.rate_change = self.rate_change
+        inv_set.offsetx = -self.offsetx if xflip else self.offsetx
+        inv_set.offsety = -self.offsety if yflip else self.offsety
         for sprite in self.sprites:
             
-            inv_set.sprites.append(pygame.transform.flip(sprite,True,False))
+            inv_set.sprites.append(pygame.transform.flip(sprite,xflip,yflip))
             
         #endfor        
         return inv_set
@@ -100,6 +107,8 @@ class SpriteLoader():
             self.scale_x = 1
             self.frame_rate = 0
             self.scale_y = 1
+            self.offsetx = 0
+            self.offsety = 0
             
         def parse_entry(self,line):
             
@@ -117,13 +126,20 @@ class SpriteLoader():
                 self.rows = int(entries[3])
                 self.frame_rate = int(entries[4]) # miliseconds
                 
+                # parsing scale x
                 if len(entries) >= 6:
                     code = entries[5]
                     self.scale_x = float(code[2:len(code)])
-                    
+                   
+                # parsing scale y 
                 if len(entries) >= 7:
                     code = entries[6]
                     self.scale_y = float(code[2:len(code)])
+                    
+                self.offsetx = int(entries[7]) if len(entries) >=8 else 0
+                self.offsety = int(entries[8]) if len(entries) >=9 else 0
+                
+                
                     
             except ValueError:
                 
@@ -167,7 +183,7 @@ class SpriteLoader():
         entry = SpriteLoader.Entry()
         for i in range(1,len(lines)):
             
-            if entry.parse_entry(lines[i]):
+            if entry.parse_entry(lines[i]):               
                 
                 current_key = entry.key
                 if current_key != last_key: # create new set and storing                    
@@ -182,7 +198,7 @@ class SpriteLoader():
                                 (entry.columns,entry.rows),
                                 entry.frame_rate,
                                 entry.scale_x,
-                                entry.scale_y):
+                                entry.scale_y,entry.offsetx,entry.offsety):
                     
                     return False 
                 #endif
