@@ -41,15 +41,6 @@ class AnimatableObject(GameObject):
         self.animation_cycles_counter = 0 # number of times the current animation sequence has been cycled through
         self.animation_keys_queue = []
         
-        # draw members
-        self.drawable_sprite = pygame.sprite.Sprite()
-        self.drawable_sprite.image = pygame.Surface([w,h])
-        self.drawable_sprite.image.fill(Colors.RED)
-        self.drawable_sprite.rect = self.drawable_sprite.image.get_rect()
-        self.drawable_group = pygame.sprite.Group()
-        self.drawable_group.add(self.drawable_sprite)
-                
-        
         # event handlers
         self.event_queue = [AnimatableObject.Events.ANIMATION_FRAME_COMPLETED]
         self.event_handlers = {} # dictionary with event keys
