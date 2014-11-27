@@ -2,6 +2,7 @@ import pygame
 from pygame.sprite import Sprite
 from simple_platformer.utilities import Colors
 from simple_platformer.game_object import CollisionMasks
+from simple_platformer.game_object import AnimationSprite
 
 class GameObject(Sprite):  
     
@@ -26,10 +27,10 @@ class GameObject(Sprite):
         self.type_bitmask = CollisionMasks.DEFAULT
         
         # drawing
-        self.drawable_sprite = pygame.sprite.Sprite()
-        self.drawable_sprite.image = pygame.Surface([w,h])
+        self.drawable_sprite = AnimationSprite(pygame.Surface([w,h]),(0,0))
         self.drawable_sprite.image.fill(Colors.RED)
-        self.drawable_sprite.rect = self.drawable_sprite.image.get_rect()
+        #self.drawable_sprite.rect = self.drawable_sprite.image.get_rect()
+        
         self.drawable_sprite.layer = GameObject.Layer.MIDDLE
         self.drawable_group = pygame.sprite.LayeredUpdates()
         self.drawable_group.add(self.drawable_sprite)

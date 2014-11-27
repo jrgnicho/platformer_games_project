@@ -11,8 +11,6 @@ class SpriteSet(object):
         
         self.sprites = [] # Sprites
         self.rate_change = 0
-        self.offsetx = 0 # x offset from center
-        self.offsety = 0 # y offset from bottom
         
     def load(self,file_name,details,rate,sx = 1,sy = 1,offsetx = 0, offsety = 0):
         """
@@ -33,8 +31,6 @@ class SpriteSet(object):
             return False
 
         self.rate_change = rate;
-        self.offsetx = offsetx
-        self.offsety = offsety
         sheet = pygame.image.load(file_name).convert()
         
         columns = details[0]
@@ -61,12 +57,16 @@ class SpriteSet(object):
                 scaled_image = pygame.Surface([scaled_width, scaled_height]).convert()
                 scaled_image = pygame.transform.smoothscale(image,(scaled_width,scaled_height))
                 scaled_image.set_colorkey(Colors.BLACK)
-                self.sprites.append(scaled_image) 
+                
+                # creating animation sprite
+                sp = AnimationSprite(scaled_image,(offsetx,offsety))
+                
+                self.sprites.append(sp) 
             #endfor
         #endfor
         
         print "Loaded %i %ix%i sprites at scale (%f x %f) offset (%i,%i) from image sheet %s "%(len(self.sprites),w,h,
-                                                                               sx,sy,self.offsetx,self.offsety,
+                                                                               sx,sy,offsetx,offsety,
                                                                                file_name)
         
         return True
@@ -83,12 +83,9 @@ class SpriteSet(object):
         
         inv_set = SpriteSet();
         inv_set.rate_change = self.rate_change
-        inv_set.offsetx = -self.offsetx if xflip else self.offsetx
-        inv_set.offsety = -self.offsety if yflip else self.offsety
-        for sprite in self.sprites:
-            
-            inv_set.sprites.append(pygame.transform.flip(sprite,xflip,yflip))
-            
+        
+        for sp in self.sprites:            
+            inv_set.sprites.append(sp.invert(xflip,yflip))            
         #endfor        
         return inv_set
     
