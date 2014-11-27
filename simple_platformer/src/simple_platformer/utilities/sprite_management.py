@@ -1,6 +1,7 @@
 import pygame
 import os
 from pygame.sprite import Sprite
+from simple_platformer.game_object import AnimationSprite
 import simple_platformer.utilities
 from simple_platformer.utilities import *
 
