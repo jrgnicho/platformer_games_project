@@ -114,11 +114,11 @@ if __name__ == "__main__":
         if sprite_index >= len(sprite_set.sprites) :
             
             sprite_index = len(sprite_set.sprites) -1  
-            sp.image = sprite_set.sprites[sprite_index]
+            sp.image = sprite_set.sprites[sprite_index].image
             time_elapsed =  pygame.time.get_ticks()
             
         else:                           
-            sp.image = sprite_set.sprites[sprite_index]
+            sp.image = sprite_set.sprites[sprite_index].image
             
         #endif
         
