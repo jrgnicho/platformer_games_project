@@ -246,8 +246,8 @@ class AnimatableObject(GameObject):
             
         #endif             
         
-        self.drawable_sprite.rect.bottom = self.screen_bottom 
-        self.drawable_sprite.rect.centerx = self.screen_centerx        
+        self.drawable_sprite.rect.bottom = self.screen_bottom + sprite_set.offsety
+        self.drawable_sprite.rect.centerx = self.screen_centerx + sprite_set.offsetx       
         
         
         
