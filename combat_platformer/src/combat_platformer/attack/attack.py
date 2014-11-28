@@ -1,4 +1,5 @@
 from simple_platformer.utilities import Colors
+from simple_platformer.game_object import AnimationSprite
 from simple_platformer.game_object import GameObject
 from combat_platformer.combat import *
 import pygame
@@ -49,56 +50,90 @@ class Hit(pygame.sprite.Sprite):
         - rect: The pygame.Rect object that will be used to check the hit.  
         - offset: tuple (x,y) indicating the position of the rect relative to the parent object's center
     """    
-    def __init__(self,parent,rect,offset):
+    def __init__(self):
         
-        pygame.sprite.Sprite.__init__(self)
+        pygame.sprite.Sprite.__init__(self,parent,mask,offset)
         self.parent_object = parent
-        self.__rect__ = pygame.Rect(rect)
-        self.__offset__ = offset
-        self.image = pygame.Surface([self.__rect__.width,self.__rect__.height])
-        self.image.fill(Colors.WHITE)
+        self.mask = mask
+        self.__rect__ = pygame.Rect((0,0),mask.get_size())
+        self.offset = offset
+        self.image = pygame.Surface([self.__rect__.width,self.__rect__.height]).convert_alpha()        
+        self.__draw_mask__()
         self.layer = GameObject.Layer.FRONT
+        
+        # creating drawable sprite
+        self.drawable_sprite = AnimationSprite(self.image,self.offset)
+        
+    def __draw_mask__(self):
+        self.image.fill(Colors.GREEN)
+        self.image.lock()
+        h = self.__rect__.height
+        w = self.__rect__.width
+        bit = 0
+        for i in range(0,w):
+            for j in range(0,h):
+                bit = self.mask.get_at(i,j)
+                if bit == 0: # set transparent
+                    self.image.set_at([0,0,0,0])
+                #endif
+            #endfor
+        #endfor
+        self.image.unlock()     
+        
+    def update(self):
+        
+        self.drawable_sprite.centerx = self.parent_object.screen_centerx 
+        self.drawable_sprite.bottom =  self.parent_object.screen_bottom            
         
     @property
     def rect(self):
         
-        cx = self.parent_object.centerx + self.__offset__[0]
-        cy = self.parent_object.centery + self.__offset__[1]
+        cx = self.parent_object.rect.centerx + self.offset[0]
+        cy = self.parent_object.rect.bottom + self.offset[1]
         self.__rect__.center = (cx,cy)
         return self.__rect__
+    
+            
+    def kill(self):        
+        self.drawable_sprite.kill()
+                    
         
         
 class Strike(object):
     
-    def __init__(self,parent,mask_surface,properties = StrikeProperties()):
+    def __init__(self,parent,animation_sprite,properties = StrikeProperties()):
         pygame.sprite.OrderedUpdates.__init__(self)
         self.parent_object = parent
         
         # sprite that represents the reach of all hit rectangles
         self.range_sprite = None
         
-        # hits array
-        self.hits = []
+        # drawable group
+        self.drawable_sprites = []
         
+        # hits array
+        self.hits = []        
         
         ## creating hit objects and range sprite
-        mask = pygame.mask.from_surface(mask_surface, 127)
-        parent_rect = mask_surface.get_rect()
+        mask = pygame.mask.from_surface(animation_sprite.image)
+        parent_rect = animation_sprite.rect
         
-        rects = mask.get_bounding_rects()
-        for r in iter(rects):
-            offsetx = r.centerx  - parent_rect.centerx 
-            offsety = r.centery - parent_rect.centery 
-            hit = Hit(self.parent_object,r,(offsetx,offsety))
-            self.hits.append(hit)
-        #endfor  
+        masks = mask.connected_components()
         
-        # creating range sprite 
-        if len(rects) > 0:
+        if len(mask) > 0:
+            for m in masks:
+                hit = Hit(parent,m,animation_sprite.offset)
+                self.hits.append(hit)
+                self.drawable_sprites.append(hit.drawable_sprite)
+            #endfor
+            
             self.range_sprite = pygame.sprite.Sprite()
-            self.range_sprite.rect = pygame.Rect.unionall(rects)
+            self.range_sprite.rect = pygame.Rect((0,0),mask.get_size())
         #endif
-                                       
+        
+        def len(self):
+            return len(self.hits)
+                   
 
 class Attack(object) :
     """
@@ -110,7 +145,7 @@ class Attack(object) :
         that can be active.  Defaults to (0,len(mask_images) - 1)
     """
     
-    def __init__(self,parent,images,strike_properties = StrikeProperties(),strike_index_bounds = None):
+    def __init__(self,parent,sprite_set,strike_properties = StrikeProperties(),strike_index_bounds = None):
                
         
         self.parent_object = parent # reference to object that spawned this attack, it should be a GameObject type      
@@ -120,16 +155,16 @@ class Attack(object) :
         self.strikes = [] # array of strike property objects, one per animation frame
         self.motion_properties = MotionProperties()
         self.life_span_properties = LifeSpanProperties()
-        self.strike_index = 0; # used to index into the "strikes" member
+        self.strike_index = -1; # used to index into the "strikes" member
         self.strike_index_bounds = (0,len(images)-1) if strike_index_bounds == None else strike_index_bounds.copy()
         
         # active hits (sprites)
         self.active_hits = pygame.sprite.Group()
         
         # initializing strikes array
-        for im in iter(images):
+        for sp in iter(sprite_set.sprites):
             
-            strk = Strike(parent, im, strike_properties)
+            strk = Strike(parent, sp, strike_properties)
             self.strikes.append(strk)
         #endfor
         
@@ -151,7 +186,7 @@ class Attack(object) :
             for hit in strike.hits:                
                 hit.kill()
             #endfor
-            
+            self.strike_index = -1
             self.parent_object.remove_range_sprite(strike.range_sprite)
         #endif
                 
@@ -170,24 +205,27 @@ class Attack(object) :
             return True;
         #endif
         
-        if (len(self.strikes) > index) :
+        if (len(self.strikes) > index) :    
+            
+            # remove last strike range sprite
+            if self.strike_index >= 0 and len(self.strikes[self.strike_index ]) > 0:
+                prev_strike = self.strikes[self.strike_index ]
+                self.parent_object.remove_range_sprite(prev_strike.range_sprite)       
+                self.parent_object.drawable_group.remove(prev_strike.drawable_sprites)                  
+                self.active_hits.empty()
+            #endif
             
             # activating strike's hit objects
             self.strike_index = index
             strk = self.strikes[index]
-            self.active_hits.empty()
-            self.active_hits.add(strk.hits)
-            
-            # adding hit objects to game object drawable sprites
-            self.parent_object.drawable_group.add(strk.hits)
-            
-            # remove last strike range sprite
-            if self.strike_index >0:
-                prev_strike = self.strikes[index - 1]
-                self.parent_object.remove_range_sprite(prev_strike.range_sprite)
-            
-            # add strike range sprite            
-            self.parent_object.add_range_sprite(strk.range_sprite)
+            if len(strk) > 0:
+                
+                self.active_hits.add(strk.hits)                
+                # adding hit objects to game object drawable sprites
+                self.parent_object.drawable_group.add(strk.drawable_sprites)  
+                # add strike range sprite            
+                self.parent_object.add_range_sprite(strk.range_sprite)
+            #endif
             
         else:
             return False
@@ -200,7 +238,7 @@ class Attack(object) :
     """        
     def check_hits(self,game_object):
         
-        hits = pygame.sprite.spritecollide(game_object, self.active_hits, False)
+        hits = pygame.sprite.spritecollide(game_object, self.active_hits, False,pygame.sprite.collide_mask)
         for hit in iter(hits):
             hit.kill()
         #end
