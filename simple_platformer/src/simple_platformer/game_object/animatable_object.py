@@ -167,8 +167,7 @@ class AnimatableObject(GameObject):
             else:
                 self.animation_selected_frames = selected_frames
             
-            #endif
-        
+            #endif        
         #endif
         
         return True
@@ -180,6 +179,7 @@ class AnimatableObject(GameObject):
     def update(self):
         
         self.update_animation_frame()
+        self.drawable_group.update()
         for evnt in iter(self.event_queue):        
             self.post_events(evnt)
         #endfor
@@ -225,7 +225,6 @@ class AnimatableObject(GameObject):
             self.event_queue.append( AnimatableObject.Events.ANIMATION_SEQUENCE_COMPLETED)
             
         else: 
-            
             self.animation_frame_index = self.animation_selected_frames[frame_index_position]         
             
             # select following frame           
