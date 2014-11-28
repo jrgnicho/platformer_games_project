@@ -1,0 +1,4 @@
+key file	colums rows rate(miliseconds) scalex scale y
+ATTACK_1 hiei_combo1_seq1_0-4.png 5 1 100 SX1.5 SY1.5 0 0
+ATTACK_2 hiei_combo1_seq2_0-6.png 7 1 90 SX1.5 SY1.5 0 0
+ATTACK_3 hiei_combo1_seq3_0-6.png 7 1 90 SX1.5 SY1.5 0 0
