@@ -1,11 +1,10 @@
 from simple_platformer.utilities import Colors
 from simple_platformer.game_object import AnimationSprite
 from simple_platformer.game_object import GameObject
-from combat_platformer.combat import *
+from combat_platformer.attack import *
 import pygame
 from pygame.sprite import Sprite
 from pygame import Rect
-from orca.dbusserver import obj
 
 class StrikeProperties(object):
     
@@ -50,9 +49,9 @@ class Hit(pygame.sprite.Sprite):
         - rect: The pygame.Rect object that will be used to check the hit.  
         - offset: tuple (x,y) indicating the position of the rect relative to the parent object's center
     """    
-    def __init__(self):
+    def __init__(self,parent,mask,offset):
         
-        pygame.sprite.Sprite.__init__(self,parent,mask,offset)
+        pygame.sprite.Sprite.__init__(self)
         self.parent_object = parent
         self.mask = mask
         self.__rect__ = pygame.Rect((0,0),mask.get_size())
@@ -72,9 +71,9 @@ class Hit(pygame.sprite.Sprite):
         bit = 0
         for i in range(0,w):
             for j in range(0,h):
-                bit = self.mask.get_at(i,j)
+                bit = self.mask.get_at((i,j))
                 if bit == 0: # set transparent
-                    self.image.set_at([0,0,0,0])
+                    self.image.set_at((i,j),[0,0,0,0])
                 #endif
             #endfor
         #endfor
@@ -102,7 +101,7 @@ class Hit(pygame.sprite.Sprite):
 class Strike(object):
     
     def __init__(self,parent,animation_sprite,properties = StrikeProperties()):
-        pygame.sprite.OrderedUpdates.__init__(self)
+        
         self.parent_object = parent
         
         # sprite that represents the reach of all hit rectangles
@@ -120,7 +119,7 @@ class Strike(object):
         
         masks = mask.connected_components()
         
-        if len(mask) > 0:
+        if len(masks) > 0:
             for m in masks:
                 hit = Hit(parent,m,animation_sprite.offset)
                 self.hits.append(hit)
@@ -131,8 +130,8 @@ class Strike(object):
             self.range_sprite.rect = pygame.Rect((0,0),mask.get_size())
         #endif
         
-        def len(self):
-            return len(self.hits)
+    def len(self):
+        return len(self.hits)
                    
 
 class Attack(object) :
@@ -156,7 +155,7 @@ class Attack(object) :
         self.motion_properties = MotionProperties()
         self.life_span_properties = LifeSpanProperties()
         self.strike_index = -1; # used to index into the "strikes" member
-        self.strike_index_bounds = (0,len(images)-1) if strike_index_bounds == None else strike_index_bounds.copy()
+        self.strike_index_bounds = (0,len(sprite_set.sprites)-1) if strike_index_bounds == None else strike_index_bounds.copy()
         
         # active hits (sprites)
         self.active_hits = pygame.sprite.Group()
