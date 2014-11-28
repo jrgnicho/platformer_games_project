@@ -59,7 +59,7 @@ class BasicPlatformer(object):
     
     def load_player_sprites(self):
         rospack = rospkg.RosPack()
-        sprites_list_file = rospack.get_path('simple_platformer') + '/resources/hiei_sprites/sprite_list.txt' 
+        sprites_list_file = rospack.get_path('simple_platformer') + '/resources/hiei_sprites/animation/sprite_list.txt' 
         
           
         sprite_loader = self.player_assets.sprite_loader 
