@@ -54,7 +54,7 @@ class SpriteSet(object):
                 # scaling image                
                 scaled_width = int(sx*w)
                 scaled_height = int(sy*h)
-                scaled_image = pygame.Surface([scaled_width, scaled_height]).convert()
+                scaled_image = pygame.Surface([scaled_width, scaled_height]).convert_alpha()
                 scaled_image = pygame.transform.smoothscale(image,(scaled_width,scaled_height))
                 scaled_image.set_colorkey(Colors.BLACK)
                 
