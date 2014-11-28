@@ -17,7 +17,7 @@ def load_sprites():
         print "Opening sprite list file %s"%(desc_file)
     else:
         rospack = rospkg.RosPack()
-        desc_file = rospack.get_path('simple_platformer') + '/resources/hiei_sprites/sprite_list.txt'
+        desc_file = rospack.get_path('simple_platformer') + '/resources/hiei_sprites/animation/sprite_list.txt'
     #endif 
         
     if G_Sprite_Loader.load_sets(desc_file):
