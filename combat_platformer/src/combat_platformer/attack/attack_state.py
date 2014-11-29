@@ -31,7 +31,7 @@ class AttackState(SubStateMachine):
             if interrupt_indices == None:
                 interrupt_indices = []
                 for at in attacks:
-                    interrupt_indices.append(at.strike_count() - 1)
+                    interrupt_indices.append(at.strikes_count() - 1)
                 #endfor
             #endif            
             
@@ -58,7 +58,7 @@ class AttackState(SubStateMachine):
             self.__attack_group__.update_active_attack()
 
         def attack_action_callback(self):            
-            if self.__game_object__.animation_frame_index> 0.5*self.__attack_group__.active_attack.get_strike_count():
+            if self.__game_object__.animation_frame_index> 0.5*self.__attack_group__.active_attack.strikes_count():
                 StateMachine.post_action_event(self.__game_object__,
                                AttackStateActionKeys.QUEUE_NEXT,
                                 StateMachine.Events.SUBMACHINE_ACTION)
