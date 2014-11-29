@@ -12,8 +12,8 @@ from combat_platformer.enemy import EnemyStateMachine
 class SimpleGameAssets(object):
     
     def __init__(self):        
-        self.sprite_loader = SpriteLoader()
-        self.attacks_images = []
+        self.animation_sprite_loader = SpriteLoader()
+        self.collision_sprite_loader = SpriteLoader()
 
 class BasicPlatformer(object):
     
@@ -62,7 +62,7 @@ class BasicPlatformer(object):
         sprites_list_file = rospack.get_path('simple_platformer') + '/resources/hiei_sprites/animation/sprite_list.txt' 
         
           
-        sprite_loader = self.player_assets.sprite_loader 
+        sprite_loader = self.player_assets.animation_sprite_loader 
         
         if sprite_loader.load_sets(sprites_list_file):
             print "Sprites successfully loaded"
@@ -89,7 +89,7 @@ class BasicPlatformer(object):
         rospack = rospkg.RosPack()
         sprite_list_file = rospack.get_path('simple_platformer') + '/resources/enemy_sprites/guardians_enemy17/sprite_list.txt'
                 
-        sprite_loader = self.enemy_assets.sprite_loader
+        sprite_loader = self.enemy_assets.animation_sprite_loader
         sprite_loader.sprite_sets.clear()
         if sprite_loader.load_sets(sprite_list_file):
             print "Enemy sprites successfully loaded"

@@ -37,9 +37,9 @@ class BasicState(State):
         
     def setup(self,assets):
         
-        if assets.sprite_loader.has_set(self.key):
-            if(self.game_object.add_animation_sets(self.key,assets.sprite_loader.sprite_sets[self.key].invert_set(),
-                                                assets.sprite_loader.sprite_sets[self.key])):
+        if assets.animation_sprite_loader.has_set(self.key):
+            if(self.game_object.add_animation_sets(self.key,assets.animation_sprite_loader.sprite_sets[self.key].invert_set(),
+                                                assets.animation_sprite_loader.sprite_sets[self.key])):
                 print "Added %s animation to game_object"%(self.key)
             else:
                 print "ERROR: adding %s animation to game_object"%(self.key)

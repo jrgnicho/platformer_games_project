@@ -35,9 +35,9 @@ class BasicState(State):
     """   
     def setup(self,assets):
         
-        if assets.sprite_loader.has_set(self.key):
-            if(self.player.add_animation_sets(self.key,assets.sprite_loader.sprite_sets[self.key],
-                                                assets.sprite_loader.sprite_sets[self.key].invert_set())):
+        if assets.animation_sprite_loader.has_set(self.key):
+            if(self.player.add_animation_sets(self.key,assets.animation_sprite_loader.sprite_sets[self.key],
+                                                assets.animation_sprite_loader.sprite_sets[self.key].invert_set())):
                 print "Added %s animation to player"%(self.key)
             else:
                 print "ERROR: adding %s animation to player"%(self.key)
