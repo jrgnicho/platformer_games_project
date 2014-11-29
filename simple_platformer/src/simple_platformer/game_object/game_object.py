@@ -29,13 +29,13 @@ class GameObject(Sprite):
         # drawing
         self.drawable_sprite = AnimationSprite(pygame.Surface([w,h]),(0,0))
         self.drawable_sprite.image.fill(Colors.RED)
-        #self.drawable_sprite.rect = self.drawable_sprite.image.get_rect()
         
         self.drawable_sprite.layer = GameObject.Layer.MIDDLE
         self.drawable_group = pygame.sprite.LayeredUpdates()
         self.drawable_group.add(self.drawable_sprite)
         
-        # collision detection support        
+        # collision detection support   
+        self.mask = pygame.mask.from_surface(self.drawable_sprite.image)     
         self.__range_collision_group__ = pygame.sprite.Group()    
         self.nearby_platforms = pygame.sprite.Group()
         
@@ -71,6 +71,7 @@ class GameObject(Sprite):
             self.__rect__ = r
             self.__half_width__ = int(0.5*self.__rect__.width) 
             self.__half_height__ = int(0.5*self.__rect__.height)
+            self.mask = pygame.mask.Mask(self.__rect__.size)
         #endif
         
     @property
@@ -115,7 +116,7 @@ class GameObject(Sprite):
     @width.setter
     def width(self,w):        
         self.__rect__.width = w
-        self.__half_width__ = int(0.5*w)
+        self.rect = self.__rect__
         
     @property
     def height(self):        
@@ -128,7 +129,7 @@ class GameObject(Sprite):
     @height.setter
     def height(self,h):
         self.__rect__.height = h
-        self.__half_height__ = int(0.5*h)
+        self.rect = self.__rect__
         
         
     @property
