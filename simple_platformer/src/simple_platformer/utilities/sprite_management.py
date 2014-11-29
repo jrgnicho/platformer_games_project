@@ -71,8 +71,7 @@ class SpriteSet(object):
         
         return True
         
-    def len(self):
-        
+    def __len__(self):        
         return len(self.sprites)
     
     def get(self,index):
@@ -151,7 +150,10 @@ class SpriteLoader():
         self.sprite_sets = {}
         
     def has_set(self,key):
-        return self.sprite_sets.has_key(key)        
+        return self.sprite_sets.has_key(key)   
+    
+    def clear(self):        
+        self.sprite_sets.clear()  
         
     def load_sets(self,desc_file_path):
         """
