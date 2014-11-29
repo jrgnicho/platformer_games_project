@@ -46,40 +46,46 @@ class Hit(pygame.sprite.Sprite):
     """ 
     Hit(parent,rect,offset)
         - parent: Parent game object that spawns the attack (usually the player or an enemy
-        - rect: The pygame.Rect object that will be used to check the hit.  
-        - offset: tuple (x,y) indicating the position of the rect relative to the parent object's center
+        - mask_pair: TA two element tuple of pygame Masks for the right and left side (right_mask,left_mask).  
+        - offset_pair: tuple ((xr,yr) , (xl,yl))indicating the position of the masks relative to the parent object's center
     """    
-    def __init__(self,parent,mask,offset):
+    def __init__(self,parent,mask_pair,offset_pair):
         
         pygame.sprite.Sprite.__init__(self)
         self.parent_object = parent
-        self.mask = mask
-        self.__rect__ = pygame.Rect((0,0),mask.get_size())
-        self.offset = offset
-        self.image = pygame.Surface([self.__rect__.width,self.__rect__.height]).convert_alpha()        
-        self.__draw_mask__()
+        self.mask_pair = mask_pair
+        self.__rect__ = pygame.Rect((0,0),mask_pair[0].get_size())
+        self.offset_pair = offset_pair
+        self.image_pair = (pygame.Surface([self.__rect__.width,self.__rect__.height]).convert_alpha(),
+                           pygame.Surface([self.__rect__.width,self.__rect__.height]).convert_alpha())        
+        self.__draw_mask__(self.mask_pair[0],self.image_pair[0])
+        self.__draw_mask__(self.mask_pair[1],self.image_pair[1])
         self.layer = GameObject.Layer.FRONT
         
         # creating drawable sprite
-        self.drawable_sprite = AnimationSprite(self.image,self.offset)
+        self.drawable_sprite = AnimationSprite(self.image_pair[0],self.offset_pair[0])
         
-    def __draw_mask__(self):
-        self.image.fill(Colors.GREEN)
-        self.image.lock()
+    def __draw_mask__(self,mask , image):
+        image.fill(Colors.GREEN)
+        image.lock()
         h = self.__rect__.height
         w = self.__rect__.width
         bit = 0
+        
         for i in range(0,w):
             for j in range(0,h):
-                bit = self.mask.get_at((i,j))
+                bit = mask.get_at((i,j))
                 if bit == 0: # set transparent
-                    self.image.set_at((i,j),[0,0,0,0])
+                    image.set_at((i,j),[0,0,0,0])
                 #endif
             #endfor
         #endfor
-        self.image.unlock()     
+        image.unlock()     
         
     def update(self):
+        
+        self.drawable_sprite.image = self.image_pair[0] if self.parent_object.facing_right else self.image_pair[1]
+        self.drawable_sprite.offset = self.offset_pair[0] if self.parent_object.facing_right else self.offset_pair[1]
         
         self.drawable_sprite.centerx = self.parent_object.screen_centerx 
         self.drawable_sprite.bottom =  self.parent_object.screen_bottom            
@@ -87,20 +93,29 @@ class Hit(pygame.sprite.Sprite):
     @property
     def rect(self):
         
-        cx = self.parent_object.rect.centerx + self.offset[0]
-        cy = self.parent_object.rect.bottom + self.offset[1]
+        offset = self.offset_pair[0] if self.parent_object.facing_right else self.offset_pair[1]
+        
+        cx = self.parent_object.rect.centerx + offset[0]
+        cy = self.parent_object.rect.bottom + offset[1]
         self.__rect__.center = (cx,cy)
         return self.__rect__
     
             
     def kill(self):        
+        pygame.sprite.Sprite.kill(self)
         self.drawable_sprite.kill()
                     
         
         
 class Strike(object):
+    """
+    Strike(parent, sprites = (right_sprite,left_sprite),properties = StrikeProperties())
+        - parent: Parent game object
+        - sprite_pair: Tuple containing the sprites for the right and left side, in that order.
+        - properties: (optional) StrikeProperties object
+    """
     
-    def __init__(self,parent,animation_sprite,properties = StrikeProperties()):
+    def __init__(self,parent,sprite_pair,properties = StrikeProperties()):
         
         self.parent_object = parent
         
@@ -113,24 +128,36 @@ class Strike(object):
         # hits array
         self.hits = []        
         
+        right_sprite = sprite_pair[0]
+        left_sprite = sprite_pair[1]
+        
         ## creating hit objects and range sprite
-        mask = pygame.mask.from_surface(animation_sprite.image)
-        parent_rect = animation_sprite.rect
+        mask_pair = (pygame.mask.from_surface(right_sprite.image),
+                     pygame.mask.from_surface(left_sprite.image))
+        parent_rect = right_sprite.rect
+        w,h = mask_pair[0].get_size()
+        if mask_pair[0].count() == w*h:
+            print "WARNING: Full mask contains %i bits out of %i pixels"%(mask_pair[0].count(),w*h)
+           
+        right_masks = mask_pair[0].connected_components()
+        left_masks = mask_pair[1].connected_components()
         
-        masks = mask.connected_components()
-        
-        if len(masks) > 0:
-            for m in masks:
-                hit = Hit(parent,m,animation_sprite.offset)
+        print "Found %i masks"%(len(right_masks))
+        if len(right_masks) > 0:
+            for i in range(0,len(right_masks)):
+                
+                rm = right_masks[i]
+                lm = left_masks[i]
+                hit = Hit(parent,(rm,lm),(right_sprite.offset,left_sprite.offset))
                 self.hits.append(hit)
                 self.drawable_sprites.append(hit.drawable_sprite)
             #endfor
             
             self.range_sprite = pygame.sprite.Sprite()
-            self.range_sprite.rect = pygame.Rect((0,0),mask.get_size())
+            self.range_sprite.rect = pygame.Rect((0,0),mask_pair[0].get_size())
         #endif
         
-    def len(self):
+    def __len__(self):
         return len(self.hits)
                    
 
@@ -138,13 +165,13 @@ class Attack(object) :
     """
     Attack(parent,mask_images)
     - parent: Parent game object that spawns the attack (usually the player or an enemy
-    - mask_images: The images containing the pixels from which the attack collision masks will be created.  
+    - sprite_sets: tuple of sprite sets for the right and left side (right_set,left_set)  
     - strike_properties: (optional) Property object used in each strike in this attack.
     - index_strike_bounds: (optional) A 2 element tuple of the form (min_index,max_index) that limits the number of strikes
         that can be active.  Defaults to (0,len(mask_images) - 1)
     """
     
-    def __init__(self,parent,sprite_set,strike_properties = StrikeProperties(),strike_index_bounds = None):
+    def __init__(self,parent,sprite_sets,strike_properties = StrikeProperties(),strike_index_bounds = None):
                
         
         self.parent_object = parent # reference to object that spawned this attack, it should be a GameObject type      
@@ -155,26 +182,35 @@ class Attack(object) :
         self.motion_properties = MotionProperties()
         self.life_span_properties = LifeSpanProperties()
         self.strike_index = -1; # used to index into the "strikes" member
-        self.strike_index_bounds = (0,len(sprite_set.sprites)-1) if strike_index_bounds == None else strike_index_bounds.copy()
+        
+        # getting sprite sets
+        right_set = sprite_sets[0]
+        left_set = sprite_sets[1]
+        
+        # setting bounds        
+        self.strike_index_bounds = (0,len(right_set.sprites)-1) if strike_index_bounds == None else strike_index_bounds.copy()
         
         # active hits (sprites)
         self.active_hits = pygame.sprite.Group()
         
         # initializing strikes array
-        for sp in iter(sprite_set.sprites):
+        for i in range(0,len(right_set)):
             
-            strk = Strike(parent, sp, strike_properties)
+            rs = right_set.sprites[i]
+            ls = left_set.sprites[i]
+            strk = Strike(parent, (rs,ls), strike_properties)
             self.strikes.append(strk)
         #endfor
         
-    def strike_count(self):        
+    def strikes_count(self):        
         return len(self.strikes)
+    
         
     def activate(self):
         
         self.strike_index = 0
         self.active_hits.empty()        
-        self.select_strike(self.paren_object.animation_frame_index)
+        self.select_strike(self.parent_object.animation_frame_index)
         
     def deactivate(self):        
         
@@ -201,6 +237,7 @@ class Attack(object) :
         #endif
         
         if self.strike_index == index:
+            self.update()
             return True;
         #endif
         
@@ -226,6 +263,8 @@ class Attack(object) :
                 self.parent_object.add_range_sprite(strk.range_sprite)
             #endif
             
+            self.update()
+            
         else:
             return False
         #endif
@@ -241,6 +280,11 @@ class Attack(object) :
         for hit in iter(hits):
             hit.kill()
         #end
+        
+    def update(self):
+        for h in self.active_hits:
+            h.update()
+        #endif
 
 
 """
@@ -248,14 +292,15 @@ Convenience class for handling multiple attacks that belong to a sequence (combo
 """   
 class AttackGroup(object):
     
-    def __init__(self,game_object,attacks):
+    def __init__(self,game_object,attacks_map):
         
         self.__game_object__ = game_object
-        self.__attacks__ = attacks
-        self.__attack_index__ = 0
-        self.__active_attack__ = None
-        
+        self.__attacks_map__ = attacks_map
+        self.__active_attack__ = None        
         self.reset()
+        
+    def add(self,key,attack):
+        self.__attacks_map__[key] = attack
         
     def reset(self):
         
@@ -263,32 +308,35 @@ class AttackGroup(object):
         if self.__active_attack__ != None:
             self.__active_attack__.deactivate()
         #endif
-        self.__active_attack__ = None        
-        self.__attack_index__ = -1
+        self.__active_attack__ = None       
             
     
-    def select_next_attack(self):
+    def select_attack(self,key):
         
         #deactivating current attack
         if self.__active_attack__ != None:
             self.__active_attack__.deactivate()
         #endif
         
-        self.__attack_index__+=1
-        if self.__attack_index__ < len(self.__attacks__):
-            self.__active_attack__ = self.__attacks__[self.__attack_index__]
+        if self.__attacks_map__.has_key(key):
+            self.__active_attack__ = self.__attacks_map__[key]
             self.__active_attack__.activate()
+        else:
+            print "ERROR: attack key %s was not found in attack group"%(key)
+            return False
         #endif
         
-    def len(self):
-        return len(self.__attacks__)    
+        return True
+        
+    def __len__(self):
+        return len(self.__attacks_map__)    
   
     def update_active_attack(self):
         """
             Sets the attack frame (strike) to the animation frame corresponding to this attack
         """          
         if self.__active_attack__ != None:
-            return self.__active__attack__.select_strike(self.__game_object__.animation_frame_index)
+            return self.__active_attack__.select_strike(self.__game_object__.animation_frame_index)
         else:
             return False
         #endif
@@ -298,20 +346,5 @@ class AttackGroup(object):
         return self.__active_attack__
     
     def active_index(self):
-        return self.__attacks__.index(self.__active_attack__)
-
-        
-        
-        
-        
- 
-        
-    
-        
-        
-        
-        
-        
-        
-
+        return self.__attacks_map__.index(self.__active_attack__)
                                        
