@@ -80,7 +80,7 @@ class Hit(pygame.sprite.Sprite):
                 #endif
             #endfor
         #endfor
-        image.unlock()     
+        image.unlock()   
         
     def update(self):
         
@@ -88,8 +88,12 @@ class Hit(pygame.sprite.Sprite):
         self.drawable_sprite.offset = self.offset_pair[0] if self.parent_object.facing_right else self.offset_pair[1]
         
         self.drawable_sprite.centerx = self.parent_object.screen_centerx 
-        self.drawable_sprite.bottom =  self.parent_object.screen_bottom            
+        self.drawable_sprite.bottom =  self.parent_object.screen_bottom      
         
+    @property
+    def mask(self):      
+        return self.mask_pair[0] if self.parent_object.facing_right else self.mask_pair[1]
+    
     @property
     def rect(self):
         
