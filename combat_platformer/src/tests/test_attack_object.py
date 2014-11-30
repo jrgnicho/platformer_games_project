@@ -6,7 +6,8 @@ import sys
 from simple_platformer.utilities import *
 from simple_platformer.game_object import GameObject
 from simple_platformer.game_object import AnimatableObject
-from combat_platformer.attack import Attack
+from combat_platformer.player import PlayerBase
+from combat_platformer.attack.attack import Attack
 from combat_platformer.attack.attack import AttackGroup
 
 RESOURCE_PACKAGE_NAME =  'simple_platformer'

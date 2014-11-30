@@ -9,6 +9,10 @@ from combat_platformer.level import LevelBase
 from combat_platformer.enemy import EnemyBase
 from combat_platformer.enemy import EnemyStateMachine
 
+RESOURCE_PACKAGE_NAME =  'simple_platformer'
+PLAYER_ANIMATION_SPRITES_PATH = '/resources/hiei_sprites/animation/sprite_list.txt'
+PLAYER_COLLISION_SPRITES_PATH = '/resources/hiei_sprites/collision/sprite_list.txt'
+
 class SimpleGameAssets(object):
     
     def __init__(self):        
@@ -35,7 +39,7 @@ class BasicPlatformer(object):
         # enemys
         self.enemies_list = []        
         self.enemy_start_positions = [(200,200), (2100,50), (80,80), (3000,80),(1400,400)
-                                    ,(800,-200), (1600,-300), (1200,-400), (2540,-100),(3200,-400)]        
+                                    ,(800,-200), (1600,-300), (1200,-400), (2540,-100),(3200,-400)]    
         self.num_enemies = len(self.enemy_start_positions)
         for i in range(0,self.num_enemies):
             enemy = EnemyStateMachine()
@@ -59,12 +63,15 @@ class BasicPlatformer(object):
     
     def load_player_sprites(self):
         rospack = rospkg.RosPack()
-        sprites_list_file = rospack.get_path('simple_platformer') + '/resources/hiei_sprites/animation/sprite_list.txt' 
+        animation_sprites_file = rospack.get_path(RESOURCE_PACKAGE_NAME) + PLAYER_ANIMATION_SPRITES_PATH
+        collision_sprites_file = rospack.get_path(RESOURCE_PACKAGE_NAME) + PLAYER_COLLISION_SPRITES_PATH
         
           
-        sprite_loader = self.player_assets.animation_sprite_loader 
+        animation_sprite_loader = self.player_assets.animation_sprite_loader 
+        collision_sprite_loader = self.player_assets.collision_sprite_loader 
         
-        if sprite_loader.load_sets(sprites_list_file):
+        if (animation_sprite_loader.load_sets(animation_sprites_file) and 
+            collision_sprite_loader.load_sets(collision_sprites_file)):
             print "Sprites successfully loaded"
         else:
             print "Sprites failed to load"

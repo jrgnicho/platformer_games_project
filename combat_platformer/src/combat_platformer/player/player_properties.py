@@ -5,6 +5,7 @@ class PlayerProperties(object):
     # size
     COLLISION_WIDTH = 40
     COLLISION_HEIGH = 60
+    RUN_WIDTH = 60
     
     # Movement Defaults
     JUMP_SPEED = -10 # y axis points downwards
@@ -31,6 +32,7 @@ class PlayerProperties(object):
         
         self.collision_width = PlayerProperties.COLLISION_WIDTH
         self.collision_height = PlayerProperties.COLLISION_HEIGH
+        self.run_width = PlayerProperties.RUN_WIDTH
         self.jump_speed = PlayerProperties.JUMP_SPEED
         self.super_jump_speed = PlayerProperties.SUPER_JUMP_SPEED
         self.run_speed = PlayerProperties.RUN_SPEED

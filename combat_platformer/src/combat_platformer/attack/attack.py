@@ -1,7 +1,8 @@
 from simple_platformer.utilities import Colors
 from simple_platformer.game_object import AnimationSprite
 from simple_platformer.game_object import GameObject
-from combat_platformer.attack import *
+from combat_platformer.attack.constants import *
+from combat_platformer.attack.action_keys import AttackStateActionKeys
 import pygame
 from pygame.sprite import Sprite
 from pygame import Rect
@@ -108,8 +109,6 @@ class Hit(pygame.sprite.Sprite):
     def kill(self):        
         pygame.sprite.Sprite.kill(self)
         self.drawable_sprite.kill()
-                    
-        
         
 class Strike(object):
     """
@@ -228,7 +227,6 @@ class Attack(object) :
             self.strike_index = -1
             self.parent_object.remove_range_sprite(strike.range_sprite)
         #endif
-                
     
     """
     This method should be called when an animation sprite changes
@@ -290,7 +288,6 @@ class Attack(object) :
             h.update()
         #endif
 
-
 """
 Convenience class for handling multiple attacks that belong to a sequence (combo)
 """   
@@ -300,7 +297,8 @@ class AttackGroup(object):
         
         self.__game_object__ = game_object
         self.__attacks_map__ = attacks_map
-        self.__active_attack__ = None        
+        self.__active_attack__ = None 
+        self.__active_key__ = ''       
         self.reset()
         
     def add(self,key,attack):
@@ -312,8 +310,7 @@ class AttackGroup(object):
         if self.__active_attack__ != None:
             self.__active_attack__.deactivate()
         #endif
-        self.__active_attack__ = None       
-            
+        self.__active_attack__ = None     
     
     def select_attack(self,key):
         
@@ -325,12 +322,16 @@ class AttackGroup(object):
         if self.__attacks_map__.has_key(key):
             self.__active_attack__ = self.__attacks_map__[key]
             self.__active_attack__.activate()
+            self.__active_key__ = key
         else:
             print "ERROR: attack key %s was not found in attack group"%(key)
             return False
         #endif
         
         return True
+    
+    def get(self,key):
+        return self.__attacks_map__[key]
         
     def __len__(self):
         return len(self.__attacks_map__)    
@@ -348,6 +349,14 @@ class AttackGroup(object):
     @property
     def active_attack(self):
         return self.__active_attack__
+    
+    @property
+    def active_key(self):
+        return self.__active_key__
+    
+    @property
+    def attack_keys(self):
+        return self.__attacks_map__.keys()
     
     def active_index(self):
         return self.__attacks_map__.index(self.__active_attack__)

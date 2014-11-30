@@ -238,6 +238,10 @@ class LevelBase(GameObject):
                     
                 #endif
                 
+                if event.key == pygame.K_s:
+                    self.__player__.execute(PlayerActionKeys.ATTACK) 
+                #endif
+                
                 if event.key == pygame.K_UP:
                     self.__player__.execute(PlayerActionKeys.MOVE_UP) 
                     

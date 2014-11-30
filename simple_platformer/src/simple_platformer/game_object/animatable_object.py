@@ -66,7 +66,7 @@ class AnimatableObject(GameObject):
         if self.event_handlers.has_key(event_key):
             event_dict = self.event_handlers[event_key]
             
-            if event_dict.has(game_obj):
+            if event_dict.has_key(game_obj):
                 del event_dict[game_obj]
             #endif
         #endif

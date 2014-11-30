@@ -4,6 +4,8 @@ from combat_platformer.player.basic_states import *
 from combat_platformer.player.action_keys import *
 from combat_platformer.player import PlayerBase
 from combat_platformer.level.action_keys import *
+from combat_platformer.attack.action_keys import AttackStateActionKeys
+from combat_platformer.attack.attack_state import AttackState
 
 class PlayerStateMachine(StateMachine,PlayerBase):
     
@@ -50,6 +52,7 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         land_state = LandState(self)
         hanging_state = HangingState(self)
         climbing_state = ClimbingState(self)
+        attack_combo_state = AttackState("BASIC_COMBO", self, ['ATTACK_1','ATTACK_2','ATTACK_3'])
         
         
         # transitions
@@ -63,6 +66,7 @@ class PlayerStateMachine(StateMachine,PlayerBase):
                           lambda: self.momentum > 0)
         sm.add_transition(run_state,PlayerActionKeys.MOVE_RIGHT,StateKeys.DASH_BREAKING,
                           lambda: self.momentum < 0)
+        sm.add_transition(run_state,PlayerActionKeys.ATTACK,attack_combo_state.key)
         
         
         sm.add_transition(dash_state,PlayerActionKeys.CANCEL_DASH,StateKeys.DASH_BREAKING,
@@ -71,7 +75,10 @@ class PlayerStateMachine(StateMachine,PlayerBase):
                           lambda: self.get_animation_progress_percentage()<0.3)
         sm.add_transition(dash_state,PlayerActionKeys.JUMP,StateKeys.JUMPING)
         sm.add_transition(dash_state,LevelActionKeys.PLATFORM_SUPPORT_LOST,StateKeys.FALLING)
-        sm.add_transition(dash_state,PlayerActionKeys.ANIMATION_SEQUENCE_COMPLETED,StateKeys.RUNNING)
+        sm.add_transition(dash_state,PlayerActionKeys.ANIMATION_SEQUENCE_COMPLETED,StateKeys.RUNNING)        
+        
+        sm.add_transition(attack_combo_state,StateMachineActionKeys.SUBMACHINE_STOP,StateKeys.STANDING)
+        sm.add_transition(attack_combo_state,LevelActionKeys.PLATFORM_SUPPORT_LOST,StateKeys.FALLING)
         
         
         sm.add_transition(midair_dash_state,PlayerActionKeys.CANCEL_DASH,StateKeys.FALLING)
@@ -97,6 +104,7 @@ class PlayerStateMachine(StateMachine,PlayerBase):
                           lambda: stand_state.is_standing_on_edge)
         sm.add_transition(stand_state,LevelActionKeys.PLATFORMS_IN_RANGE,StateKeys.FALLING,
                   lambda: stand_state.is_beyond_edge)
+        sm.add_transition(stand_state,PlayerActionKeys.ATTACK,attack_combo_state.key)
         
         
         sm.add_transition(stand_edge_state,PlayerActionKeys.RUN,StateKeys.RUNNING)

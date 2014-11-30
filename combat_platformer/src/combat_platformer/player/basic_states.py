@@ -52,7 +52,6 @@ class BasicState(State):
     
 class RunState(BasicState):    
 
-    STATE_WIDTH = 60
     def __init__(self,player):
         
         BasicState.__init__(self,StateKeys.RUNNING,player)        
@@ -67,7 +66,7 @@ class RunState(BasicState):
     
     def enter(self):
         
-        self.player.width = RunState.STATE_WIDTH
+        self.player.width = self.player.properties.run_width
         self.player.max_delta_x = self.speed            
         self.player.set_current_animation_key(StateKeys.RUNNING),
         self.player.set_horizontal_speed(self.speed)  
