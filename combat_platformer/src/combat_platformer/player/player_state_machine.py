@@ -113,6 +113,7 @@ class PlayerStateMachine(StateMachine,PlayerBase):
         sm.add_transition(stand_edge_state,PlayerActionKeys.MOVE_LEFT,StateKeys.RUNNING)
         sm.add_transition(stand_edge_state,PlayerActionKeys.MOVE_RIGHT,StateKeys.RUNNING)
         sm.add_transition(stand_edge_state,PlayerActionKeys.DASH,StateKeys.DASHING)
+        sm.add_transition(stand_edge_state,PlayerActionKeys.ATTACK,attack_combo_state.key)
         
         sm.add_transition(jump_state,PlayerActionKeys.DASH,StateKeys.MIDAIR_DASHING,
                           lambda: self.midair_dash_remaining > 0)

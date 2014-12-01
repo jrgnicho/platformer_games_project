@@ -43,6 +43,8 @@ class LevelBase(GameObject):
                 
         # input
         self.__input_events__ = (pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP)
+        
+        # 
     
     @property
     def player(self):
@@ -154,6 +156,7 @@ class LevelBase(GameObject):
         # event setup (must be done here once the display has been initialized)
         pygame.event.set_allowed(self.__input_events__)
         pygame.event.set_allowed(AnimatableObject.Events.EVENTS_LIST)
+        pygame.event.set_allowed(StateMachine.Events.EVENTS_LIST)
         
         # setup player
         if self.__player__ == None:
@@ -451,8 +454,23 @@ class LevelBase(GameObject):
         
         if not platform_found:
             game_object.execute(LevelActionKeys.PLATFORM_SUPPORT_LOST)                   
-        #endif              
-        
+        else:
+            game_object.rect.y += LevelBase.PLATFORM_CHECK_STEP
+            platforms = pygame.sprite.spritecollide(game_object,self.__platforms__,False)
+            game_object.rect.y -= LevelBase.PLATFORM_CHECK_STEP
+            for p in platforms:
+                cx = game_object.rect.centerx
+                if (cx > p.rect.right) and ((cx - p.rect.right) > game_object.properties.distance_from_platform_edge):
+                    game_object.rect.left = p.rect.right
+                    game_object.execute(LevelActionKeys.PLATFORM_SUPPORT_LOST)
+                    break
+                elif cx < p.rect.left and ((p.rect.left - cx) > game_object.properties.distance_from_platform_edge ):
+                    game_object.rect.right = p.rect.left
+                    game_object.execute(LevelActionKeys.PLATFORM_SUPPORT_LOST)
+                    break
+                #endif
+            #endfor
+            
     def process_level_y_collisions(self,game_object):     
         
         if pygame.sprite.spritecollideany(game_object, self.__platforms__, None):

@@ -5,7 +5,7 @@ class PlayerProperties(object):
     # size
     COLLISION_WIDTH = 40
     COLLISION_HEIGH = 60
-    RUN_WIDTH = 60
+    RUN_WIDTH = 44
     
     # Movement Defaults
     JUMP_SPEED = -10 # y axis points downwards
@@ -18,6 +18,7 @@ class PlayerProperties(object):
     MAX_MIDAIR_DASHES = 1
     
     # Environment thresholds
+    MIN_DISTANCE_FROM_PLATFORM_EDGE = 10
     MAX_DISTANCE_FROM_EDGE = 0.80 # percentage of width
     MIN_DISTANCE_FROM_EDGE = 0.0 # percentage of width
     
@@ -44,6 +45,7 @@ class PlayerProperties(object):
         
         self.max_distance_from_edge = PlayerProperties.MAX_DISTANCE_FROM_EDGE
         self.min_distance_from_edge = PlayerProperties.MIN_DISTANCE_FROM_EDGE
+        self.distance_from_platform_edge = PlayerProperties.MIN_DISTANCE_FROM_PLATFORM_EDGE
         
         self.hang_radius = PlayerProperties.HANG_RADIUS
         self.hang_distance_from_top = PlayerProperties.HANG_DISTANCE_FROM_TOP

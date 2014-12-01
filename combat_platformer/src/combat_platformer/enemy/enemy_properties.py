@@ -17,6 +17,7 @@ class EnemyProperties(object):
     MAX_MIDAIR_DASHES = 1
     
     # Environment thresholds
+    MIN_DISTANCE_FROM_PLATFORM_EDGE = 35
     MAX_DISTANCE_FROM_EDGE = 0.80 # percentage of width
     MIN_DISTANCE_FROM_EDGE = 0.10 # percentage of width
     
@@ -45,6 +46,7 @@ class EnemyProperties(object):
         
         self.max_distance_from_edge = EnemyProperties.MAX_DISTANCE_FROM_EDGE
         self.min_distance_from_edge = EnemyProperties.MIN_DISTANCE_FROM_EDGE
+        self.distance_from_platform_edge = EnemyProperties.MIN_DISTANCE_FROM_PLATFORM_EDGE
         
         self.hang_radius = EnemyProperties.HANG_RADIUS
         self.hang_distance_from_top = EnemyProperties.HANG_DISTANCE_FROM_TOP

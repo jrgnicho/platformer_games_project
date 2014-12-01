@@ -39,7 +39,7 @@ class BasicPlatformer(object):
         # enemys
         self.enemies_list = []        
         self.enemy_start_positions = [(200,200), (2100,50), (80,80), (3000,80),(1400,400)
-                                    ,(800,-200), (1600,-300), (1200,-400), (2540,-100),(3200,-400)]    
+                                      ,(800,-200), (1600,-300), (1200,-400), (2540,-100),(3200,-400)]  
         self.num_enemies = len(self.enemy_start_positions)
         for i in range(0,self.num_enemies):
             enemy = EnemyStateMachine()
@@ -148,7 +148,7 @@ class BasicPlatformer(object):
         
         size = [ScreenProperties.SCREEN_WIDTH,ScreenProperties.SCREEN_HEIGHT]
         self.screen = pygame.display.set_mode(size,pygame.SWSURFACE )
-        pygame.display.set_caption("Don't mess with this dragon [x: jump , z: dash, <-: left, ->: right")        
+        pygame.display.set_caption("Don't mess with this dragon [x: jump , z: dash, s: attack,<-: left, ->: right")        
         
         if not self.setup():
             print "setup failed"
