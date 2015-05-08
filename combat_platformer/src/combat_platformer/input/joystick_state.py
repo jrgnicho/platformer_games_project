@@ -1,3 +1,4 @@
+import sys, os
 from pygame.joystick import Joystick
 from combat_platformer.input import JoystickButtons
 
@@ -11,6 +12,7 @@ class JoystickState(object):
         
     def capture(self,joystick):
         
+        
         # capturing axes
         for i in range(joystick.get_numaxes()):
             self.axes[i] = joystick.get_axis(i)
@@ -23,7 +25,7 @@ class JoystickState(object):
         for i in range(joystick.get_numhats()):
             self.hats[i] = joystick.get_hat(i)
         #endfor
-        
+                
     
     def is_axis_down(self,axis,r):
         """
@@ -36,7 +38,7 @@ class JoystickState(object):
             - Bool: True | False boolean 
         """
         if len(self.axes) > axis:
-            return (self.axes[axis] >= r(0) and self.axes[axis] <= r(1))
+            return (self.axes[axis] >= r[0] and self.axes[axis] <= r[1])
         else:
             return False
         #endif

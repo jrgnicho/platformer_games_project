@@ -13,11 +13,13 @@ class InputManager(object):
         self.__moves__ = []
         
     def set_moves(self,move_list):
-        self.__moves__ = sorted(move_list,key = lambda move : len(move),True)
+        self.__moves__ = sorted(move_list,key = lambda move : len(move),reverse = True)
         
     def add_move(self,move):
         self.__moves__.append(move)
-        self.set_moves(self.__moves__)    
+        self.set_moves(self.__moves__)  
+        
+        print "Added new %s move to InputManager"%(move.name)  
  
     def update(self,dt = 0):
         """

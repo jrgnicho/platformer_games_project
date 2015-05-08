@@ -1,3 +1,6 @@
+from contextlib import contextmanager
+import sys, os, cStringIO
+import pygame.joystick
 from combat_platformer.input import InputManager
 from combat_platformer.input import JoystickButtons
 from combat_platformer.input import JoystickState
@@ -5,9 +8,8 @@ from combat_platformer.input import JoystickState
         
 class JoystickManager(InputManager):
     
-    
-    # saved to suppress unwanted debug output from SDL
-    __STDOUT__ = sys.stdout
+    MAX_BUFFER_SIZE = 30   
+
     
     class JoystickAxes(object):
         """ JoystickAxes
@@ -43,10 +45,10 @@ class JoystickManager(InputManager):
                 direction = direction | JoystickButtons.DPAD_LEFT
                 
             if js.is_axis_down(self.y_axis,(self.yrange[0],self.yrange[1])): 
-                direction = direction | JoystickButtons.DPAD_UP
+                direction = direction | JoystickButtons.DPAD_DOWN
                 
             if js.is_axis_down(self.y_axis,(-self.yrange[1],-self.yrange[0])): 
-                direction = direction | JoystickButtons.DPAD_DOWN
+                direction = direction | JoystickButtons.DPAD_UP
                 
             return direction
     
@@ -73,17 +75,16 @@ class JoystickManager(InputManager):
         
         # Support members
         self.__button_buffer__ = []
-        self.__time_elapsed__ = 0.0
+        self.__time_elapsed__ = 0
         
-        # Initializing Joystick support
-        
+        # Initializing joystick support members        
         self.__joystick_state__ = None   
-        self.__joystick__ = None     
-        pygame.joystick.init()
+        self.__joystick__ = None    
         
         if pygame.joystick.get_count() > 0 :
             print "Enabling Joystick 0"
             self.__joystick__ = pygame.joystick.Joystick(0)
+            self.__joystick__.init()
             
             # Instantiating a JoystickState 
             self.__joystick_state__ = JoystickState(self.__joystick__)
@@ -93,21 +94,29 @@ class JoystickManager(InputManager):
                                          
     def update(self,dt = 0):
         
+        #print "JoystickManager Update Started"
+        
         InputManager.update(self,dt)
         
         # Update internal time elapsed and clear buffer if timeout exceeded
         self.__time_elapsed__ = self.__time_elapsed__ + dt
         if self.__time_elapsed__ > self.__buffer_timeout__:
+            
+            #print "Time Elapsed %i exceeded Buffer Timeout %i"%(self.__time_elapsed__,self.__buffer_timeout__)
+            self.__time_elapsed__ = 0
             self.__button_buffer__ = []
         
         if self.__joystick__ == None:
             print "ERROR: No joystick found"
-            return 
-                        
+            return   
+   
         # Capturing Joystick Buttons
+        #with self.suppress_stdout():
         self.__joystick_state__.capture(self.__joystick__)
-        
-        buttons = self.__joystick_axes__.get_direction(self.__joystick_state__)
+
+                
+        # Combining pressed buttons
+        buttons = self.__joystick_axes__.get_direction(self.__joystick_state__)                 
         button_count = self.__joystick__.get_numbuttons()
         for i in range(0,button_count):
             if self.__joystick_state__.is_button_down(i):
@@ -116,7 +125,16 @@ class JoystickManager(InputManager):
                 buttons = buttons | self.__button_map__[i]
                 
         # Saving buttons pressed into buffer
-        self.__button_buffer__.append(buttons)
+        
+        if buttons != JoystickButtons.NONE:
+            self.__button_buffer__.append(buttons)
+            #print "Button Buffer has %i entries"%(len(self.__button_buffer__))
+        
+        
+        
+        # Keeping buffer size to max allowed
+        if len(self.__button_buffer__) > JoystickManager.MAX_BUFFER_SIZE:
+            del self.__button_buffer__[0]
         
         # Checking for activated moves
         move_count = len(self.__moves__)
@@ -127,16 +145,28 @@ class JoystickManager(InputManager):
                 # Clear buffer if move is not part of another move
                 if not self.__moves__[i].is_submove:
                     self.__button_buffer__ = []
+                    break
+                
+        
+                # A match was found, exit
+                #break
         
         
-        
+        #print "JoystickManager Update Completed"
+            
+    @contextmanager       
+    def suppress_stdout(self):
+        '''Prevent print to stdout, but if there was an error then catch it and
+        print the output before raising the error.'''
     
-    # for supressing SDL output to stdout
-    def suppress_stdout(supress):
-        with open(os.devnull, "w") as devnull:
-            sys.stdout = devnull if supress else JoystickManager.__STDOUT__
-            try:  
-                yield
-            finally:
-                sys.stdout = JoystickManager.__STDOUT__
-    
+        saved_stdout = sys.stdout
+        sys.stdout = cStringIO.StringIO()
+        try:
+            yield
+        except Exception:
+            saved_output = sys.stdout
+            sys.stdout = saved_stdout
+            print saved_output.getvalue()
+            raise
+        sys.stdout = saved_stdout
+            

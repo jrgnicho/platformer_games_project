@@ -1,4 +1,5 @@
-from input import JoystickButtons
+import sys
+from combat_platformer.input import JoystickButtons
 
 class Move(object):
     """
@@ -10,11 +11,11 @@ class Move(object):
             - callback : The function that will be executed when the execute() method is invoked
     """
     
-    def __init__(self,name,button_sequence,is_submove,callback = None):
+    def __init__(self,name,button_sequence,is_submove = False,callback = None):
         
         self.name = name
         self.button_sequence = button_sequence;
-        self.callback = callback if (callback != None) else (lambda : "Move '%s' executed"%(name))
+        self.callback = callback if (callback != None) else (lambda : sys.stdout.write("Move '%s' executed\n"%(name)))
         self.is_submove = is_submove
         
     def match(self,sequence):
@@ -27,12 +28,26 @@ class Move(object):
                 - Bool : True if match is found, false otherwise
         """
         
-        if len(sequence) == len(self.button_sequence):
-            for i in range(len(sequence)):
-                if sequence[i] != self.button_sequence[i]:
+        if len(sequence) >= len(self.button_sequence):
+            
+            # finding the first button entry
+            if sequence.count(self.button_sequence[0]) > 0 :
+                start_ind = sequence.index(self.button_sequence[0])
+                subsequence = sequence[start_ind:]
+                                
+                # Exit if subsequence has fewer entries
+                if len(subsequence) < len(self.button_sequence):
                     return False
-                #endif
-            #endfor
+            
+                
+                for i in range(len(self.button_sequence)):
+                    if (subsequence[i] & self.button_sequence[i]) != self.button_sequence[i]:
+                        return False
+                    #endif
+                #endfor
+            else:
+                # Button 'sequence' array doesn't have the first button entry
+                return False
                             
         else:
             return False
