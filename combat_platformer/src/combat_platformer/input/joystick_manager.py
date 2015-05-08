@@ -124,11 +124,13 @@ class JoystickManager(InputManager):
                 # Combining button presses
                 buttons = buttons | self.__button_map__[i]
                 
-        # Saving buttons pressed into buffer
-        
-        if buttons != JoystickButtons.NONE:
+        # Saving buttons pressed into buffer        
+        if (len(self.__button_buffer__) == 0):            
             self.__button_buffer__.append(buttons)
-            #print "Button Buffer has %i entries"%(len(self.__button_buffer__))
+        else:
+            if buttons != self.__button_buffer__[-1]:
+                self.__button_buffer__.append(buttons)
+        #print "Button Buffer has %i entries"%(len(self.__button_buffer__))
         
         
         
@@ -139,17 +141,20 @@ class JoystickManager(InputManager):
         # Checking for activated moves
         move_count = len(self.__moves__)
         for i in range(0,move_count):
-            if self.__moves__[i].match(self.__button_buffer__):
-                self.__moves__[i].execute()
-                
-                # Clear buffer if move is not part of another move
-                if not self.__moves__[i].is_submove:
-                    self.__button_buffer__ = []
-                    break
-                
-        
-                # A match was found, exit
-                #break
+            
+            if not self.__moves__[i].is_submove:  
+                     
+                if self.__moves__[i].match(self.__button_buffer__):
+                    self.__moves__[i].execute()
+                    self.__button_buffer__ = []      
+                    break   
+
+            else:                 
+                        
+                num_buttons = len(self.__moves__[i])
+                if self.__moves__[i].match(self.__button_buffer__[-num_buttons:]):
+                    self.__moves__[i].execute()
+
         
         
         #print "JoystickManager Update Completed"
