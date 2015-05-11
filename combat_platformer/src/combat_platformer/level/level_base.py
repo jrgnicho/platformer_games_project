@@ -154,6 +154,7 @@ class LevelBase(GameObject):
     def setup(self):
         
         # event setup (must be done here once the display has been initialized)
+        pygame.event.set_allowed(None)
         pygame.event.set_allowed(self.__input_events__)
         pygame.event.set_allowed(AnimatableObject.Events.EVENTS_LIST)
         pygame.event.set_allowed(StateMachine.Events.EVENTS_LIST)
@@ -435,9 +436,6 @@ class LevelBase(GameObject):
         #endfor 
         
         self.process_animation_events()    
-        
-        # remove all events from queue
-        pygame.event.pump()
         
         
     def scroll(self,dx,dy):

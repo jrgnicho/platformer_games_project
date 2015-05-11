@@ -46,6 +46,11 @@ class Hit(pygame.sprite.Sprite):
     
     """ 
     Hit(parent,rect,offset)
+        Most basic unit of an attack. Constains a pygame.mask.Mask for each side which is used to check for collisions against enemies.  A 
+        Hit object usually lives inside a Strike object along with other Hit object.  Thus a Strike object contains the Hits for a given 
+        animation frame and all the Hits within a Strike become active when such animation frame is played.
+        
+        Inputs
         - parent: Parent game object that spawns the attack (usually the player or an enemy
         - mask_pair: TA two element tuple of pygame Masks for the right and left side (right_mask,left_mask).  
         - offset_pair: tuple ((xr,yr) , (xl,yl))indicating the position of the masks relative to the parent object's center
@@ -113,6 +118,9 @@ class Hit(pygame.sprite.Sprite):
 class Strike(object):
     """
     Strike(parent, sprites = (right_sprite,left_sprite),properties = StrikeProperties())
+        A class that contains all the Hit objects that correspond to a single animation frame.  The Hit objects (masks) are generated
+        from the images of the input right and left sprite pair.  The Strike is only active when the originating animation frame is active.
+        Inputs
         - parent: Parent game object
         - sprite_pair: Tuple containing the sprites for the right and left side, in that order.
         - properties: (optional) StrikeProperties object
@@ -229,7 +237,9 @@ class Attack(object) :
         #endif
     
     """
-    This method should be called when an animation sprite changes
+    This method should be called when an animation sprite changes.  To disable drawing of the collision masks, remove the 
+    `self.parent_object.drawable_group.add(strk.drawable_sprites) ` line so that the drawables are not added to the parent 
+    object list of drawable components
     """    
     def select_strike(self,index):
         
@@ -260,7 +270,7 @@ class Attack(object) :
                 
                 self.active_hits.add(strk.hits)                
                 # adding hit objects to game object drawable sprites
-                self.parent_object.drawable_group.add(strk.drawable_sprites)  
+                #self.parent_object.drawable_group.add(strk.drawable_sprites)  
                 # add strike range sprite            
                 self.parent_object.add_range_sprite(strk.range_sprite)
             #endif
