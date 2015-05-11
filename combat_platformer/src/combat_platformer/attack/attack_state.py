@@ -21,11 +21,13 @@ class AttackState(SubStateMachine):
     
     class BaseAttackState(State):
         """
-        BaseAttackState(game_object,attacks,interrupt_indices)
+        BaseAttackState(game_object,attack_group,interrupt_indices)
             game_object: Object that spawns the attack
-            attacks : Array of attack objects
-            interrupt_indices: Array of indices at which each attack frame will end and continue onto the next attack.
-                Defaults to [-1, ..., -1] same size as the attacks array.
+            attack_group : AttackGroup object containing the attacks to be managed by this state
+            interrupt_indices: Dictionary of key and indices pairs where each key is use to look up an Attack object in the attack_group
+                                argument, the value indicates the animation frame when the attack ends.
+                                Defaults to [-1, ..., -1] same size as the attacks array.  It must have a size equal to the number of 
+                                attacks in the 'attacks' argument
         """
         
         def __init__(self,key,game_object,attack_group, interrupt_indices = None):            
@@ -34,6 +36,7 @@ class AttackState(SubStateMachine):
             self.__attack_group__ = attack_group
             self.facing_right = True
             
+            # Defaults to the last frame (no early interruptions) 
             if interrupt_indices == None:
                 interrupt_indices = {}
                 keys = attack_group.attack_keys
@@ -58,14 +61,23 @@ class AttackState(SubStateMachine):
             self.__attack_group__.reset()          
         
     class ActiveState(BaseAttackState):
+        """
+        ActiveState(game_object,attack_group,interrupt_indices)
+        This state updates the attack so that the game_object animation and the corresponding attack strikes are in sync.
+        """
         
         def __init__(self,game_object,attack_group, interrupt_indices = None): 
             AttackState.BaseAttackState.__init__(self,AttackState.StateKeys.ACTIVE,game_object,attack_group,interrupt_indices)
             
+            # Animation image frame entered
             self.add_action(AnimatableObject.ActionKeys.ANIMATION_FRAME_ENTERED,
                 lambda : self.frame_entered_callback())
+            
+            # Attack button(s) pressed
             self.add_action(PlayerActionKeys.ATTACK,
                 lambda : self.attack_action_callback())
+            
+            # Exit attack when animation for the active state ends
             self.add_action(AnimatableObject.ActionKeys.ANIMATION_SEQUENCE_COMPLETED,
                 lambda : self.sequence_completed_callback())
             
