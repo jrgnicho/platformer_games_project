@@ -70,7 +70,7 @@ class AttackState(SubStateMachine):
             AttackState.BaseAttackState.__init__(self,AttackState.StateKeys.ACTIVE,game_object,attack_group,interrupt_indices)
             
             # Animation image frame entered
-            self.add_action(AnimatableObject.ActionKeys.ANIMATION_FRAME_ENTERED,
+            self.add_action(AnimatableObject.ActionKeys.ANIMATION_FRAME_COMPLETED,
                 lambda : self.frame_entered_callback())
             
             # Attack button(s) pressed
@@ -82,7 +82,8 @@ class AttackState(SubStateMachine):
                 lambda : self.sequence_completed_callback())
             
         def enter(self):            
-            self.__game_object__.select_next_queued()
+            self.__game_object__.select_next_queued() # Queueing the animations in the game objects makes it possible to track the queue
+                                                      # without having to mantain and sync multiple queue arrays
             self.__attack_group__.select_attack(self.__game_object__.animation_set_key)
             
         def exit(self):
@@ -91,7 +92,8 @@ class AttackState(SubStateMachine):
         def frame_entered_callback(self):          
             self.__attack_group__.update_active_attack()
 
-        def attack_action_callback(self):            
+        def attack_action_callback(self):  
+            # Delegate the management of the attack to the Continue state if the NEXT_ATTACK_TRESHOLD has been exceeded          
             if (self.__game_object__.animation_frame_index 
                 > AttackState.NEXT_ATTACK_THRESHOLD*self.__attack_group__.active_attack.strikes_count()):
                 StateMachine.post_action_event(self.__game_object__,
@@ -101,6 +103,7 @@ class AttackState(SubStateMachine):
             
         def sequence_completed_callback(self):
             
+            # Should quit the containing sub machine
             StateMachine.post_action_event(self.__game_object__,
                            AttackStateActionKeys.SEQUENCE_COMPLETED,
                             StateMachine.Events.SUBMACHINE_ACTION)     
@@ -111,7 +114,7 @@ class AttackState(SubStateMachine):
         def __init__(self,game_object,attack_group, interrupt_indices = None): 
             AttackState.BaseAttackState.__init__(self,AttackState.StateKeys.CONTINUE,game_object,attack_group,interrupt_indices)
             
-            self.add_action(AnimatableObject.ActionKeys.ANIMATION_FRAME_ENTERED,
+            self.add_action(AnimatableObject.ActionKeys.ANIMATION_FRAME_COMPLETED,
                 lambda : self.frame_entered_callback())
             self.add_action(AnimatableObject.ActionKeys.ANIMATION_SEQUENCE_COMPLETED,
                 lambda : self.sequence_completed_callback())
@@ -125,20 +128,22 @@ class AttackState(SubStateMachine):
         def frame_entered_callback(self):            
             key = self.__attack_group__.active_key
             if self.__interrupt_indices__[key] == self.__game_object__.animation_frame_index:
+                
+                # Send to the Active State in order to start the next attack if the animation for the current attack has ended.  
                 StateMachine.post_action_event(self.__game_object__,
                                AttackStateActionKeys.ENTER_NEXT,
                                 StateMachine.Events.SUBMACHINE_ACTION)
             else:
+                
+                # updates the active attack
                 self.__attack_group__.update_active_attack()
             #endif
             
         def sequence_completed_callback(self):
             
-            if len(self.__game_object__.animation_keys_queue) != 0:
-                StateMachine.post_action_event(self.__game_object__,
-                               AttackStateActionKeys.ENTER_NEXT,
-                                StateMachine.Events.SUBMACHINE_ACTION)  
-            else:
+            # Send to the Active State in order to start the next attack if the animation for the current attack has ended. 
+            if len(self.__game_object__.animation_keys_queue) == 0:
+                # Exit submachine when last animation sequence has been completed
                 StateMachine.post_action_event(self.__game_object__,
                                AttackStateActionKeys.SEQUENCE_COMPLETED,
                                 StateMachine.Events.SUBMACHINE_ACTION)    
@@ -160,7 +165,7 @@ class AttackState(SubStateMachine):
     def enter(self):        
         
         self.__game_object__.add_event_handler(AnimatableObject.Events.ANIMATION_FRAME_COMPLETED,self,
-                               lambda: self.execute(AnimatableObject.ActionKeys.ANIMATION_FRAME_ENTERED))
+                               lambda: self.execute(AnimatableObject.ActionKeys.ANIMATION_FRAME_COMPLETED))
         
         self.__game_object__.set_horizontal_speed(0)
         self.__game_object__.queue_animation_keys(self.__attack_keys__)
