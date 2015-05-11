@@ -95,7 +95,7 @@ class AttackState(SubStateMachine):
             if (self.__game_object__.animation_frame_index 
                 > AttackState.NEXT_ATTACK_THRESHOLD*self.__attack_group__.active_attack.strikes_count()):
                 StateMachine.post_action_event(self.__game_object__,
-                               AttackStateActionKeys.QUEUE_NEXT,
+                               AttackStateActionKeys.CONTINUE_NEXT,
                                 StateMachine.Events.SUBMACHINE_ACTION)
             #endif  
             
@@ -209,7 +209,7 @@ class AttackState(SubStateMachine):
                 
         # transitions
         self.add_transition(self.start_state, StateMachineActionKeys.SUBMACHINE_START, self.active_state.key)
-        self.add_transition(self.active_state, AttackStateActionKeys.QUEUE_NEXT, self.continue_state.key)
+        self.add_transition(self.active_state, AttackStateActionKeys.CONTINUE_NEXT, self.continue_state.key)
         self.add_transition(self.continue_state, AttackStateActionKeys.ENTER_NEXT, self.active_state.key)
         self.add_transition(self.active_state, AttackStateActionKeys.SEQUENCE_COMPLETED, self.stop_state.key)
         self.add_transition(self.continue_state, AttackStateActionKeys.SEQUENCE_COMPLETED, self.stop_state.key)
