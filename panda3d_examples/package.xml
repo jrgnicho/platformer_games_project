@@ -40,9 +40,6 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>panda3d</build_depend>
-  <build_depend>pygame</build_depend>
-  <build_depend>rospy</build_depend>
   <run_depend>panda3d</run_depend>
   <run_depend>pygame</run_depend>
   <run_depend>rospy</run_depend>

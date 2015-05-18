@@ -8,6 +8,7 @@ from direct.gui.OnscreenText import OnscreenText
 
 from panda3d.core import AmbientLight
 from panda3d.core import DirectionalLight
+from panda3d.core import LColor
 from panda3d.core import Vec3
 from panda3d.core import Vec4
 from panda3d.core import Point3
@@ -34,7 +35,7 @@ from panda3d.bullet import BulletDebugNode
 
 LOOP_DELAY = 0.05 # seconds
 CAM_DISTANCE =  20
-ROTATIONAl_SPEED = 20
+ROTATIONAl_SPEED = 10
 
 # RUNNING hiei_run_0-7.png 8 1 80 SX1.5 SY1.5 0 0#
 
@@ -92,10 +93,14 @@ class SpriteAnimator(NodePath):
         return False
 
     # Load the image with a PNMImage
-    right_image = PNMImage()
-    left_image = PNMImage()
-    right_image.read(image_file)    
-    left_image.copyFrom(right_image)
+    full_image = PNMImage(img_head.getXSize(),img_head.getYSize())
+    full_image.alphaFill(0)
+    full_image.read(image_file) 
+
+    right_image = PNMImage(img_head.getXSize(),img_head.getYSize())
+    left_image = PNMImage(img_head.getXSize(),img_head.getYSize())
+    right_image.copyFrom(full_image)    
+    left_image.copyFrom(full_image)
     left_image.flip(True,False,False)
 
     # storing individual sprite size
@@ -106,6 +111,7 @@ class SpriteAnimator(NodePath):
 
     right_image.clear()
     left_image.clear()
+    full_image.clear()
 
     self.faceRight(True)      
 
@@ -114,8 +120,8 @@ class SpriteAnimator(NodePath):
   def createSequenceNode(self,name,img,cols,rows,scale_x,scale_y,frame_rate):
     
     seq = SequenceNode(name)
-    w = img.getReadXSize()/cols
-    h = img.getReadYSize()/rows
+    w = int(img.getXSize()/cols)
+    h = int(img.getYSize()/rows)
 
     counter = 0
     for i in range(0,cols):
@@ -123,6 +129,7 @@ class SpriteAnimator(NodePath):
         sub_img = PNMImage(w,h)
         sub_img.addAlpha()
         sub_img.alphaFill(0)
+        sub_img.fill(1,1,1)
         sub_img.copySubImage(img ,0 ,0 ,i*w ,j*h ,w ,h)
 
         # Load the image onto the texture
@@ -131,6 +138,9 @@ class SpriteAnimator(NodePath):
         texture.setYSize(h)
         texture.setZSize(1)    
         texture.load(sub_img)
+        texture.setWrapU(Texture.WM_border_color) # gets rid of odd black edges around image
+        texture.setWrapV(Texture.WM_border_color)
+        texture.setBorderColor(LColor(0,0,0,0))
 
         cm = CardMaker(name + '_' + str(counter))
         cm.setFrame(-0.5*scale_x,0.5*scale_x,-0.5*scale_y,0.5*scale_y)
@@ -141,7 +151,7 @@ class SpriteAnimator(NodePath):
         counter+=1
     
     seq.setFrameRate(frame_rate)
-    print "Sequence Node %s contains %i frames"%(name,seq.getNumFrames())
+    print "Sequence Node %s contains %i frames of size %s"%(name,seq.getNumFrames(),str((w,h)))
     return seq   
 
   def nextFrame(self) :
@@ -307,7 +317,36 @@ class TestApplication(ShowBase):
       print "Error loading image %s"%(SPRITE_IMAGE_DETAILS[0])
       sys.exit(1)
     self.sprt_animator_ = sprt_animator
-    #self.object_nodes_.append(sprt_animator)
+
+    # creating Mobile Character Box
+    size = Vec3(0.5,0.2,1)
+    mbox_visual = loader.loadModel('models/box.egg')
+    bounds = mbox_visual.getTightBounds()
+    extents = Vec3(bounds[1] - bounds[0])
+    scale_factor = 1/max([extents.getX(),extents.getY(),extents.getZ()])
+    mbox_visual.setScale(size.getX()*scale_factor,size.getY()*scale_factor,size.getZ()*scale_factor)
+
+    mbox = self.world_node_.attachNewNode(BulletRigidBodyNode('CharacterBox'))
+    mbox.node().addShape(BulletBoxShape(size/2))
+    mbox.node().setMass(1.0)
+    mbox.node().setLinearFactor((1,0,1))
+    mbox.node().setAngularFactor((0,1,0))
+    mbox.setCollideMask(BitMask32.allOn())
+    mbox_visual.instanceTo(mbox)
+    mbox_visual.hide()
+    mbox.setPos(Vec3(1,0,size.getZ()+1))
+
+    bounds = sprt_animator.getTightBounds()
+    extents = Vec3(bounds[1] - bounds[0])
+    scale_factor = size.getZ()/extents.getZ()
+    sprt_animator.setScale(scale_factor,1,scale_factor)
+    sprt_animator.reparentTo(mbox)
+    bounds = sprt_animator.getTightBounds()
+    print "Sprite Animator bounds %s , %s"%(str(bounds[1]),str(bounds[0]))
+    
+    self.physics_world_.attachRigidBody(mbox.node())
+    self.object_nodes_.append(mbox)
+    self.controlled_objects_.append(mbox)
 
     # creating sphere
     diameter = 0.4
@@ -332,34 +371,6 @@ class TestApplication(ShowBase):
     self.physics_world_.attachRigidBody(sphere.node())
     self.object_nodes_.append(sphere)
     self.controlled_objects_.append(sphere)
-
-    # creating Mobile Character Box
-    size = Vec3(0.5,0.2,1)
-    mbox_visual = loader.loadModel('models/box.egg')
-    bounds = mbox_visual.getTightBounds()
-    extents = Vec3(bounds[1] - bounds[0])
-    scale_factor = 1/max([extents.getX(),extents.getY(),extents.getZ()])
-    mbox_visual.setScale(size.getX()*scale_factor,size.getY()*scale_factor,size.getZ()*scale_factor)
-
-    mbox = self.world_node_.attachNewNode(BulletRigidBodyNode('CharacterBox'))
-    mbox.node().addShape(BulletBoxShape(size/2))
-    mbox.node().setMass(1.0)
-    mbox.node().setLinearFactor((1,0,1))
-    mbox.node().setAngularFactor((0,1,0))
-    mbox.setCollideMask(BitMask32.allOn())
-    mbox_visual.instanceTo(mbox)
-    mbox_visual.hide()
-    mbox.setPos(Vec3(1,0,size.getZ()+1))
-
-    bounds = sprt_animator.getTightBounds()
-    extents = Vec3(bounds[1] - bounds[0])
-    scale_factor = size.getZ()/extents.getZ()
-    sprt_animator.setScale(extents.getX()*scale_factor,extents.getY()*scale_factor,scale_factor)
-    sprt_animator.reparentTo(mbox)
-    
-    self.physics_world_.attachRigidBody(mbox.node())
-    self.object_nodes_.append(mbox)
-    self.controlled_objects_.append(mbox)
 
     self.setupLevel()
 

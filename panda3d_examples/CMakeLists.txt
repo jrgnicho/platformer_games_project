@@ -5,9 +5,6 @@ project(panda3d_examples)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  panda3d
-  pygame
-  rospy
 )
 
 ## System dependencies are found with CMake's conventions
@@ -82,7 +79,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES panda3d_examples
-#  CATKIN_DEPENDS panda3d pygame rospy
+  CATKIN_DEPENDS panda3d pygame rospy
 #  DEPENDS system_lib
 )
 
