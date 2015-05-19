@@ -121,7 +121,7 @@ class TestApplication(ShowBase):
     box_visual = loader.loadModel('models/box.egg')
     box_visual.clearModelNodes()
     box_visual.setTexture(loader.loadTexture('models/wood.png'))
-    
+    #box_visual.setRenderModeWireframe()
     bounds = box_visual.getTightBounds() # start of box model scaling
     extents = Vec3(bounds[1] - bounds[0])
     scale_factor = side_length/max([extents.getX(),extents.getY(),extents.getZ()])
@@ -208,30 +208,35 @@ class TestApplication(ShowBase):
       (-4 , 1, 10, 4, 1),
       ( 16, 6, 30, 4, 1)
       ]
+
+    # Platform Visuals
+    visual = loader.loadModel('models/box.egg')
+    visual.setTexture(loader.loadTexture('models/iron.jpg'))
+    
     for i in range(0,len(platform_details)):
       p = platform_details[i]
       topleft = (p[0],p[1])
       size = Vec3(p[2],p[3],p[4])
-      self.addPlatform(topleft, size,'Platform%i'%(i))
+      self.addPlatform(topleft, size,'Platform%i'%(i),visual)
 
 
-  def addPlatform(self,topleft,size,name):
+  def addPlatform(self,topleft,size,name,visual):
 
-    # Visual
-    visual = loader.loadModel('models/box.egg')
-    visual.setTexture(loader.loadTexture('models/iron.jpg'))
-    bounds = visual.getTightBounds()
-    extents = Vec3(bounds[1] - bounds[0])
-    scale_factor = 1/max([extents.getX(),extents.getY(),extents.getZ()])
-    visual.setScale(size.getX()*scale_factor,size.getY()*scale_factor,size.getZ()*scale_factor)
-    
+
     # Box (static)
     platform = self.world_node_.attachNewNode(BulletRigidBodyNode(name))
     platform.node().setMass(0)
     platform.node().addShape(BulletBoxShape(size/2))
     platform.setPos(Vec3(topleft[0] + 0.5*size.getX(),0,topleft[1]-0.5*size.getZ()))
     platform.setCollideMask(BitMask32.allOn())
-    visual.instanceTo(platform)
+    local_visual = visual.instanceUnderNode(platform,name + '_visual')
+
+    # Visual scaling
+    bounds = local_visual.getTightBounds()
+    extents = Vec3(bounds[1] - bounds[0])
+    scale_factor = 1/max([extents.getX(),extents.getY(),extents.getZ()])
+    local_visual.setScale(size.getX()*scale_factor,size.getY()*scale_factor,size.getZ()*scale_factor)
+    
 
     self.physics_world_.attachRigidBody(platform.node())
     self.object_nodes_.append(platform)
