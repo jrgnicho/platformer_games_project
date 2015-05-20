@@ -25,7 +25,7 @@ class GameObject(NodePath):
     DEFAULT_RESOURCES_DIRECTORY = 'resources/default'
     
     DEFAULT_BOX_MODEL = Loader.loadModel( GameObject.DEFAULT_RESOURCES_DIRECTORY + '/models/defaultbox.egg')
-    DEFAULT_TEXTURE = TexturePool.loadTexture(GameObject.DEFAULT_RESOURCES_DIRECTORY +'/images/irong.jpg')
+    DEFAULT_TEXTURE = Loader.loadTexture(GameObject.DEFAULT_RESOURCES_DIRECTORY +'/images/irong.jpg')
     
     def __init__(self,name,size,mass, bt_collision_shape = None ,use_visual = True,visual = None):    
         

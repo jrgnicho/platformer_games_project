@@ -26,7 +26,7 @@ class SpriteAnimator(NodePath):
         self.name_ = name
         self.size_ = (0,0) # (horizontal_scale, vertical_scale
         
-    def loadImages(self,images_right, images_left,lenght,height):
+    def loadImages(self,images_right, images_left,width,height):
         
         pass
         
