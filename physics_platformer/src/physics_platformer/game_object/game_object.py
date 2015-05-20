@@ -1,6 +1,7 @@
 
 from direct.showbase import Loader
 
+from panda3d.core import TexturePool
 from panda3d.core import LColor
 from panda3d.core import Vec3
 from panda3d.core import Vec4
@@ -21,9 +22,12 @@ Game Object class
 
 """
 class GameObject(NodePath):
-    DEFAULT_BOX_MODEL = Loader.loadModel('models/box.egg')
+    DEFAULT_RESOURCES_DIRECTORY = 'resources/default'
     
-    def __init__(self,name,size,mass, bt_collision_shape = None ,visual = None):    
+    DEFAULT_BOX_MODEL = Loader.loadModel( GameObject.DEFAULT_RESOURCES_DIRECTORY + '/models/defaultbox.egg')
+    DEFAULT_TEXTURE = TexturePool.loadTexture(GameObject.DEFAULT_RESOURCES_DIRECTORY +'/images/irong.jpg')
+    
+    def __init__(self,name,size,mass, bt_collision_shape = None ,use_visual = True,visual = None):    
         
         # instantiating to a bullet rigid body
         NodePath.__init__(self,BulletRigidBodyNode(name + "-rigid-body"))
@@ -32,14 +36,32 @@ class GameObject(NodePath):
         self.size_ = size        
         
         # set collision shape
-        collision_shape = collision_shape if collision_shape != None else self.createBoxShape(size)        
+        collision_shape = bt_collision_shape if bt_collision_shape != None else BulletBoxShape(Vec3(size[0],size[1],size[2])/2) 
+        self.node().addShape(collision_shape)
+        self.node().setMass(mass)
+        self.node().setLinearFactor((1,0,1))   
+        self.node().setAngularFactor((0,0,0))   
+        self.setCollideMask(BitMask32().allOn())
         
         # set visual
-        self.visual_nh_ = GameObject.DEFAULT_BOX_MODEL
-        
-        
-    def createBoxShape(self,size):
+        if use_visual:
+            visual_nh
+            if visual == None:
+                visual_nh = GameObject.DEFAULT_BOX_MODEL
+                visual_nh.setTexture(GameObject.DEFAULT_TEXTURE)
+            else:
+                visual_nh = visual
+                
+            self.visual_nh_ = visual_nh.instanceUnderNode(self,name + '-visual');
+        else:
+            self.visual_nh_ = NodePath() # create empty node
+            
+    def update(self,dt):
         pass
+    
+        
+        
+        
     
     
     
