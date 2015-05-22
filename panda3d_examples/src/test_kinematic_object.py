@@ -4,6 +4,7 @@ import time
 
 from direct.showbase.ShowBase import ShowBase
 from direct.controls.InputState import InputState
+from direct.gui.OnscreenText import OnscreenText
 
 from panda3d.core import AmbientLight
 from panda3d.core import DirectionalLight
@@ -15,6 +16,7 @@ from panda3d.core import BitMask32
 from panda3d.core import NodePath
 from panda3d.core import PandaNode
 from panda3d.core import ClockObject
+from panda3d.core import TextNode
 
 from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletPlaneShape
@@ -26,6 +28,18 @@ from panda3d.bullet import BulletDebugNode
 LOOP_DELAY = 0.05 # seconds
 CAM_DISTANCE =  20
 ROTATIONAl_SPEED = 20
+
+# Function to put instructions on the screen.
+def addInstructions(pos, msg):
+    return OnscreenText(text=msg, style=1, fg=(1, 1, 1, 1), scale=.05,
+                        shadow=(0, 0, 0, 1), parent=base.a2dTopLeft,
+                        pos=(0.08, -pos - 0.04), align=TextNode.ALeft)
+
+# Function to put title on the screen.
+def addTitle(text):
+    return OnscreenText(text=text, style=1, fg=(1, 1, 1, 1), scale=.08,
+                        parent=base.a2dBottomRight, align=TextNode.ARight,
+                        pos=(-0.1, 0.09), shadow=(0, 0, 0, 1))
 
 class TestApplication(ShowBase):
 
@@ -74,7 +88,7 @@ class TestApplication(ShowBase):
     self.accept('f3', self.toggleDebug)
     self.accept('f5', self.doScreenshot)
     self.accept('n', self.selectNextControlledObject)
-    self.accept('k',self.toggleKinematicMode)
+    self.accept('k', self.toggleKinematicMode)
 
     # Inputs (Polling)
     self.input_state_ = InputState()
@@ -87,6 +101,19 @@ class TestApplication(ShowBase):
     self.input_state_.watchWithModifiers('roll_stop', 'x')
 
 
+    self.title = addTitle("Panda3D: Kinematic Objects")
+    self.inst1 = addInstructions(0.06, "ESC: Quit")
+    self.inst2 = addInstructions(0.12, "Up/Down: Jump/Stop")
+    self.inst3 = addInstructions(0.18, "Left/Right: Move Left / Move Rigth")
+    self.inst4 = addInstructions(0.24, "z/x/c : Rotate Left/ Rotate Stop / Rotate Right")
+    self.inst5 = addInstructions(0.30, "n: Select Next Character")
+    self.inst6 = addInstructions(0.36, "k: Toggle Kinematic Mode")
+    self.inst7 = addInstructions(0.42, "f1: Toggle Wireframe")
+    self.inst8 = addInstructions(0.48, "f2: Toggle Texture")
+    self.inst9 = addInstructions(0.54, "f3: Toggle BulletDebug")
+    self.inst10 = addInstructions(0.60, "f5: Capture Screenshot")
+
+
 
   def setupPhysics(self):
 
@@ -97,11 +124,12 @@ class TestApplication(ShowBase):
     self.physics_world_.setGravity(Vec3(0, 0, -9.81))
 
     self.debug_node_ = self.world_node_.attachNewNode(BulletDebugNode('Debug'))
-    self.debug_node_.show()
     self.debug_node_.node().showWireframe(True)
     self.debug_node_.node().showConstraints(True)
-    self.debug_node_.node().showBoundingBoxes(False)
+    self.debug_node_.node().showBoundingBoxes(True)
     self.debug_node_.node().showNormals(True)
+    self.physics_world_.setDebugNode(self.debug_node_.node())
+    self.debug_node_.hide()
 
     # setting up ground
     self.ground_ = self.world_node_.attachNewNode(BulletRigidBodyNode('Ground'))
@@ -341,6 +369,7 @@ class TestApplication(ShowBase):
     self.setupPhysics()
 
   def toggleDebug(self):
+
     if self.debug_node_.isHidden():
       self.debug_node_.show()
     else:
