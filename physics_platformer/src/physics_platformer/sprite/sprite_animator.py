@@ -109,7 +109,7 @@ class SpriteAnimator(NodePath):
     
         self.facing_right_ = face_right    
         
-    def getActiveSequenceNP(self):
+    def getSelectedNP(self):
         """
         Returns the active NodePath containing the active SequenceNode (either left or right)
         """
