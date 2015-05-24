@@ -1,5 +1,6 @@
-
-from direct.showbase import Loader
+import rospkg
+from panda3d.core import ModelPool
+from panda3d.core import TexturePool
 
 from panda3d.core import TexturePool
 from panda3d.core import LColor
@@ -16,24 +17,24 @@ from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletSphereShape
 from panda3d.bullet import BulletConvexHullShape
 from panda3d.bullet import BulletRigidBodyNode
+from direct.showbase.ShowBase import ShowBase
 
 """
 Game Object class
 
 """
 class GameObject(NodePath):
-    DEFAULT_RESOURCES_DIRECTORY = 'resources/default'
+    DEFAULT_RESOURCES_DIRECTORY = rospkg.RosPack().get_path('physics_platformer') + '/resources'        
+    DEFAULT_TEXTURE = TexturePool.loadTexture(DEFAULT_RESOURCES_DIRECTORY +'/models/limba.jpg')
+    DEFAULT_BOX_MODEL = NodePath(ModelPool.loadModel( DEFAULT_RESOURCES_DIRECTORY + '/models/box.egg'))
     
-    DEFAULT_BOX_MODEL = Loader.loadModel( GameObject.DEFAULT_RESOURCES_DIRECTORY + '/models/defaultbox.egg')
-    DEFAULT_TEXTURE = Loader.loadTexture(GameObject.DEFAULT_RESOURCES_DIRECTORY +'/images/irong.jpg')
     
-    def __init__(self,name,size,mass, bt_collision_shape = None ,use_visual = True,visual = None):   
+    def __init__(self,name,size,mass = 0,setup_visual = True):   
         """
         GameObject(string name,
             Vec3 size,
-            panda3d.bullet.BulletShape bt_collision_shape = None,
-            Bool use_visual= True,
-            panda.core.Model visual = None)
+            float mass,
+            Bool setup_visual)
             
             Inherits from panda3d.core.NodePath
         
@@ -46,23 +47,30 @@ class GameObject(NodePath):
         self.size_ = size        
         
         # set collision shape
-        collision_shape = bt_collision_shape if bt_collision_shape != None else BulletBoxShape(Vec3(size[0],size[1],size[2])/2) 
+        collision_shape = BulletBoxShape(self.size_/2) 
         self.node().addShape(collision_shape)
         self.node().setMass(mass)
         self.node().setLinearFactor((1,0,1))   
-        self.node().setAngularFactor((0,0,0))   
+        self.node().setAngularFactor((0,1,0))   
         self.setCollideMask(BitMask32().allOn())
         
         # set visual
-        if use_visual:
-            visual_nh
-            if visual == None:
-                visual_nh = GameObject.DEFAULT_BOX_MODEL
-                visual_nh.setTexture(GameObject.DEFAULT_TEXTURE)
-            else:
-                visual_nh = visual
-                
-            self.visual_nh_ = visual_nh.instanceUnderNode(self,name + '-visual');
+        if setup_visual:     
+                   
+            visual_nh = GameObject.DEFAULT_BOX_MODEL 
+            visual_nh.clearModelNodes()            
+            self.visual_nh_ = visual_nh.instanceUnderNode(self,name + '-visual');    
+            #self.visual_nh_ = visual_nh.instanceTo(self);          
+            self.visual_nh_.setTexture(GameObject.DEFAULT_TEXTURE,1)   
+            
+            if GameObject.DEFAULT_TEXTURE == None:
+                print 'ERROR: Texture failed to load'
+            
+            # scaling visual model
+            bounds = self.visual_nh_.getTightBounds()
+            extents = Vec3(bounds[1] - bounds[0])
+            scale_factor = 1/max([extents.getX(),extents.getY(),extents.getZ()])
+            self.visual_nh_.setScale(self.size_.getX()*scale_factor,self.size_.getY()*scale_factor,self.size_.getZ()*scale_factor)
         else:
             self.visual_nh_ = NodePath() # create empty node
             

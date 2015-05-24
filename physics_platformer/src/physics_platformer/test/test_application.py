@@ -33,7 +33,8 @@ from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletDebugNode
 
 RESOURCES_DIR = rospkg.RosPack().get_path('physics_platformer') + '/resources'  
-CAM_DISTANCE =  20
+CAM_ZOOM =  4
+CAM_STEP = 0.2
 
 # Function to put instructions on the screen.
 def addInstructions(pos, msg):
@@ -118,7 +119,7 @@ class TestApplication(ShowBase):
     self.physics_world_ = BulletWorld()
     self.world_node_ = self.render.attachNewNode('world')
     self.cam.reparentTo(self.world_node_)
-    self.cam.setPos(self.world_node_,0, -CAM_DISTANCE, 0)
+    self.cam.setPos(self.world_node_,0, -CAM_ZOOM*6, CAM_STEP*25)
     self.physics_world_.setGravity(Vec3(0, 0, -9.81))
 
     self.debug_node_ = self.world_node_.attachNewNode(BulletDebugNode('Debug'))
@@ -127,6 +128,8 @@ class TestApplication(ShowBase):
     self.debug_node_.node().showConstraints(True)
     self.debug_node_.node().showBoundingBoxes(False)
     self.debug_node_.node().showNormals(True)    
+    self.physics_world_.setDebugNode(self.debug_node_.node())
+    self.debug_node_.hide()
     self.object_nodes_ = []
     self.controlled_objects_ = []
 
@@ -161,7 +164,7 @@ class TestApplication(ShowBase):
     platform_details =[ 
       (-20, 4, 20, 4, 1  ),
       (-2, 5, 10, 4, 1  ),
-      ( 4 , 2 , 16, 4, 1.4),
+      ( 4 , 2 , 16, 4, 1),
       (-4 , 1, 10, 4, 1),
       ( 16, 6, 30, 4, 1)
       ]
@@ -176,7 +179,8 @@ class TestApplication(ShowBase):
 
     # Visual
     visual = loader.loadModel(RESOURCES_DIR + '/models/box.egg')
-    visual.setTexture(loader.loadTexture(RESOURCES_DIR + '/models/iron.jpg'))
+    visual.clearModelNodes()
+    visual.setTexture(loader.loadTexture(RESOURCES_DIR + '/models/iron.jpg'),1)
     bounds = visual.getTightBounds()
     extents = Vec3(bounds[1] - bounds[0])
     scale_factor = 1/max([extents.getX(),extents.getY(),extents.getZ()])
@@ -199,7 +203,7 @@ class TestApplication(ShowBase):
     dt = self.clock_.getDt()
     self.processInput(dt)    
     self.physics_world_.doPhysics(dt, 5, 1.0/180.0)
-    self.updateCamera()    
+    #self.updateCamera()    
 
     return task.cont 
 
@@ -220,11 +224,9 @@ class TestApplication(ShowBase):
      
 
   def updateCamera(self):
-
-    if len(self.controlled_objects_) > 0:
-      obj = self.controlled_objects_[self.controlled_obj_index_]
-      self.cam.setPos(obj,0, -CAM_DISTANCE, 0)
-      self.cam.lookAt(obj.getPos())
+      
+    #self.cam.setY(-CAM_ZOOM)
+    pass
 
   def cleanup(self):
     
@@ -243,27 +245,31 @@ class TestApplication(ShowBase):
     
   # _____MOVE_METHODS____
   def moveUp(self):
-      print "MOVE UP not implemented"
+      global CAM_STEP
+      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,CAM_STEP))
       
   def moveDown(self):
-      print "MOVE DOWN not implemented"
+      global CAM_STEP
+      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,-CAM_STEP))
   
   def moveRight(self):
-      print "MOVE RIGHT not implemented"
+      global CAM_STEP
+      self.cam.setPos(self.cam.getPos() + Vec3(CAM_STEP,0,0))
   
   def moveLeft(self):
-      print "MOVE LEFT not implemented"
+      global CAM_STEP
+      self.cam.setPos(self.cam.getPos() + Vec3(-CAM_STEP,0,0))
 
   # _____HANDLER_____
 
 
   def zoomIn(self):
-    global CAM_DISTANCE
-    CAM_DISTANCE-=4
+    #global CAM_ZOOM
+    self.cam.setY(self.cam.getY()+CAM_ZOOM)
 
   def zoomOut(self):
-    global CAM_DISTANCE
-    CAM_DISTANCE+=4
+    #global CAM_ZOOM
+    self.cam.setY(self.cam.getY()-CAM_ZOOM)
 
   def doExit(self):
     self.cleanup()

@@ -22,7 +22,8 @@ class AnimationSpriteAlignment(object):
 class AnimatableObject(GameObject):
     
     def __init__(self,name,size,mass,sprite_animator_dict):
-        GameObject.__init__(name,size,mass,None,False) #creatin GameObject with a default box shape and no Visual
+        GameObject.__init__(name,size,mass,False) #creatin GameObject with a default box shape and no Visual
+        self.node().setAngularFactor(0,0,0)  # no rotation
         self.animation_np_ = self.attachNewNode('sprite-animations')
         self.sprite_animators_ = {}
         self.selected_animation_name_ = ''
@@ -51,7 +52,7 @@ class AnimatableObject(GameObject):
         
         # setting the node's location
         pos = Vec3(0,0,0)
-        bounds = size = np.getTightBounds()
+        bounds = np.getTightBounds()
         min = Vec3(bounds[0])
         max = Vec3(bounds[1])
         
