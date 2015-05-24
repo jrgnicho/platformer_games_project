@@ -27,7 +27,17 @@ class GameObject(NodePath):
     DEFAULT_BOX_MODEL = Loader.loadModel( GameObject.DEFAULT_RESOURCES_DIRECTORY + '/models/defaultbox.egg')
     DEFAULT_TEXTURE = Loader.loadTexture(GameObject.DEFAULT_RESOURCES_DIRECTORY +'/images/irong.jpg')
     
-    def __init__(self,name,size,mass, bt_collision_shape = None ,use_visual = True,visual = None):    
+    def __init__(self,name,size,mass, bt_collision_shape = None ,use_visual = True,visual = None):   
+        """
+        GameObject(string name,
+            Vec3 size,
+            panda3d.bullet.BulletShape bt_collision_shape = None,
+            Bool use_visual= True,
+            panda.core.Model visual = None)
+            
+            Inherits from panda3d.core.NodePath
+        
+        """ 
         
         # instantiating to a bullet rigid body
         NodePath.__init__(self,BulletRigidBodyNode(name + "-rigid-body"))
