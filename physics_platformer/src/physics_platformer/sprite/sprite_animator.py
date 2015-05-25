@@ -14,19 +14,34 @@ from panda3d.core import TextureStage
 from panda3d.core import TransparencyAttrib
 
 
+
 class SpriteAnimator(PandaNode):
+    PANDA_TAG = 'PandaNodeSubclass'
+    
+    class PlayMode(object):
+        
+        STOPPED = -1
+        PLAYING = 0
+        LOOPING = 1
+        PAUSED = 2
+        
+        ALLOWED_MODES = [STOPPED,
+                         PLAYING,
+                         LOOPING,
+                         PAUSED]
     
     def __init__(self,name):
         
-        PandaNode.__init__(self,name)
-        self.setTransparency(TransparencyAttrib.M_alpha)
+        PandaNode.__init__(self,name) 
+        PandaNode.setPythonTag(self,SpriteAnimator.PANDA_TAG,self)       
         self.seq_left_ = None
         self.seq_right_ = None
         self.facing_right_ = True
         self.size_ = (0,0) # (horizontal_scale, vertical_scale
+        self.play_mode_ = SpriteAnimator.PlayMode.STOPPED
     
     
-    def loadImages(self,images_right, images_left,frame_rate, scale = 1):   
+    def loadImages(self,images_right, images_left,frame_rate, scale = 1.0):   
         """
         loadImages
             Loads the images for the right and left side of the sprite animation
@@ -56,7 +71,7 @@ class SpriteAnimator(PandaNode):
     
         return True
     
-    def createSequenceNode(self,name,images,w,h,scale,frame_rate):
+    def createSequenceNode(self,name,images,scale,frame_rate):
     
         seq = SequenceNode(name)
         w = images[0].getXSize() # assumes that all images in the in 'images' array are the same size
@@ -91,7 +106,7 @@ class SpriteAnimator(PandaNode):
             seq.addChild(card.node(),i)
          
         seq.setFrameRate(frame_rate)   
-        print "Sequence Node %s contains %i frames of size %s"%(name,seq.getNumFrames(),str((w,h)))        
+        print "Sequence Node %s contains %i imagese of size %s and card size of %s"%(name,seq.getNumFrames(),str((w,h)),str((cw,ch)))        
         return seq 
     
     def isFacingRight(self):
@@ -99,18 +114,20 @@ class SpriteAnimator(PandaNode):
     
     def faceRight(self,face_right):
 
+        
         if face_right: 
             
             self.seq_left_.stop()
             self.stashChild(self.seq_left_)            
-            self.unstashChild(self.seq_right_)      
+            self.unstashChild(self.seq_right_) 
     
         else:
             self.seq_right_.stop()
             self.stashChild(self.seq_right_)
             self.unstashChild(self.seq_left_)  
     
-        self.facing_right_ = face_right    
+        self.facing_right_ = face_right  
+        self.setPlayMode(self.play_mode_)  
         
     def getSelectedNode(self):
         """
@@ -120,15 +137,37 @@ class SpriteAnimator(PandaNode):
     
     def play(self):        
         self.getSelectedNode().play()
+        self.play_mode_ = SpriteAnimator.PlayMode.PLAYING
         
     def loop(self,restart = True):        
         self.getSelectedNode().loop(restart)
+        self.play_mode_ = SpriteAnimator.PlayMode.LOOPING
         
     def stop(self):
         self.getSelectedNode().stop()
+        self.play_mode_ = SpriteAnimator.PlayMode.STOPPED
         
     def pose(self,frame):
         self.getSelectedNode().pose(frame)
+        
+    def setPlayMode(self,mode):
+        
+        if SpriteAnimator.PlayMode.ALLOWED_MODES.count(mode) > 0:
+            
+            if SpriteAnimator.PlayMode.STOPPED:
+                self.stop()
+                
+            if SpriteAnimator.PlayMode.PLAYING:
+                self.play()
+                
+            if SpriteAnimator.PlayMode.LOOPING:
+                self.loop()
+            
+        else:
+            return False
+        
+        return True
+
         
     def getNumFrames(self):
         return self.getSelectedNode().getNumFrames()

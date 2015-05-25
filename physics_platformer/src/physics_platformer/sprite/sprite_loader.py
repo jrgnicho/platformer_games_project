@@ -12,7 +12,7 @@ from panda3d.core import Texture
 from panda3d.core import TextureStage
 from panda3d.core import TransparencyAttrib
 
-class SpriteSequenceLoader:
+class SpriteLoader:
     
     def __init__(self):
         pass

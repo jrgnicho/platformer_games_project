@@ -73,6 +73,9 @@ class GameObject(NodePath):
             self.visual_nh_.setScale(self.size_.getX()*scale_factor,self.size_.getY()*scale_factor,self.size_.getZ()*scale_factor)
         else:
             self.visual_nh_ = NodePath() # create empty node
+    
+    def getSize(self):
+        return self.size_
             
     def update(self,dt):
         pass

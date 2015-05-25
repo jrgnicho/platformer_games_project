@@ -2,6 +2,7 @@ from physics_platformer.game_object import GameObject
 from physics_platformer.sprite import SpriteAnimator
 from panda3d.core import BitMask16
 from panda3d.core import Vec3
+from panda3d.core import TransparencyAttrib
 from _ast import alias
 
 
@@ -21,15 +22,18 @@ class AnimationSpriteAlignment(object):
 
 class AnimatableObject(GameObject):
     
-    def __init__(self,name,size,mass,sprite_animator_dict):
-        GameObject.__init__(name,size,mass,False) #creatin GameObject with a default box shape and no Visual
-        self.node().setAngularFactor(0,0,0)  # no rotation
+    def __init__(self,name,size,mass,sprite_animator_dict = None):
+        GameObject.__init__(self,name,size,mass,False) #creatin GameObject with a default box shape and no Visual
+        self.setTransparency(TransparencyAttrib.M_alpha)
+        self.node().setAngularFactor((0,0,0))  # no rotation
         self.animation_np_ = self.attachNewNode('sprite-animations')
         self.sprite_animators_ = {}
         self.selected_animation_name_ = ''
-        self.selected_animator_ = None
+        self.animator_np_ = None # selected animator NodePath
+        self.animator_ = None
         
-        self.loadSpriteAnimations(sprite_animator_dict)
+        if sprite_animator_dict != None:
+            self.loadSpriteAnimations(sprite_animator_dict)
         
     def setSpriteAnimations(self,sprite_animator_dict):
         
@@ -55,26 +59,28 @@ class AnimatableObject(GameObject):
         bounds = np.getTightBounds()
         min = Vec3(bounds[0])
         max = Vec3(bounds[1])
+        extends = max - min
         
         
         if (align & AnimationSpriteAlignment.TOP_ALIGN) == AnimationSpriteAlignment.TOP_ALIGN:
-            pos.setZ(0.5*self.size_.getZ() - max.getZ())            
+            pos.setZ(0.5*self.size_.getZ() - 0.5*extends.getZ())            
         elif (align & AnimationSpriteAlignment.BOTTOM_ALIGN) == AnimationSpriteAlignment.BOTTOM_ALIGN:
-            pos.setZ(-0.5*self.size_.getZ() - min.getZ())
+            pos.setZ(-(0.5*self.size_.getZ() - 0.5*extends.getZ()))
             
         if (align & AnimationSpriteAlignment.RIGHT_ALIGN) == AnimationSpriteAlignment.RIGHT_ALIGN:
-            pos.setX(0.5*self.size_.getX()- max.getX()) 
+            pos.setX(0.5*self.size_.getX()- 0.5*extends.getX()) 
         elif (align & AnimationSpriteAlignment.LEFT_ALIGN) == AnimationSpriteAlignment.LEFT_ALIGN:
-            pose.setX(-0.5*self.size_.getX() - min.getX())
+            pose.setX(-(0.5*self.size_.getX() - 0.5*extends.getX()))
             
         if align == AnimationSpriteAlignment.CENTER_OFFSET_ALIGN:
             pos = center_offset
-            
-        np.setPos(pos)     
+        
+        np.setPos(self,pos)     
         
         # selecting pose if none is
-        if self.selected_animator_ == None:
+        if self.animator_np_ == None:
             self.pose(name)
+            print "Selecting animation %s"%name
             
             
     def clearSpriteAnimations(self):
@@ -91,27 +97,29 @@ class AnimatableObject(GameObject):
             return False
         
         if self.selected_animation_name_ == animation_name:
+            print "WARNING: Animation %s already selected"%(animation_name)
             return True
         
         # deselecting current node
         face_right = True
-        if self.selected_animator_ != None :
+        if self.animator_np_ != None :
             
-            faceRight = self.selected_animator_.node().isFacingRight()
-            self.selected_animator_.node().stop()
-            self.selected_animator_.hide()
+            face_right = self.animator_.isFacingRight()
+            self.animator_.stop()
+            self.animator_np_.hide()
             
-        self.selected_animator_ = self.sprite_animators_[animation_name]        
-        self.selected_animator_.node().faceRight(face_right)
-        self.selected_animator_.node().pose(frame)
-        self.selected_animator_.show()       
+        self.animator_np_ = self.sprite_animators_[animation_name]   
+        self.animator_ = self.animator_np_.node().getPythonTag(SpriteAnimator.PANDA_TAG)     
+        self.animator_.faceRight(face_right)
+        self.animator_.pose(frame)
+        self.animator_np_.show()       
         
         return True 
     
     def getNumFrames(self,animation_name =None):
         
         if animation_name == None :
-            return self.selected_animator_.node().getNumFrames()
+            return self.animator_.getNumFrames()
         
         if self.sprite_animators_.has_key(animation_name):
             return (self.sprite_animators_[animation_name]).node().getNumFrames()
@@ -123,30 +131,30 @@ class AnimatableObject(GameObject):
         """
         Selects the frame of the current animation
         """  
-        self.selected_animator_.node().pose(frame)        
+        self.animator_.pose(frame)        
         
         
     def play(self,animation_name):
         
         if self.pose(animation_name):
-            self.selected_animator_.node().play()
+            self.animator_.play()
             
     def loop(self,animation_name):
         
         if self.pose(animation_name):
-            self.selected_animator_.node().loop()
+            self.animator_.loop()
             
     def stop(self):
-        if self.selected_animator_ != None:
-            self.selected_animator_.node().stop()
+        if self.animator_np_ != None:
+            self.animator_.stop()
             
     def faceRight(self,face_right = True):
-        if self.selected_animator_ != None :
-            self.selected_animator_.node().faceRight(face_right)
+        if self.animator_np_ != None :
+            self.animator_.faceRight(face_right)
             
     def isFacingRight(self):
-        if self.selected_animator_ != None :
-            self.selected_animator_.node().isFacingRight()
+        if self.animator_np_ is not None :
+            return self.animator_.isFacingRight()
             
         
         

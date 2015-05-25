@@ -36,21 +36,8 @@ RESOURCES_DIR = rospkg.RosPack().get_path('physics_platformer') + '/resources'
 CAM_ZOOM =  4
 CAM_STEP = 0.2
 
-# Function to put instructions on the screen.
-def addInstructions(pos, msg):
-    return OnscreenText(text=msg, style=1, fg=(1, 1, 1, 1), scale=.05,
-                        shadow=(0, 0, 0, 1), parent=base.a2dTopLeft,
-                        pos=(0.08, -pos - 0.04), align=TextNode.ALeft)
-
-# Function to put title on the screen.
-def addTitle(text):
-    return OnscreenText(text=text, style=1, fg=(1, 1, 1, 1), scale=.08,
-                        parent=base.a2dBottomRight, align=TextNode.ARight,
-                        pos=(-0.1, 0.09), shadow=(0, 0, 0, 1))
 
 class TestApplication(ShowBase):
-    
-
 
   def __init__(self,name = 'TestApplication'):
 
@@ -65,6 +52,18 @@ class TestApplication(ShowBase):
   
     # Task
     taskMgr.add(self.update, 'updateWorld')
+    
+    # Function to put instructions on the screen.    
+  def addInstructions(self,pos, msg):
+      return OnscreenText(text=msg, style=1, fg=(1, 1, 1, 1), scale=.05,
+                shadow=(0, 0, 0, 1), parent=base.a2dTopLeft,
+                pos=(0.08, -pos - 0.04), align=TextNode.ALeft)
+    
+    # Function to put title on the screen.
+  def addTitle(self,text):
+      return OnscreenText(text=text, style=1, fg=(1, 1, 1, 1), scale=.08,
+                parent=base.a2dBottomRight, align=TextNode.ARight,
+                pos=(-0.1, 0.09), shadow=(0, 0, 0, 1))
 
 
   def setupRendering(self):
@@ -105,12 +104,19 @@ class TestApplication(ShowBase):
     self.input_state_.watchWithModifiers('up', 'arrow_up')
     self.input_state_.watchWithModifiers('down', 'arrow_down')
 
-    self.title = addTitle("Panda3D: " + self.name_)
-    self.inst1 = addInstructions(0.06, "ESC: Quit")
-    self.inst2 = addInstructions(0.12, "Up/Down: Jump/Stop")
-    self.inst3 = addInstructions(0.18, "Left/Right: Move Left / Move Rigth")
-    self.inst4 = addInstructions(0.24, "z/x/c : Rotate Left/ Rotate Stop / Rotate Right")
-    self.inst7 = addInstructions(0.30, "q/a: Zoom in / Zoom out")
+
+    self.title = self.addTitle("Panda3D: " + self.name_)
+    self.instructions_ = [
+                          self.addInstructions(0.06, "ESC: Quit"),
+                          self.addInstructions(0.12, "Up/Down: Jump/Stop"),
+                          self.addInstructions(0.18, "Left/Right: Move Left / Move Rigth"),
+                          self.addInstructions(0.24, "z/x/c : Rotate Left/ Rotate Stop / Rotate Right"),
+                          self.addInstructions(0.30, "q/a: Zoom in / Zoom out")
+                          ]
+    
+    
+    
+    
 
 
   def setupPhysics(self):
