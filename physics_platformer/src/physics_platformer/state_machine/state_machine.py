@@ -1,23 +1,68 @@
 #import pygame.event
 from simple_platformer.game_state_machine import StateMachineActionKeys
 from simple_platformer.game_state_machine import State
-       
-class StateMachine(object):
+from direct.showbase.DirectObject import DirectObject
+import logging
+
+class StateEvent(object):
     
-    class Events:
-    
-        SUBMACHINE_ACTION = pygame.USEREVENT + 3         
-        EVENTS_LIST = [SUBMACHINE_ACTION]   
+    def __init__(self,state_mach,action_key):
         
-    #static method
-    def postActionEvent(sm,action_key,event_type):               
-        pass
-#         if StateMachine.Events.EVENTS_LIST.count(event_type) > 0:                    
-#             event = pygame.event.Event(event_type,{'notify':lambda : sm.execute(action_key)})
-#             pygame.event.post(event)
-#         else:
-#             print 'ERROR: event type \'%s\' not supported by StateMachine'%(event_type)
-#         #endif
+        self.sm_ = state_mach
+        self.action_key_ = action_key
+        
+    def notify(self,args= ()):
+        """
+        Executes the action on the state machine
+        """
+        self.sm_.execute(self.action_key_,*args)
+        
+
+class StateEventHandler(DirectObject):
+    
+    def __init__(self):
+        DirectObject.__init__(self)
+        
+        self.events_buffer_ = []
+        self.addTask(self.consumeEvents,'ConsumeEvents')
+        
+    def addEvent(self,evnt,args = ()): 
+        
+        self.events_buffer_.append((evnt,args))   
+        
+    def consumeEvents(self,task):
+        
+        for tp in self.events_buffer_:
+            evnt = tp[0]
+            args = tp[1]
+            evnt.notify(*args)
+            
+        # clearing buffer
+        self.events_buffer_ = []
+        
+        return task.done  
+
+       
+class StateMachine(object):    
+     
+    __STATE_EVENT_HANDLER__ = StateEventHandler()
+    
+     ############# Static Method #################  
+    def postEvent(evnt,args = ()):
+        """
+        StateMachine.postEvent(StateEvent evnt, args = () )
+        A StateMachineEvent can be posted using the StateMachine.postEvent(...) static method.  In general, it should be used as part of a state's 
+        action callback.  For instance when we have the following state and we'd like to respond to an action by executing an action on the containing
+        state machine we could do the following:
+        my_state = State("MyState")
+        my_state.addAction("EXIT_MOVE",lambda args : StateMachine.postEvent(StateEvent(state_machine,'DONE',args) )
+        
+        Inputs
+        - evnt: A StateEvent object
+        - args: Optional arguments to be passed to the events notify method
+        """
+        StateEventHandler.__STATE_EVENT_HANDLER__.addEvent(evnt, args)            
+
             
     def __init__(self):
         
@@ -28,22 +73,38 @@ class StateMachine(object):
         
     def addState(self,state_obj):
         
-        if not self.states_dict_.has_key(state_obj.key):
-            self.states_dict_[state_obj.key] = state_obj
+        if not self.states_dict_.has_key(state_obj.getKey()):
+            self.states_dict_[state_obj.getKey()] = state_obj
         else:
-            self.states_dict_[state_obj.key] = state_obj
-            print "State was already registered in state machine, new entry will now replace it"
+            self.states_dict_[state_obj.getKey()] = state_obj
+            loggin.warning( "State '%s'was already registered in state machine, new entry will now replace it" %(state_obj.getKey()))
 
-    def addTransition(self,state_obj,action_key,next_state_key,condition_cb = lambda: True):
+    def addTransition(self,state_key,action_key,next_state_key,condition_cb = lambda: True):
+        """
+        addTransition(String state_key, String action_key, String next_state_key, Cb condition_cb =  = lambda: True)
+            Adds a transition rule from one state to another when an action is requested.  This transition will take place whenever
+            the StateMachine.execute(action_key) method is invoked on the StateMachine object and the state machine is at the state
+            indicated by 'state_key'
+            
+            Inputs:
+            - state_key: The state to transition from.
+            - action_key: The requested action.
+            - next_state_key: The state to transition into
+            - condition_cb: (Optional) A callback that returns true or false.  Transition will take place when the callback returns True.
+            
+            Outpurs:
+            - success: Bool
+        
+        """
         
         # inserting as active state if None is currently selected
         if self.active_state_key_ == None:
-            self.active_state_key_ = state_obj.key            
+            self.active_state_key_ = state_key            
             
-        if self.states_dict_.has_key(state_obj.key): 
+        if self.states_dict_.has_key(state_key): 
             
             # transition rules for the state           
-            transition_dict = self.transitions_dict_[state_obj.key]   
+            transition_dict = self.transitions_dict_[state_key]   
             
             # add (next_state_key,condition_callback) tuple to the list
             if transition_dict.has_key(action_key):
@@ -59,13 +120,14 @@ class StateMachine(object):
             #endif    
             
         else:       
-            self.states_dict_[state_obj.key] = state_obj
-            self.transitions_dict_[state_obj.key] = {action_key:[(next_state_key,condition_cb)]}  
+            
+            logging.error("State key '%s' was not found"%(state_key))
+            return False
         
         #endif
             
-        print "Added transition rule : From %s state : %s action : To %s state"%(state_obj.key,action_key,next_state_key)  
-           
+        loggin.info( "Added transition rule : From %s state : %s action : To %s state"%(state_key,action_key,next_state_key) ) 
+        return True           
         
     def execute(self,action_key,action_cb_args=()):
         
@@ -106,7 +168,7 @@ class StateMachine(object):
                         # setting next state as active
                         self.active_state_key_ = state_key
                         
-                        print "Transition from state [%s] : through action [%s] : to state [%s]"%(active_state_obj.key,
+                        print "Transition from state [%s] : through action [%s] : to state [%s]"%(active_state_obj.getKey(),
                                                                           action_key,
                                                                           self.active_state_key_)
                         
@@ -120,7 +182,7 @@ class StateMachine(object):
                         else: 
                             
                             # reverting upon failure
-                            #self.active_state_key_ = active_state_obj.key                            
+                            #self.active_state_key_ = active_state_obj.getKey()                            
                             #print "Transition failed, reverted to state %s from state %s"%(self.active_state_key_,state_key)
                             return False                 
                     
@@ -207,7 +269,7 @@ class SubStateMachine(StateMachine):
     def __init__(self,key,parent_sm = None):
         StateMachine.__init__(self)
         
-        self.key = key
+        self.key_ = key
         self.parent_state_machine = parent_sm
         self.action_list = []
         self.start_state = SubStateMachine.StartState(self)
@@ -250,7 +312,7 @@ class SubStateMachine(StateMachine):
             
     def stop(self):
         
-        self.active_state_key_ = self.start_state.key
+        self.active_state_key_ = self.start_state.getKey()
         
         if self.parent_state_machine != None:
             StateMachine.postActionEvent(self.parent_state_machine,
@@ -259,16 +321,16 @@ class SubStateMachine(StateMachine):
         
     def enter(self):        
         
-        print "Entering '%s' SubMachine"%(self.key)
+        print "Entering '%s' SubMachine"%(self.getKey())
         active_state_obj = self.states_dict_[self.active_state_key_]
         active_state_obj.enter()
         
         
     def exit(self):
-        print  "Exiting '%s' SubMachine"%(self.key)
+        print  "Exiting '%s' SubMachine"%(self.getKey())
         active_state_obj = self.states_dict_[self.active_state_key_]
         active_state_obj.exit()
-        self.active_state_key_ = self.start_state.key
+        self.active_state_key_ = self.start_state.getKey()
         
     
         

@@ -55,6 +55,9 @@ class State(object):
             #print "State %s does not support %s action"%(self.key_,action_key)
             return False
         
+    def getKey(self):
+        return self.key_
+        
     def enter(self):
         
         if self.entry_callback_ != None:
