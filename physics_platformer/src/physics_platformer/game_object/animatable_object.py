@@ -3,7 +3,6 @@ from physics_platformer.sprite import SpriteAnimator
 from panda3d.core import BitMask16
 from panda3d.core import Vec3
 from panda3d.core import TransparencyAttrib
-from _ast import alias
 
 
 class AnimationSpriteAlignment(object):
@@ -31,6 +30,10 @@ class AnimatableObject(GameObject):
         self.selected_animation_name_ = ''
         self.animator_np_ = None # selected animator NodePath
         self.animator_ = None
+        
+        # callbacks
+        self.animation_end_cb_ = None
+        self.animation_start_cb_ = None
         
         if sprite_animator_dict != None:
             self.loadSpriteAnimations(sprite_animator_dict)
@@ -172,6 +175,14 @@ class AnimatableObject(GameObject):
     def isFacingRight(self):
         if self.animator_np_ is not None :
             return self.animator_.isFacingRight()
+        
+    def __monitorFrames__(self):
+        
+        observed_frames ={} # dictionary of (int frame, Bool notify)
+        if self.animation_start_cb_ is not None:
+            observed_frames[0] = True
+        if self.animation_end_cb_ is not None:
+            observed_frames[self.getNumFrames() - 1] = True
             
         
         

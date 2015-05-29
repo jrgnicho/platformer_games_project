@@ -14,9 +14,6 @@ from panda3d.core import TextureStage
 from panda3d.core import TransparencyAttrib
 import logging
 
-# Configuring logging level
-logging.basicConfig(level=logging.INFO)
-
 class SpriteAnimator(PandaNode):
     PANDA_TAG = 'PandaNodeSubclass'
     
