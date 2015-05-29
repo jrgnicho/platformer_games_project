@@ -8,6 +8,9 @@ import rospkg
 from direct.interval.LerpInterval import LerpFunc
 from direct.interval.FunctionInterval import Func
 from direct.interval.IntervalGlobal import Sequence
+import sys
+import logging
+import getopt
 
 
 NUM_BOXES = 20
@@ -147,5 +150,24 @@ class TestAnimatableObject(TestApplication):
 
 
 if __name__ == '__main__':
+    
+    
+    log_level = logging.WARN
+    try:
+        opts, args = getopt.getopt(sys.argv[1:],'l:','log=')
+    except getopt.GetoptError:
+        logging.error("Invalid use of the %s script"%(sys.argv[0]))
+        sys.exit()
+        
+    for opt,arg in opts:
+        if opt in ('-l','--log'):
+            
+            # Configuring logging level
+            log_level = getattr(logging, arg.upper(), None)
+            if isinstance(log_level, int):                                
+                print "Configuring log level to %s"%(arg.upper())
+        
+    
+    logging.basicConfig(format='%(levelname)s: %(message)s',level=log_level)    
     application = TestAnimatableObject()
     application.run()
