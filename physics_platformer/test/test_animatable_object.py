@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 
+from direct.interval.Interval import Interval
 from physics_platformer.test import TestApplication
 from physics_platformer.game_object import *
 from physics_platformer.sprite import *
 import rospkg
+from direct.interval.LerpInterval import LerpFunc
+from direct.interval.FunctionInterval import Func
+from direct.interval.IntervalGlobal import Sequence
 
 
 NUM_BOXES = 20
@@ -24,13 +28,14 @@ SPRITES_DIRECTORY = rospkg.RosPack().get_path('simple_platformer')+ '/resources/
 SPRITE_IMAGE_DETAILS = {'RUN'  : SpriteDetails('RUN',SPRITES_DIRECTORY + 'hiei_run_0-7.png',8,1,12),
                         'WALK' : SpriteDetails('DASH',SPRITES_DIRECTORY +'hiei_dash_0-2.png',3,1,12),
                         'JUMP' : SpriteDetails('JUMP',SPRITES_DIRECTORY +'hiei_jump_ascend_0-4.png',5,1,12),
-                        'LAND' : SpriteDetails('STAND',SPRITES_DIRECTORY +'hiei_jump_land_0-2.png',3,1,12)}
+                        'LAND' : SpriteDetails('LAND',SPRITES_DIRECTORY +'hiei_jump_land_0-2.png',3,1,12)}
 
 class TestAnimatableObject(TestApplication):
     
-    def __init__(self):
+    def __init__(self):        
         
-        self.setupResources()
+        self.seq_ = None # Sequence used for checking end of animations
+        self.setupResources()        
         TestApplication.__init__(self,"Test Animatable Object")
         
     def setupControls(self):
@@ -83,7 +88,7 @@ class TestAnimatableObject(TestApplication):
         self.physics_world_.attachRigidBody(actor2d.node())
         self.controlled_obj_ =  actor2d
         self.animation_index_ = 0
-        self.controlled_obj_.loop(self.animator_set_[self.animation_index_].getName())   
+        self.nextAnimation()
         
         self.cam.setX(actor2d.getPos().getX())
         self.cam.setPos(actor2d,0, -16, 0)
@@ -102,7 +107,36 @@ class TestAnimatableObject(TestApplication):
         self.animation_index_+=1
         if self.animation_index_ >= len(self.animator_set_):
             # reset the animation index
-            self.animation_index_ = 0        
+            self.animation_index_ = 0            
+
+         
+        # Creating interval to check when animation is finished
+        anim_name = self.animator_set_[self.animation_index_].getName()
+        num_frames = self.controlled_obj_.getNumFrames(anim_name)
+        
+        
+        if self.seq_ != None:
+            self.seq_.finish()
+            self.seq_ = Sequence() 
+        else:
+            self.seq_ = Sequence()    
+            
+        def checkFrame():    
+                   
+            if self.controlled_obj_.getFrame() == num_frames - 1:
+                
+                #self.seq_.finish()
+                if checkFrame.notify:
+                    logging.info("Animation %s completed"%(anim_name))
+                    checkFrame.notify= False
+                    
+            if self.controlled_obj_.getFrame() == 0:
+                checkFrame.notify = True
+        checkFrame.notify = True 
+                
+        sfunct = Func(lambda : checkFrame())
+        self.seq_.append(sfunct)
+        self.seq_.loop()        
         
         self.controlled_obj_.loop(self.animator_set_[self.animation_index_].getName())
         

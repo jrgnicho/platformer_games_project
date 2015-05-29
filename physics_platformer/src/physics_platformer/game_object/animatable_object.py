@@ -122,9 +122,26 @@ class AnimatableObject(GameObject):
             return self.animator_.getNumFrames()
         
         if self.sprite_animators_.has_key(animation_name):
-            return (self.sprite_animators_[animation_name]).node().getNumFrames()
+            animator_np = self.sprite_animators_[animation_name]   
+            animator = animator_np.node().getPythonTag(SpriteAnimator.PANDA_TAG)  
+            return animator.getNumFrames()
         
         return -1
+    
+    def getFrame(self):
+        if self.animator_np_ != None:
+            return self.animator_.getFrame()
+        else:
+            return -1
+    
+    def getFrameRate(self,animation_name = None):
+        if animation_name == None:
+            return  self.animator_.getFrameRate()
+        
+        if self.sprite_animators_.has_key(animation_name):
+            animator_np = self.sprite_animators_[animation_name]   
+            animator = animator_np.node().getPythonTag(SpriteAnimator.PANDA_TAG)  
+            return animator.getFrameRate()
             
     
     def selectFrame(self,frame):

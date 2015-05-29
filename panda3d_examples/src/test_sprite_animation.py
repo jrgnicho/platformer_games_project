@@ -74,7 +74,7 @@ class SpriteAnimator(NodePath):
 
     print "Playing: %s"%('Yes' if seq.node().isPlaying() else 'No')
     print "Frame# %i"%(self.getFrame())
-    print "Play Rate: %f"%(seq.node().getPlayRate())
+    print "Frame Rate: %f"%(seq.node().getFrameRate())
     print "Sprite Size: %s"%(str(self.size_))
 
   def loadImage(self,file_path,cols,rows,scale_x,scale_y,frame_rate):
