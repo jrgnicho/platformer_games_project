@@ -1,7 +1,6 @@
 #import pygame.event
-from simple_platformer.game_state_machine import StateMachineActionKeys
-from simple_platformer.game_state_machine import State
-from direct.showbase.DirectObject import DirectObject
+from physics_platformer.state_machine import StateMachineActionKeys
+from physics_platformer.state_machine import State
 import logging
 
 class StateEvent(object):
@@ -15,22 +14,21 @@ class StateEvent(object):
         """
         Executes the action on the state machine
         """
+        logging.debug("State event executing %s action"%(self.action_key_))
         self.sm_.execute(self.action_key_,*args)
         
 
-class StateEventHandler(DirectObject):
+class StateEventHandler(object):
     
-    def __init__(self):
-        DirectObject.__init__(self)
+    def __init__(self):     
         
         self.events_buffer_ = []
-        self.addTask(self.consumeEvents,'ConsumeEvents')
         
     def addEvent(self,evnt,args = ()): 
         
         self.events_buffer_.append((evnt,args))   
         
-    def consumeEvents(self,task):
+    def consumeEvents(self):
         
         for tp in self.events_buffer_:
             evnt = tp[0]
@@ -40,14 +38,14 @@ class StateEventHandler(DirectObject):
         # clearing buffer
         self.events_buffer_ = []
         
-        return task.done  
 
        
 class StateMachine(object):    
      
     __STATE_EVENT_HANDLER__ = StateEventHandler()
     
-     ############# Static Method #################  
+     ############# Static Methods #################  
+    @staticmethod
     def postEvent(evnt,args = ()):
         """
         StateMachine.postEvent(StateEvent evnt, args = () )
@@ -61,7 +59,11 @@ class StateMachine(object):
         - evnt: A StateEvent object
         - args: Optional arguments to be passed to the events notify method
         """
-        StateEventHandler.__STATE_EVENT_HANDLER__.addEvent(evnt, args)            
+        StateMachine.__STATE_EVENT_HANDLER__.addEvent(evnt, args)     
+     
+    @staticmethod   
+    def processEvents():
+        StateMachine.__STATE_EVENT_HANDLER__.consumeEvents()     
 
             
     def __init__(self):
@@ -75,9 +77,10 @@ class StateMachine(object):
         
         if not self.states_dict_.has_key(state_obj.getKey()):
             self.states_dict_[state_obj.getKey()] = state_obj
+            self.transitions_dict_[state_obj.getKey()]  = {}
         else:
             self.states_dict_[state_obj.getKey()] = state_obj
-            loggin.warning( "State '%s'was already registered in state machine, new entry will now replace it" %(state_obj.getKey()))
+            logging.warning( "State '%s'was already registered in state machine, new entry will now replace it" %(state_obj.getKey()))
 
     def addTransition(self,state_key,action_key,next_state_key,condition_cb = lambda: True):
         """
@@ -102,7 +105,7 @@ class StateMachine(object):
             self.active_state_key_ = state_key            
             
         if self.states_dict_.has_key(state_key): 
-            
+                        
             # transition rules for the state           
             transition_dict = self.transitions_dict_[state_key]   
             
@@ -126,7 +129,7 @@ class StateMachine(object):
         
         #endif
             
-        loggin.info( "Added transition rule : From %s state : %s action : To %s state"%(state_key,action_key,next_state_key) ) 
+        logging.info( "Added transition rule : From %s state : %s action : To %s state"%(state_key,action_key,next_state_key) ) 
         return True           
         
     def execute(self,action_key,action_cb_args=()):
@@ -168,25 +171,18 @@ class StateMachine(object):
                         # setting next state as active
                         self.active_state_key_ = state_key
                         
-                        print "Transition from state [%s] : through action [%s] : to state [%s]"%(active_state_obj.getKey(),
+                        logging.debug("Transition from state [%s] : through action [%s] : to state [%s]"%(active_state_obj.getKey(),
                                                                           action_key,
-                                                                          self.active_state_key_)
+                                                                          self.active_state_key_))
                         
-                        # calling state enter routine
-                        if next_state_obj.execute(action_key,action_cb_args):
-                            
-                            # transition succeeded
-
-                            return True
+                        return True
                         
-                        else: 
-                            
-                            # reverting upon failure
-                            #self.active_state_key_ = active_state_obj.getKey()                            
-                            #print "Transition failed, reverted to state %s from state %s"%(self.active_state_key_,state_key)
-                            return False                 
+                        # execting action on newly entered state
+#                         if next_state_obj.execute(action_key,action_cb_args):
+#                             return True                        
+#                         else:                             
+#                             return False                 
                     
-                        #endif
                     
                     else: # condition evaluation failed
                         
@@ -214,7 +210,7 @@ class StateMachine(object):
             #endif
             
         else:
-            print "Transitions from the state %s have not been defined"%(self.active_state_key_)
+            logging.warning( "Transitions from the state %s have not been defined"%(self.active_state_key_))
             return False
         
         #endif
@@ -241,11 +237,11 @@ class SubStateMachine(StateMachine):
         def __init__(self,parent_sm):
             
             State.__init__(self,SubStateMachine.StateKeys.START)
-            self.parent_sm = parent_sm
+            self.parent_sm_ = parent_sm
             
         def enter(self):    
-            print "SM START state entered"   
-            self.parent_sm.start()
+            logging.debug( "SM START state entered"   )
+            self.parent_sm_.start()
     
     """
     StopState:
@@ -259,78 +255,83 @@ class SubStateMachine(StateMachine):
         def __init__(self,parent_sm):
             
             State.__init__(self,SubStateMachine.StateKeys.STOP)
-            self.parent_sm = parent_sm
+            self.parent_sm_ = parent_sm
             
         def enter(self):   
-            print 'SM STOP state entered'         
-            self.parent_sm.stop()
+            logging.debug( 'SM STOP state entered')      
+            self.parent_sm_.stop()
             
     
-    def __init__(self,key,parent_sm = None):
+    def __init__(self,key,parent_sm = None):        
+        """
+        Submachine
+        Subclasses a state machine. It requires that you add the following transition for entering to the first functional state:
+            - addTransition(SubStateMachine.StateKeys.START ,StateMachineActionKeys.SUBMACHINE_START , my_entry_state_key)
+        
+            It alse requires that you add another transition to exit the state machine:
+            - addTransition(my_terminal_state ,StateMachineActionKeys.SUBMACHINE_STOP , SubStateMachine.StateKeys.STOP)
+        """
         StateMachine.__init__(self)
         
         self.key_ = key
-        self.parent_state_machine = parent_sm
-        self.action_list = []
-        self.start_state = SubStateMachine.StartState(self)
-        self.stop_state = SubStateMachine.StopState(self)  
+        self.parent_sm_ = parent_sm
+        self.action_list_ = []
+        self.start_state_ = SubStateMachine.StartState(self)
+        self.stop_state_ = SubStateMachine.StopState(self)  
         
         # adding start and stop sub machine states to transition table
-        self.addTransition(self.start_state, StateMachineActionKeys.__IGNORE_ACTION__,
+        self.addTransition(self.start_state_, StateMachineActionKeys.__IGNORE_ACTION__,
                             SubStateMachine.StateKeys.START, None)
-        self.addTransition(self.stop_state, StateMachineActionKeys.__IGNORE_ACTION__,
+        self.addTransition(self.stop_state_, StateMachineActionKeys.__IGNORE_ACTION__,
                     SubStateMachine.StateKeys.STOP, None)
         
         
     def hasAction(self,action_key):        
-        return (self.action_list.count(action_key) > 0)        
+        return (self.action_list_.count(action_key) > 0)        
  
     def getActionKeys(self):
-        return self.action_list
+        return seself.action_list_        
+    def addTransition(self,state_key ,action_key ,next_state_key,condition_cb = lambda: True):
+        StateMachine.addTransition(self, state_key , action_key, next_state_key, condition_cb)
         
-    def addTransition(self,state_obj,action_key,next_state_key,condition_cb = lambda: True):
-        StateMachine.addTransition(self, state_obj, action_key, next_state_key, condition_cb)
-        
-        if self.action_list.count(action_key) == 0:
-            self.action_list.append(action_key)
+        if self.action_list_.count(action_key) == 0:
+            self.action_list_.append(action_key)
         #endif
         
         # adding actions to action list
+        state_obj = self.states_dict_[state_key]
         action_keys = state_obj.getActionKeys()     
         for akey in action_keys:
-            if self.action_list.count(akey) == 0:
-                self.action_list.append(akey)
+            if self.action_list_.count(akey) == 0:
+                self.action_list_.append(akey)
             #endif
         #endfor
         
     def start(self):
         
-        if self.parent_state_machine != None:
-            StateMachine.postActionEvent(self.parent_state_machine,
-                                           StateMachineActionKeys.SUBMACHINE_START,
-                                            StateMachine.Events.SUBMACHINE_ACTION)
+        if self.parent_sm_ != None:
+            StateMachine.postEvent(StateEvent(self.parent_sm_, StateMachineActionKeys.SUBMACHINE_START))
             
     def stop(self):
         
-        self.active_state_key_ = self.start_state.getKey()
+        # Set the start state as the active state key before leaving
+        self.active_state_key_ = self.start_state_.getKey()
         
-        if self.parent_state_machine != None:
-            StateMachine.postActionEvent(self.parent_state_machine,
-                                           StateMachineActionKeys.SUBMACHINE_STOP,
-                                            StateMachine.Events.SUBMACHINE_ACTION)
+        if self.parent_sm_ != None:
+            StateMachine.postEvent(StateEvent(self.parent_sm_, StateMachineActionKeys.DONE))
         
     def enter(self):        
         
-        print "Entering '%s' SubMachine"%(self.getKey())
+        logging.debug( "Entering '%s' SubMachine"%(self.getKey()))
         active_state_obj = self.states_dict_[self.active_state_key_]
         active_state_obj.enter()
         
         
     def exit(self):
-        print  "Exiting '%s' SubMachine"%(self.getKey())
+        logging.debug(  "Exiting '%s' SubMachine"%(self.getKey()))
         active_state_obj = self.states_dict_[self.active_state_key_]
         active_state_obj.exit()
-        self.active_state_key_ = self.start_state.getKey()
+        self.active_state_key_ = self.start_state_.getKey()
         
     
         

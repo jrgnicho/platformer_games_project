@@ -3,6 +3,9 @@ from physics_platformer.sprite import SpriteAnimator
 from panda3d.core import BitMask16
 from panda3d.core import Vec3
 from panda3d.core import TransparencyAttrib
+from direct.interval.MetaInterval import Sequence
+from direct.interval.FunctionInterval import Func
+import logging
 
 
 class AnimationSpriteAlignment(object):
@@ -32,6 +35,7 @@ class AnimatableObject(GameObject):
         self.animator_ = None
         
         # callbacks
+        self.frame_monitor_seq_ = Sequence() # Used to monitor animation frames and invoke callbacks
         self.animation_end_cb_ = None
         self.animation_start_cb_ = None
         
@@ -83,7 +87,19 @@ class AnimatableObject(GameObject):
         # selecting pose if none is
         if self.animator_np_ == None:
             self.pose(name)
-            print "Selecting animation %s"%name
+            logging.debug("Selecting animation %s"%(name) )
+            
+    def setAnimationEndCallback(self,cb):
+        """
+        Invokes the callback 'cb()' at the end of the animation. Pass 'None' to remove callback.
+        """
+        self.animation_end_cb_ = cb
+    
+    def setAnimationStartCallback(self,cb):  
+        """
+        Invokes the callback 'cb()' at the start of the animation. Pass 'None' to remove callback.
+        """
+        self.animation_start_cb_ = cb        
             
             
     def clearSpriteAnimations(self):
@@ -93,14 +109,17 @@ class AnimatableObject(GameObject):
         
         self.sprite_animators_ = {}
         
+    def getCurrentAnimation(self):
+        return self.selected_animation_name_
+        
     def pose(self,animation_name, frame = 0):
         
         if not self.sprite_animators_.has_key(animation_name):
-            print "ERROR: Invalid animation name '%s'"%(animation_name)
+            logging.error( "Invalid animation name '%s'"%(animation_name))
             return False
         
         if self.selected_animation_name_ == animation_name:
-            print "WARNING: Animation %s already selected"%(animation_name)
+            logging.warning(" Animation %s already selected"%(animation_name))
             return True
         
         # deselecting current node
@@ -115,7 +134,8 @@ class AnimatableObject(GameObject):
         self.animator_ = self.animator_np_.node().getPythonTag(SpriteAnimator.PANDA_TAG)     
         self.animator_.faceRight(face_right)
         self.animator_.pose(frame)
-        self.animator_np_.show()       
+        self.animator_np_.show()   
+        self.selected_animation_name_ = animation_name    
         
         return True 
     
@@ -136,7 +156,7 @@ class AnimatableObject(GameObject):
             return self.animator_.getFrame()
         else:
             return -1
-    
+            
     def getFrameRate(self,animation_name = None):
         if animation_name == None:
             return  self.animator_.getFrameRate()
@@ -156,16 +176,21 @@ class AnimatableObject(GameObject):
         
     def play(self,animation_name):
         
-        if self.pose(animation_name):
+        if self.pose(animation_name):            
+            self.stop()
             self.animator_.play()
+            self.__startFrameMonitor__()
             
     def loop(self,animation_name):
         
-        if self.pose(animation_name):
+        if self.pose(animation_name):            
+            self.stop()
             self.animator_.loop()
+            self.__startFrameMonitor__()
             
     def stop(self):
         if self.animator_np_ != None:
+            self.__stopFrameMonitor__()
             self.animator_.stop()
             
     def faceRight(self,face_right = True):
@@ -176,13 +201,65 @@ class AnimatableObject(GameObject):
         if self.animator_np_ is not None :
             return self.animator_.isFacingRight()
         
-    def __monitorFrames__(self):
         
-        observed_frames ={} # dictionary of (int frame, Bool notify)
+    ####################  Animation Frame Callback Triggering  #####################
+        
+    def __startFrameMonitor__(self):       
+        
+        # no callbacks the exit
+        if (self.animation_start_cb_ is None) and (self.animation_end_cb_ is None):
+            return
+        
+        # resetting sequence
+        self.frame_monitor_seq_ = Sequence() 
+        
+        # invoking start callback
         if self.animation_start_cb_ is not None:
-            observed_frames[0] = True
-        if self.animation_end_cb_ is not None:
-            observed_frames[self.getNumFrames() - 1] = True
+            self.animation_start_cb_()
+        
+        
+        if self.animator_.getPlayMode() == SpriteAnimator.PlayMode.PLAYING :
+            finterv = Func(lambda n = (self.getNumFrames()-1) : self.__monitorEndInPlayMode__(n))
+            self.frame_monitor_seq_.append(finterv)
+            
+        if self.animator_.getPlayMode() == SpriteAnimator.PlayMode.LOOPING :     
+            self.triggered_callbacks_ = True
+            finterv = Func(self.__monitorInLoopMode__)
+            self.frame_monitor_seq_.append(finterv)
+            
+        self.frame_monitor_seq_.loop()
+        
+    def __stopFrameMonitor__(self):        
+        self.frame_monitor_seq_.finish()       
+        
+            
+    def __monitorEndInPlayMode__(self,last_frame):
+        
+        if (not self.animator_.isPlaying()) and (self.getFrame() == last_frame):
+            
+            self.animation_end_cb_()
+            self.frame_monitor_seq_.finish() 
+            
+            
+    def __monitorInLoopMode__(self):
+                    
+        if self.getFrame() == 0:
+            
+            if self.triggered_callbacks_:
+                return
+            
+            # invoke callbacks
+            if self.animation_start_cb_ is not None:
+                self.animation_start_cb_()
+                
+            if self.animation_end_cb_ is not None:
+                self.animation_end_cb_()
+                
+            self.triggered_callbacks_ = True
+        else:
+            self.triggered_callbacks_ = False
+            
+            
             
         
         

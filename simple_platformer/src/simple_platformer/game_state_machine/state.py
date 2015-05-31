@@ -1,4 +1,5 @@
 import sys
+import logging
     
 class State(object):
     
@@ -18,8 +19,7 @@ class State(object):
         self.exit_callback = exit_cb        
         
     def add_action(self,action_key,
-                       action_cb = lambda: sys.stdout.write("No action callback\n")):
-                        # ,condition_cb = lambda: True):
+                       action_cb = lambda: logging.debug("No action callback\n")):
         """
         Adds supported action to the state
         

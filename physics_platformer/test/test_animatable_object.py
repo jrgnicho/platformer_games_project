@@ -11,6 +11,7 @@ from direct.interval.IntervalGlobal import Sequence
 import sys
 import logging
 import getopt
+from direct.task.TaskManagerGlobal import taskMgr
 
 
 NUM_BOXES = 20
@@ -38,16 +39,31 @@ class TestAnimatableObject(TestApplication):
     def __init__(self):        
         
         self.seq_ = None # Sequence used for checking end of animations
+        self.loop_ = True
         self.setupResources()        
         TestApplication.__init__(self,"Test Animatable Object")
-        
+                
     def setupControls(self):
         TestApplication.setupControls(self)
         
         self.accept('n',self.nextAnimation)
         self.accept('b',self.toggleLeftRight)
+        self.accept('l',self.loop )
+        self.accept('p',self.play )
+        self.accept('i',lambda: sys.stdout.write(str(taskMgr)))
         self.instructions_.append(self.addInstructions(0.36, "n: Next Animation"))
         self.instructions_.append(self.addInstructions(0.42, "b: Toggle Left Right"))
+        self.instructions_.append(self.addInstructions(0.48, "l: Loop Animation"))
+        self.instructions_.append(self.addInstructions(0.54, "p: Play Animation"))
+        self.instructions_.append(self.addInstructions(0.60, "i: Print TaskManager Info"))
+        
+    def play(self):
+        n = self.controlled_obj_.getCurrentAnimation()
+        self.controlled_obj_.play( n ) 
+        
+    def loop(self):
+        n = self.controlled_obj_.getCurrentAnimation()
+        self.controlled_obj_.loop( n ) 
         
     def setupResources(self):
         
@@ -57,7 +73,7 @@ class TestAnimatableObject(TestApplication):
         for v in SPRITE_IMAGE_DETAILS.values():
             success, right_imgs = sprite_loader.loadSpriteImages(v.path,v.cols,v.rows,False,False)
             if not success:
-                print 'ERROR: Failed to load sprite images'
+                logging.error(' Failed to load sprite images')
                 sys.exit(1)
                 
             left_imgs = sprite_loader.flipImages(right_imgs,True,False)
@@ -91,6 +107,11 @@ class TestAnimatableObject(TestApplication):
         self.physics_world_.attachRigidBody(actor2d.node())
         self.controlled_obj_ =  actor2d
         self.animation_index_ = 0
+        
+        # setting up animation callbacks
+        self.controlled_obj_.setAnimationEndCallback(lambda : logging.info("Animation %s completed"%(self.controlled_obj_.getCurrentAnimation())))
+        self.controlled_obj_.setAnimationStartCallback(lambda : logging.info("Animation %s started"%(self.controlled_obj_.getCurrentAnimation())))
+        
         self.nextAnimation()
         
         self.cam.setX(actor2d.getPos().getX())
@@ -111,37 +132,12 @@ class TestAnimatableObject(TestApplication):
         if self.animation_index_ >= len(self.animator_set_):
             # reset the animation index
             self.animation_index_ = 0            
-
-         
-        # Creating interval to check when animation is finished
-        anim_name = self.animator_set_[self.animation_index_].getName()
-        num_frames = self.controlled_obj_.getNumFrames(anim_name)
-        
-        
-        if self.seq_ != None:
-            self.seq_.finish()
-            self.seq_ = Sequence() 
-        else:
-            self.seq_ = Sequence()    
             
-        def checkFrame():    
-                   
-            if self.controlled_obj_.getFrame() == num_frames - 1:
-                
-                #self.seq_.finish()
-                if checkFrame.notify:
-                    logging.info("Animation %s completed"%(anim_name))
-                    checkFrame.notify= False
-                    
-            if self.controlled_obj_.getFrame() == 0:
-                checkFrame.notify = True
-        checkFrame.notify = True 
-                
-        sfunct = Func(lambda : checkFrame())
-        self.seq_.append(sfunct)
-        self.seq_.loop()        
+        self.controlled_obj_.pose(self.animator_set_[self.animation_index_].getName())
         
-        self.controlled_obj_.loop(self.animator_set_[self.animation_index_].getName())
+        
+    def toggleLooping(self):
+        self.loop_ = not self.loop_
         
     def toggleLeftRight(self):        
 

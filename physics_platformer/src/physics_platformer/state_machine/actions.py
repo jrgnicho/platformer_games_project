@@ -6,5 +6,6 @@ class StateMachineActionKeys(object):
     SUBMACHINE_RESTART = 'SUBMACHINE_RESTART'
     SUBMACHINE_PAUSE = 'SUBMACHINE_PAUSE'
     SUBMACHINE_STOP = 'SUBMACHINE_STOP'
+    DONE = 'DONE'
     
     

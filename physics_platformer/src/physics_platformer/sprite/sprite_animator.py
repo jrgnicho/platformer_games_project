@@ -167,6 +167,12 @@ class SpriteAnimator(PandaNode):
         
         return True
     
+    def getPlayMode(self):
+        return self.play_mode_
+    
+    def isPlaying(self):
+        return self.getSelectedNode().isPlaying()
+    
     def getFrameRate(self):
         return self.getSelectedNode().getFrameRate()
 
@@ -176,3 +182,6 @@ class SpriteAnimator(PandaNode):
 
     def getFrame(self):
         return self.getSelectedNode().getFrame()
+    
+    def getFullFrame(self):
+        return self.getSelectedNode().getFullFrame()
