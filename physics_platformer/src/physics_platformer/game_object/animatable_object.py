@@ -13,13 +13,17 @@ class AnimationSpriteAlignment(object):
     TOP_ALIGN = BitMask16.bit(0)
     BOTTOM_ALIGN = BitMask16.bit(1)
     LEFT_ALIGN = BitMask16.bit(2)
-    RIGHT_ALIGN = BitMask16.bit(3)
+    RIGHT_ALIGN = BitMask16.bit(3)    
+    CENTER_ALIGN_HORIZONTAL = BitMask16.bit(4)   
+    CENTER_ALIGN_VERTICAL = BitMask16.bit(5)  
+    CENTER_OFFSET_ALIGN = BitMask16.bit(6)
+    
     TOP_RIGHT_ALIGN = TOP_ALIGN | RIGHT_ALIGN
     TOP_LEFT_ALIGN = TOP_ALIGN | LEFT_ALIGN
+    TOP_CENTER_ALIGN = TOP_ALIGN | CENTER_ALIGN_HORIZONTAL
     BOTTOM_RIGHT_ALIGN = BOTTOM_ALIGN | RIGHT_ALIGN
     BOTTOM_LEFT_ALIGN = BOTTOM_ALIGN | LEFT_ALIGN
-    CENTER_ALIGN = BitMask16.bit(4)    
-    CENTER_OFFSET_ALIGN = BitMask16.bit(5)
+    BOTTOM_CENTER_ALIGN = BOTTOM_ALIGN | CENTER_ALIGN_HORIZONTAL
     
 
 class AnimatableObject(GameObject):
@@ -29,10 +33,11 @@ class AnimatableObject(GameObject):
         self.setTransparency(TransparencyAttrib.M_alpha)
         self.node().setAngularFactor((0,0,0))  # no rotation
         self.animation_np_ = self.attachNewNode('sprite-animations')
+        self.animation_np_.setPos(Vec3(0,0,-0.5*size.getZ()))
         self.sprite_animators_ = {}
         self.selected_animation_name_ = ''
         self.animator_np_ = None # selected animator NodePath
-        self.animator_ = None
+        self.animator_ = None          
         
         # callbacks
         self.frame_monitor_seq_ = Sequence() # Used to monitor animation frames and invoke callbacks
@@ -55,7 +60,9 @@ class AnimatableObject(GameObject):
         keys = sprite_animator_dict.keys()
         self.pose(keys[0])
         
-    def addSpriteAnimation(self,name,sprite_animator,align = AnimationSpriteAlignment.BOTTOM_ALIGN, center_offset = Vec3(0,0,0)):
+    def addSpriteAnimation(self,name,sprite_animator,
+                           align = (AnimationSpriteAlignment.BOTTOM_CENTER_ALIGN),
+                           center_offset = Vec3(0,0,0)):
         
         np = self.animation_np_.attachNewNode(sprite_animator)
         np.hide()
@@ -68,21 +75,26 @@ class AnimatableObject(GameObject):
         max = Vec3(bounds[1])
         extends = max - min
         
+        logging.info("align bitmask %s"%(str(align)))
         
+        # Sprites origin is at the image's topleft corner
         if (align & AnimationSpriteAlignment.TOP_ALIGN) == AnimationSpriteAlignment.TOP_ALIGN:
-            pos.setZ(0.5*self.size_.getZ() - 0.5*extends.getZ())            
+            pos.setZ(self.size_.getZ())            
         elif (align & AnimationSpriteAlignment.BOTTOM_ALIGN) == AnimationSpriteAlignment.BOTTOM_ALIGN:
-            pos.setZ(-(0.5*self.size_.getZ() - 0.5*extends.getZ()))
+            pos.setZ(extends.getZ())
             
         if (align & AnimationSpriteAlignment.RIGHT_ALIGN) == AnimationSpriteAlignment.RIGHT_ALIGN:
-            pos.setX(0.5*self.size_.getX()- 0.5*extends.getX()) 
+            pos.setX(-0.5*self.size_.getX() - (self.size_.getX()- extends.getX())) 
         elif (align & AnimationSpriteAlignment.LEFT_ALIGN) == AnimationSpriteAlignment.LEFT_ALIGN:
-            pose.setX(-(0.5*self.size_.getX() - 0.5*extends.getX()))
+            pos.setX(-0.5*self.size_.getX())                        
+        elif (align & AnimationSpriteAlignment.CENTER_ALIGN_HORIZONTAL) == AnimationSpriteAlignment.CENTER_ALIGN_HORIZONTAL:
+            logging.info("Centering horizontally")
+            pos.setX(-0.5*extends.getX())
             
         if align == AnimationSpriteAlignment.CENTER_OFFSET_ALIGN:
             pos = center_offset
         
-        np.setPos(self,pos)     
+        np.setPos(self.animation_np_,pos)           
         
         # selecting pose if none is
         if self.animator_np_ == None:

@@ -73,10 +73,6 @@ class SpriteAnimator(PandaNode):
     def createSequenceNode(self,name,images,scale,frame_rate):
     
         seq = SequenceNode(name)
-        w = images[0].getXSize() # assumes that all images in the in 'images' array are the same size
-        h = images[0].getYSize()       
-        cw = w*scale
-        ch = h*scale 
         
         for i in range(0,len(images)):
             
@@ -86,6 +82,11 @@ class SpriteAnimator(PandaNode):
             #sprite_img.alphaFill(0)
             #sprite_img.fill(1,1,1)
             #sprite_img.copySubImage(img ,0 ,0 ,0 ,0,w ,h)
+            
+            w = img.getXSize() 
+            h = img.getYSize()       
+            cw = w*scale
+            ch = h*scale 
             
             # Load the image onto the texture
             texture = Texture()        
@@ -99,7 +100,7 @@ class SpriteAnimator(PandaNode):
             
             # creating CardMaker to hold the texture
             cm = CardMaker(name +    str(i))
-            cm.setFrame(-0.5*cw,0.5*cw,-0.5*ch,0.5*ch)
+            cm.setFrame(0,cw,-ch,0)  # This configuration places the image's topleft corner at the origin
             card = NodePath(cm.generate())            
             card.setTexture(texture)
             seq.addChild(card.node(),i)

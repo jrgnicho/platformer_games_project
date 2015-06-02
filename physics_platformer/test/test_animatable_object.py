@@ -100,7 +100,7 @@ class TestAnimatableObject(TestApplication):
         # Setting up animatable object
         actor2d = AnimatableObject('actor2d', Vec3(0.6,0.2,1), 1)        
         for anim in self.animator_set_:
-            actor2d.addSpriteAnimation(anim.getName(), anim, AnimationSpriteAlignment.BOTTOM_ALIGN)
+            actor2d.addSpriteAnimation(anim.getName(), anim, AnimationSpriteAlignment.BOTTOM_CENTER_ALIGN)
         
         actor2d.setPos(Vec3(1,0,actor2d.getSize().getZ()+1))  
         actor2d.reparentTo(self.world_node_)
