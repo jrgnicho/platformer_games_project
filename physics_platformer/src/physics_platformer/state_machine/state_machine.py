@@ -187,10 +187,7 @@ class StateMachine(object):
                     else: # condition evaluation failed
                         
                         continue
-                
-                    #endif
-                    
-                #endfor                
+                               
                 
             else:
                 
