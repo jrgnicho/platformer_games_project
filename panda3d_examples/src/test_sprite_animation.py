@@ -74,7 +74,7 @@ class SpriteAnimator(NodePath):
 
     print "Playing: %s"%('Yes' if seq.node().isPlaying() else 'No')
     print "Frame# %i"%(self.getFrame())
-    print "Play Rate: %f"%(seq.node().getPlayRate())
+    print "Frame Rate: %f"%(seq.node().getFrameRate())
     print "Sprite Size: %s"%(str(self.size_))
 
   def loadImage(self,file_path,cols,rows,scale_x,scale_y,frame_rate):
@@ -108,6 +108,8 @@ class SpriteAnimator(NodePath):
 
     self.seq_right_ = self.attachNewNode(self.createSequenceNode(self.name_ + '_right_seq',right_image,cols,rows,scale_x,scale_y,frame_rate))
     self.seq_left_ = self.attachNewNode(self.createSequenceNode(self.name_ + '_left_seq',left_image,cols,rows,scale_x,scale_y,frame_rate))
+    self.seq_right_.reparentTo(self)
+    self.seq_left_.reparentTo(self)
 
     right_image.clear()
     left_image.clear()
@@ -163,20 +165,15 @@ class SpriteAnimator(NodePath):
   def faceRight(self,face_right):
 
     if face_right: 
-      self.seq_left_.removeNode()
-      self.seq_right_.reparentTo(self)
-
-      # toggle animation
-      #self.seq_left_.node().stop()
-      #self.seq_right_.node().loop(True)
+      self.seq_left_.node().stop()
+      self.seq_left_.hide()
+      self.seq_right_.show()
 
     else:
-      self.seq_right_.removeNode()
-      self.seq_left_.reparentTo(self)
+      self.seq_right_.node().stop()
+      self.seq_right_.hide()
+      self.seq_left_.show()
 
-      # toggle animation
-      #self.seq_right.node().stop()
-      #self.seq_left_.node().loop(True)
 
     self.facing_right_ = face_right
 
@@ -234,6 +231,7 @@ class TestApplication(ShowBase):
     self.accept('p',self.printInfo)
     self.accept('q',self.zoomIn)
     self.accept('a',self.zoomOut)
+    self.accept('s',self.toggleRightLeft)
 
     # Inputs (Polling)
     self.input_state_ = InputState()
@@ -253,7 +251,8 @@ class TestApplication(ShowBase):
     self.inst5 = addInstructions(0.30, "n: Select Next Character")
     self.inst6 = addInstructions(0.36, "k: Toggle Kinematic Mode")
     self.inst7 = addInstructions(0.42, "q/a: Zoom in / Zoom out")
-    self.inst7 = addInstructions(0.48, "p: Print Info")
+    self.inst7 = addInstructions(0.48, "s: Toggle Rigth|Left ")
+    self.inst7 = addInstructions(0.54, "p: Print Info")
 
   def printInfo(self):
     self.sprt_animator_.printInfo()
@@ -436,8 +435,6 @@ class TestApplication(ShowBase):
     self.physics_world_.doPhysics(dt, 5, 1.0/180.0)
     self.updateCamera()
   
-    #self.sprt_animator_.nextFrame()
-    #self.sprt_animator_.printInfo()
 
     
 
@@ -507,6 +504,7 @@ class TestApplication(ShowBase):
     self.ground_ = None
     self.physics_world_ = None
     self.debug_node_ = None
+    self.sprt_animator_ = None
     self.cam.reparentTo(self.render)
     self.world_node_.removeNode()
     self.world_node_ = None
@@ -525,6 +523,9 @@ class TestApplication(ShowBase):
     self.kinematic_mode_ = not self.kinematic_mode_
 
     print "Kinematic Mode %s"%('ON' if self.kinematic_mode_ else 'OFF')
+
+  def toggleRightLeft(self):
+    self.sprt_animator_.faceRight(not self.sprt_animator_.facing_right_)
 
   def selectNextControlledObject(self):
     self.controlled_obj_index_+=1

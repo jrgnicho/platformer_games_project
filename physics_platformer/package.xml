@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+  <name>physics_platformer</name>
+  <version>0.0.0</version>
+  <description>The physics_platformer package</description>
+
+  <!-- One maintainer tag required, multiple allowed, one person per tag --> 
+  <!-- Example:  -->
+  <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
+  <maintainer email="jrgnichodevel@gmail.com">Jorge Nicho</maintainer>
+
+  <license>BSD</license>
+  <!-- <url type="website">http://wiki.ros.org/physics_platformer</url> -->
+  <author email="jrgnichodevel@gmail.com">Jorge Nicho</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>bitarray</build_depend>
+  <build_depend>panda3d</build_depend>
+  <build_depend>pygame</build_depend>
+  <run_depend>bitarray</run_depend>
+  <run_depend>panda3d</run_depend>
+  <run_depend>pygame</run_depend>
+
+
+  <export>
+  </export>
+</package>
