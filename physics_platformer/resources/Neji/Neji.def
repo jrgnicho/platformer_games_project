@@ -1,0 +1,34 @@
+;***************************************************************************;
+;******************* Created in Fighter Factory Ultimate *******************;
+;*******************      http://www.virtualltek.com     *******************;
+;***************************************************************************;
+
+[Info]
+name = "Hyuga Neji"
+displayname = "Neji"
+versiondate = 19/03/2015
+mugenversion = 
+author = "Mikel8888"
+pal.defaults = 1,2,3,4,5,6
+
+[Files]
+sprite = Neji.sff
+anim = Neji.air
+sound = Neji.snd
+cmd = Neji.cmd
+cns = Neji.cns
+stcommon = common1.cns
+st = Neji.cns
+st1 = IA.cns
+st2 = Especiales.cns
+st3 = Supers.cns
+pal1 = 1.act
+pal2 = 2.act
+pal3 = 3.act
+pal4 = 4.act
+pal5 = 5.act
+pal6 = 6.act
+
+[Arcade]
+intro.storyboard = 
+ending.storyboard = 

@@ -1,0 +1,324 @@
+; Animation data
+; see docs/air.txt for more information
+; Note: Putting -1,0 for the sprite means it does not draw anything
+
+;---------------------------------------------------------------------------
+; Standing Animation
+[Begin Action 0]
+
+; Turning
+[Begin Action 5]
+
+; Crouch Turning
+[Begin Action 6]
+
+;--------------------------------------------------
+; Stand to crouch
+[Begin Action 10]
+
+; Crouching animation
+[Begin Action 11]
+
+; Crouch to Stand
+[Begin Action 12]
+
+;--------------------------------------------------
+; Walking Forward
+[Begin Action 20]
+
+; Walking Back
+[Begin Action 21]
+
+;--------------------------------------------------
+; Jump start frame
+[Begin Action 40]
+
+; Starting Jumping up
+[Begin Action 41]
+
+; Starting Jumping forwards
+[Begin Action 42]
+
+; Starting Jumping backwards
+[Begin Action 43]
+
+; Peak and coming down from Jumping up
+[Begin Action 44]
+
+; Peak and coming down from Jumping forwards
+[Begin Action 45]
+
+; Peak and coming down from Jumping backwards
+[Begin Action 46]
+
+; Jump land frame
+[Begin Action 47]
+
+;--------------------------------------------------
+; Run forwards
+[Begin Action 100]
+
+; Hop backwards
+[Begin Action 105]
+
+;--------------------------------------------------
+; GUARDSTART (stand)
+[Begin Action 120]
+
+; GUARDSTART (crouch)
+[Begin Action 121]
+
+; GUARDSTART (air)
+[Begin Action 122]
+
+; GUARD (stand)
+[Begin Action 130]
+
+; GUARD (crouch)
+[Begin Action 131]
+
+; GUARD (air)
+[Begin Action 132]
+
+; GUARDEND (stand)
+[Begin Action 140]
+
+; GUARDEND (crouch)
+[Begin Action 141]
+
+; GUARDEND (air)
+[Begin Action 142]
+
+; Hit back while guarding (stand)
+[Begin Action 150]
+
+; Hit back while guarding (crouch)
+[Begin Action 151]
+
+; Hit back while guarding (air)
+[Begin Action 152]
+
+;--------------------------------------------------
+; Lose
+[Begin Action 170]
+
+;--------------------------------------------------
+; Win
+[Begin Action 180]
+
+;--------------------------------------------------
+; INTRO
+[Begin Action 190]
+
+;--------------------------------------------------
+; Taunt
+[Begin Action 195]
+
+;--------------------------------------------------
+; Stand Light Punch
+[Begin Action 200]
+
+; Stand Medium Punch
+[Begin Action 210]
+
+; Stand Strong Punch
+[Begin Action 220]
+
+;--------------------------------------------------
+; Standing Light Kick
+[Begin Action 230]
+
+; Standing Medium Kick
+[Begin Action 240]
+
+; Standing Strong Kick
+[Begin Action 250]
+
+;--------------------------------------------------
+; Crouching Light Punch
+[Begin Action 400]
+
+; Crouching Medium Punch
+[Begin Action 410]
+
+; Crouching Strong Punch
+[Begin Action 420]
+
+;--------------------------------------------------
+; Crouching Light Kick
+[Begin Action 430]
+
+; Crouching Medium Kick
+[Begin Action 440]
+
+; Crouching Strong Kick
+[Begin Action 450]
+
+;--------------------------------------------------
+; Jump Light Punch
+[Begin Action 600]
+
+; Jump Medium Punch
+[Begin Action 610]
+
+; Jump Strong Punch
+[Begin Action 620]
+
+;--------------------------------------------------
+; Jump Light Kick
+[Begin Action 630]
+
+; Jump Medium Kick
+[Begin Action 640]
+
+; Jump Strong Kick
+[Begin Action 650]
+
+;--------------------------------------------------
+; Throw Attempt
+[Begin Action 800]
+
+; Throw
+[Begin Action 810]
+
+; Thrown (animation for opponent)
+; Note: Use ONLY the required frames documented in spr.txt and spr.gif.
+;       It is important to be restricted to the required frames so that
+;       the throw animation will look correct for any given character.
+[Begin Action 820]
+
+;--------------------------------------------------
+; Stand/Air Hit high (light)
+[Begin Action 5000]
+
+; Stand/Air Hit high (medium)
+[Begin Action 5001]
+
+; Stand/Air Hit high (hard)
+[Begin Action 5002]
+
+;--------------------------------------------------
+; Stand Recover high (light)
+[Begin Action 5005]
+
+; Stand Recover high (medium)
+[Begin Action 5006]
+
+; Stand Recover high (hard)
+[Begin Action 5007]
+
+;--------------------------------------------------
+; Stand/Air Hit low (light)
+[Begin Action 5010]
+
+; Stand/Air Hit low (medium)
+[Begin Action 5011]
+
+; Stand/Air Hit low (hard)
+[Begin Action 5012]
+
+;--------------------------------------------------
+; Stand Recover low (light)
+[Begin Action 5015]
+
+; Stand Recover low (medium)
+[Begin Action 5016]
+
+; Stand Recover low (hard)
+[Begin Action 5017]
+
+;--------------------------------------------------
+; Crouch Hit (light)
+[Begin Action 5020]
+
+; Crouch Hit (medium)
+[Begin Action 5021]
+
+; Crouch Hit (hard)
+[Begin Action 5022]
+
+;--------------------------------------------------
+; Crouch Recover (light)
+[Begin Action 5025]
+
+; Crouch Recover (medium)
+[Begin Action 5026]
+
+; Crouch Recover (hard)
+[Begin Action 5027]
+
+;--------------------------------------------------
+; Stand/Air Hit back
+[Begin Action 5030]
+
+; Stand/Air Hit transition
+[Begin Action 5035]
+
+;--------------------------------------------------
+; Air Recover
+[Begin Action 5040]
+
+;--------------------------------------------------
+; Air Fall (going up)
+[Begin Action 5050]
+
+; Air Fall (up-type, going up)
+[Begin Action 5051]
+
+; Air Fall (diagup-type, going up)
+[Begin Action 5052]
+
+;--------------------------------------------------
+; Air Fall (coming down)
+[Begin Action 5060]
+
+; Air Fall (up-type, coming down)
+[Begin Action 5061]
+
+; Air Fall (diagup-type, coming down)
+[Begin Action 5062]
+
+;--------------------------------------------------
+; Tripped
+[Begin Action 5070]
+
+;--------------------------------------------------
+; LieDown Hit (stay down)
+[Begin Action 5080]
+
+;--------------------------------------------------
+; LieDown Hit (hit up into air)
+[Begin Action 5090]
+
+;--------------------------------------------------
+; Hit ground from fall
+[Begin Action 5100]
+
+; Bounce into air
+[Begin Action 5160]
+
+; Hit ground from bounce
+[Begin Action 5170]
+
+;--------------------------------------------------
+; LieDown
+[Begin Action 5110]
+
+; Get up from LieDown
+[Begin Action 5120]
+
+; LieDead animation
+[Begin Action 5150]
+
+;--------------------------------------------------
+; Fall-recovery near ground
+[Begin Action 5200]
+
+; Fall-recovery in mid-air
+[Begin Action 5210]
+
+;--------------------------------------------------
+; Dizzy
+[Begin Action 5300]
+
+;--------------------------------------------------
