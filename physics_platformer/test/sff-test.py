@@ -35,22 +35,28 @@ def main():
 
   fh = open(sff_file, 'rb')
 
-  header = sff.sff1_file.parse(fh.read(512))
+  header = sff1_file.parse(fh.read(512))
   print(header)
 
   next_subfile = header.next_subfile
-  while next_subfile:
+  count = 0
+  while next_subfile and count < header.image_total:
       fh.seek(next_subfile)
-      subfile = sff.sff1_subfile_header.parse(fh.read(32))
+      subfile = sff1_subfile_header.parse(fh.read(32))
       next_subfile = subfile.next_subfile
+
       try:
           s = StringIO(fh.read(subfile.length))
           image = Image.open(s)
+
+          print "Image Group: %i, no: %i, size: %i x %i ,offset: (%i , %i)"%(subfile.groupno,subfile.imageno, 
+            image.size[0],image.size[1],subfile.axisx,subfile.axisy)
       except IOError:
           print("ioerror", subfile.groupno, subfile.imageno)
           pass
       else:
           image.save(output_dir + "/g{0}-i{1}.png".format(subfile.groupno, subfile.imageno))
+      count+=1
 
 if __name__ == '__main__':
 

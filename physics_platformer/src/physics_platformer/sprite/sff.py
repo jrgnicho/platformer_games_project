@@ -16,7 +16,7 @@ leif theden, 2012 - 2015
 public domain
 """
 from construct import *
-from io import StringIO
+from StringIO import StringIO
 
 
 class RunLengthAdapter(Adapter):
