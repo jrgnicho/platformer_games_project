@@ -1,3 +1,5 @@
+from physics_platformer.sprite import Sprite
+from physics_platformer.sprite import SpriteGroup
 from physics_platformer.sprite import SpriteAnimator
 from panda3d.core import SequenceNode
 from panda3d.core import Texture
@@ -21,32 +23,32 @@ class AnimationActor(SpriteAnimator):
     """
     return self.hit_body_
     
-  def loadAnimationImages(self,images_right, images_left,framerate,scale):
+  def loadAnimationSprites(self,sprites_right, sprites_left,framerate,scale):
     """
-    loadAnimationImages
-      Loads SFFImages for the right and left animations
+    loadAnimationSprites
+      Loads Sprites for the right and left animations
       Inputs:
-      - images_right: list[SFFImage] list of images for the right side
-      - images_left: list[SFFImage] list of images for the left side
+      - sprites_right: list[SFFImage] list of images for the right side
+      - sprites_left: list[SFFImage] list of images for the left side
       - framerate: (double) 
       - scale: (Vec3) Only the x and z values are used 
     """
     
-    if (len(images_right) == 0) or (len(images_left) == 0):
+    if (len(sprites_right) == 0) or (len(sprites_left) == 0):
       logging.error("ERROR: Found empty image list")
       return False
     
-    if len(images_right) != len(images_left):
+    if len(sprites_right) != len(sprites_left):
       logging.error("Unequal number of images for the left and right side")
       return False
     
     # storing individual sprite size
-    w = images_right[0].getXSize() # assumes that all images in the in 'images' array are the same size
-    h = images_right[0].getYSize()
+    w = sprites_right[0].getXSize() # assumes that all images in the in 'images' array are the same size
+    h = sprites_right[0].getYSize()
     self.size_ = (w,h) # image size in pixels
     
-    self.seq_right_ = self.__createAnimationSequence__(self.getName() + '-right-seq',images_right,frame_rate)
-    self.seq_left_ = self.__createAnimationSequence__(self.getName()+ '-left-seq',images_left,frame_rate)
+    self.seq_right_ = self.__createAnimationSequence__(self.getName() + '-right-seq',sprites_right,frame_rate)
+    self.seq_left_ = self.__createAnimationSequence__(self.getName()+ '-left-seq',sprites_left,frame_rate)
     self.node().addStashed(self.seq_right_)
     self.node().addStashed(self.seq_left_)
     

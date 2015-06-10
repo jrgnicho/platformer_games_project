@@ -64,7 +64,8 @@ class AnimatableObject(GameObject):
                            align = (AnimationSpriteAlignment.BOTTOM_CENTER_ALIGN),
                            center_offset = Vec3(0,0,0)):
         
-        np = self.animation_np_.attachNewNode(sprite_animator)
+        #np = self.animation_np_.attachNewNode(sprite_animator)
+        np = sprite_animator.instanceTo(self.animation_np_)
         np.hide()
         self.sprite_animators_[name] = np
         

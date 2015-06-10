@@ -14,7 +14,7 @@ from panda3d.core import TextureStage
 from panda3d.core import TransparencyAttrib
 import logging
 
-class SpriteAnimator(PandaNode):
+class SpriteAnimator(NodePath):
     PANDA_TAG = 'PandaNodeSubclass'
     
     class PlayMode(object):
@@ -31,8 +31,8 @@ class SpriteAnimator(PandaNode):
     
     def __init__(self,name):
         
-        PandaNode.__init__(self,name) 
-        PandaNode.setPythonTag(self,SpriteAnimator.PANDA_TAG,self)       
+        NodePath.__init__(self,PandaNode(name)) 
+        self.node().setPythonTag(SpriteAnimator.PANDA_TAG,self)       
         self.seq_left_ = None
         self.seq_right_ = None
         self.facing_right_ = True
@@ -63,10 +63,10 @@ class SpriteAnimator(PandaNode):
     
         self.seq_right_ = self.createSequenceNode(self.getName() + '-right-seq',images_right,scale,frame_rate)
         self.seq_left_ = self.createSequenceNode(self.getName()+ '-left-seq',images_left,scale,frame_rate)
-        self.addStashed(self.seq_right_)
-        self.addStashed(self.seq_left_)
+        self.node().addStashed(self.seq_right_)
+        self.node().addStashed(self.seq_left_)
     
-        self.faceRight(True)      
+        self.faceRight(True)     
     
         return True
     
@@ -105,7 +105,7 @@ class SpriteAnimator(PandaNode):
             card.setTexture(texture)
             seq.addChild(card.node(),i)
          
-        seq.setFrameRate(frame_rate)   
+        seq.setFrameRate(frame_rate)           
         print "Sequence Node %s contains %i imagese of size %s and card size of %s"%(name,seq.getNumFrames(),str((w,h)),str((cw,ch)))        
         return seq 
     
@@ -118,13 +118,13 @@ class SpriteAnimator(PandaNode):
         if face_right: 
             
             self.seq_left_.stop()
-            self.stashChild(self.seq_left_)            
-            self.unstashChild(self.seq_right_) 
+            self.node().stashChild(self.seq_left_)            
+            self.node().unstashChild(self.seq_right_) 
     
         else:
             self.seq_right_.stop()
-            self.stashChild(self.seq_right_)
-            self.unstashChild(self.seq_left_)  
+            self.node().stashChild(self.seq_right_)
+            self.node().unstashChild(self.seq_left_)  
     
         self.facing_right_ = face_right  
         self.setPlayMode(self.play_mode_)  
