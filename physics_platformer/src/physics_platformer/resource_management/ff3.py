@@ -33,7 +33,29 @@ class FFELoader(object):
   
   def __init__(self):   
     
-    self.groups_dict_ = {}
+    self.groups_dict_ = {}    
+        
+  def hasGroup(self, group_no):
+    return self.groups_dict_.has_key(group_no)
+    
+  def getSprite(self,group_no,im_no,right_side = True):
+    
+    if self.hasGroup(group_no):        
+      group_pair = self.groups_dict_[group_no]
+      group = group_pair[0] if right_side else group_pair[1]
+      
+      return group.getSprite(im_no)
+    else:
+      return None
+    
+  def getSprites(self,group_no,right_side = True):
+    
+    if self.hasGroup(group_no):        
+      group_pair = self.groups_dict_[group_no]
+      group = group_pair[0] if right_side else group_pair[1]        
+      return group.getSprites()
+    else:
+      return None
   
   def load(self,filename, groups = []):
     """
@@ -48,6 +70,7 @@ class FFELoader(object):
     # openning file
     if not ( os.path.exists(filename) and filename.endswith(FFELoader.__EXTENSION__)):
       logging.error("File %s is invalid"%(filename))
+      return False
       
     dirname, junk = os.path.split(os.path.abspath(filename))
       
@@ -172,5 +195,31 @@ class FFELoader(object):
   
 class AIRLoader(object):
   
+  __EXTENSION__ = ".air"
+  __ANIMATION_NAME__ = '^; (.+)'
+  __BEGIN_HEADER__ = '\[Begin Action ([0-9]+)\]'
+  __COLLISION_BOX_STATIC_LIST__ = 'Clsn2Default: ([1-9]+)'
+  __COLLISION_BOX_LIST__ = 'Clsn2: ([1-9]+)'
+  __COLLISION_BOX_ENTRY__ = 'Clsn2\[(0-9)] = '
+  __HIT_BOX_LIST__ = 'Clsn1: ([1-9)+)'
+  __HIT_BOX_ENTRY__ = 'Clsn1\([0-9]+)\] = '
+  __SPRITE_ENTRY__ = '[,| ]*([0-9]+)'*5 #  group, sprite_no, offsetx, offsety, time(framerate) -> 50,1, 0,0, 6
+  
   def __init__(self):
     pass
+  
+  def load(self,filename):
+    
+    # openning file
+    if not ( os.path.exists(filename) and filename.endswith(AIRLoader.__EXTENSION__)):
+      logging.error("File %s is invalid"%(filename))
+      return False
+    
+    f = open(filename,'r')
+    lines = f.readlines()
+    
+    linecount = 0
+    while linecount < len(lines):      
+      pass
+      
+      

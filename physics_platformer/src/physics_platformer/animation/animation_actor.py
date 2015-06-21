@@ -5,6 +5,15 @@ from panda3d.core import SequenceNode
 from panda3d.core import Texture
 import logging
 
+class AnimationDetails(object):
+  
+  def __init__(self):
+    
+    self.sprite_group_left = None
+    self.sprite_group_right = None
+    self.collision_boxes = []
+    self.hit_boxes =[]
+
 class AnimationActor(SpriteAnimator):
   
   def __init__(self,name):
@@ -28,8 +37,8 @@ class AnimationActor(SpriteAnimator):
     loadAnimationSprites
       Loads Sprites for the right and left animations
       Inputs:
-      - sprites_right: list[SFFImage] list of images for the right side
-      - sprites_left: list[SFFImage] list of images for the left side
+      - sprites_right: list[Sprite] list of images for the right side
+      - sprites_left: list[Sprite] list of images for the left side
       - framerate: (double) 
       - scale: (Vec3) Only the x and z values are used 
     """

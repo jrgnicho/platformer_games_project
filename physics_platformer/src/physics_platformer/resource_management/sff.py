@@ -18,7 +18,7 @@ class SFFLoader(object):
   def hasGroup(self, group_no):
     return self.groups_dict_.has_key(group_no)
     
-  def loadSffFile(self,filename,groups = []):
+  def loadSff(self,filename,groups = []):
     """
       Loads sprite images from an sff file
       Inputs:
