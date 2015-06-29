@@ -198,6 +198,7 @@ class AIRLoader(object):
   __EXTENSION__ = ".air"
   __ANIMATION_NAME__ = '^; (.+)'
   __BEGIN_HEADER__ = '\[Begin Action ([0-9]+)\]'
+  __BOX_INFO__ = '([-]?[0-9]+), '*3 + '$([-]?[0-9]+)' # left, top, right, bottom (x+ from left to right and y+ from top to bottom)
   __COLLISION_BOX_STATIC_LIST__ = 'Clsn2Default: ([1-9]+)'
   __COLLISION_BOX_LIST__ = 'Clsn2: ([1-9]+)'
   __COLLISION_BOX_ENTRY__ = 'Clsn2\[(0-9)] = '
@@ -219,7 +220,59 @@ class AIRLoader(object):
     lines = f.readlines()
     
     linecount = 0
-    while linecount < len(lines):      
-      pass
+    anim_name =''
+    anim_id = 0
+    static_col_boxes = []
+    col_boxes_dict = {}
+    static_hit_boxes = []
+    hit_boxes_dict ={}
+    anim_sprites = [] # list of tuples (group_no, image_no)
+    anim_framerate = 10
+    
+    while linecount < len(lines):   
+      
+      line = lines[linecount]
+      
+      m = re.search(AIRLoader.__ANIMATION_NAME__,line)
+      if m is not None:
+        anim_name = m.group(1)
+        linecount+=1
+        continue
+      
+      m = re.search(AIRLoader.__BEGIN_HEADER__,line)
+      if m is not None:
+        anim_id  = int(m.group(1))
+        linecount+=1
+        continue
+      
+      m = re.search(AIRLoader.__COLLISION_BOX_STATIC_LIST__,line)
+      if m is not None:
+        static_col_boxes = int(m.group(1))
+      
+  def __parseCollisionBoxList(self,lines,linecount):
+    
+    box_found = True
+    box_list = []
+    
+    while box_found:
+      line = lines[linecount]
+      m = re.search(AIRLoader.__COLLISION_BOX_ENTRY__,line)
+      
+      if m is None:
+        box_found = False
+        break
+      
+      # parsing box coordinates
+      start = m.end()
+      b = re.search(AIRLoader.__BOX_INFO__,line[start:])
+      left = b.group(1)
+      top = b.group(2)
+      right = b.group(3)
+      bottom = b.group(4)
+      
+      box_found = True
+    
+         
+      
       
       
