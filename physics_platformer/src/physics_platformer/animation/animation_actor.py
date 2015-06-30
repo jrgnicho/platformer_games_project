@@ -13,6 +13,7 @@ class AnimationDetails(object):
     self.sprite_group_right = None
     self.collision_boxes = []
     self.hit_boxes =[]
+    self.framerate = 0
 
 class AnimationActor(SpriteAnimator):
   

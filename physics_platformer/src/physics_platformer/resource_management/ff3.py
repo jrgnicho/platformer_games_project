@@ -3,6 +3,7 @@ from panda3d.core import Texture
 from panda3d.core import LColor
 from physics_platformer.sprite import Sprite
 from physics_platformer.sprite import SpriteGroup
+from physics_platformer.geometryd2d import Box2D
 from construct import *
 import os
 import logging
@@ -224,53 +225,126 @@ class AIRLoader(object):
     anim_id = 0
     static_col_boxes = []
     col_boxes_dict = {}
-    static_hit_boxes = []
     hit_boxes_dict ={}
     anim_sprites = [] # list of tuples (group_no, image_no)
     anim_framerate = 10
     
+    parse_animation = False
     while linecount < len(lines):   
       
-      line = lines[linecount]
+      line = lines[linecount]      
+      linecount+=1     
       
       m = re.search(AIRLoader.__ANIMATION_NAME__,line)
       if m is not None:
         anim_name = m.group(1)
-        linecount+=1
-        continue
+        
+        # finding header
+        line = lines[linecount]          
+        linecount+=1     
+         
+        m = re.search(AIRLoader.__BEGIN_HEADER__,line)
+        if m is not None:
+          anim_id  = int(m.group(1))
+        else:
+          logging.error("Animation header was not found");
+          return False           
+        
+        parse_animation = True
       
-      m = re.search(AIRLoader.__BEGIN_HEADER__,line)
-      if m is not None:
-        anim_id  = int(m.group(1))
-        linecount+=1
-        continue
+        while parse_animation:  
+               
+          line = lines[linecount]          
+          linecount+=1  
+          
+          # find Default Collision Boxes
+          m = re.search(AIRLoader.__COLLISION_BOX_STATIC_LIST__,line)
+          if m is not None:
+            static_col_boxes = int(m.group(1))
+            
+          # find Hit Boxes
+          m = re.search(AIRLoader.__HIT_BOX_LIST__,line)
+          if m is not None:
+            box_count = int(m.group(1))
+            linecount+=1
+            box_list,linecount = self.__parseBoxList__(AIRLoader.__HIT_BOX_ENTRY__, lines, linecount)
+            
+            if (len(box_list) != box_count ) :
+              logging.error("Size of hit box list is incorrect")
+              return False
+            
+            linecount+=1
+            sprite_entry = self.__parseSpriteEntry__(lines, linecount)
+            if sprite_entry is None:
+              logging.error("Sprite entry corresponding to hit boxes was not found")
+              return False
+            
+            
+            
+            
+            
+            
+        
+  def __parseCollisionBoxList__(self,lines,linecount):
+    return self.__parseBoxList__(AIRLoader.__COLLISION_BOX_ENTRY__, lines, linecount)
+  
+  def __parseHitBoxList__(self,lines,linecount):    
+    return self.__parseBoxList__(AIRLoader.__HIT_BOX_ENTRY__, lines, linecount)
       
-      m = re.search(AIRLoader.__COLLISION_BOX_STATIC_LIST__,line)
-      if m is not None:
-        static_col_boxes = int(m.group(1))
-      
-  def __parseCollisionBoxList(self,lines,linecount):
+  def __parseBoxList__(self,token_expr,lines,linecount):
     
-    box_found = True
+    proceed = True
     box_list = []
     
-    while box_found:
+    while proceed:
       line = lines[linecount]
-      m = re.search(AIRLoader.__COLLISION_BOX_ENTRY__,line)
+      m = re.search(token_expr,line)
       
       if m is None:
-        box_found = False
+        proceed = False
         break
       
       # parsing box coordinates
       start = m.end()
       b = re.search(AIRLoader.__BOX_INFO__,line[start:])
-      left = b.group(1)
-      top = b.group(2)
-      right = b.group(3)
-      bottom = b.group(4)
+      left = float(b.group(1))
+      top = float(-b.group(2))
+      right = float(b.group(3))
+      bottom = float(-b.group(4))
       
-      box_found = True
+      w = abs(right - left)
+      h = abs(top - bottom)
+      cx = left + w*0.5
+      cy = bottom + h*0.5
+      
+      box = Box2D(w,h,(cx,cy))
+      box_list.append(box)
+      linecount+=1      
+      proceed = True
+      
+    return (box_list,linecount)
+  
+  def __parseSpriteEntry__(self,lines,linecount):
+    
+    group_no = 0
+    im_no = 0
+    offsetx = 0
+    offsety = 0
+    delay = 0
+    
+    line = lines[linecount]
+    m = re.search(AIRLoader.__SPRITE_ENTRY__,line)
+    if m is None:
+      return (None,linecount)
+    
+    group_no = int(m.group(1))
+    im_no = int(m.group(2))
+    offsetx = int(m.group(3))
+    offsety = int(m.group(4))
+    delay = int(m.group(5))
+    
+    linecount+=1
+    return ( (group_no,im_no,offsetx,offsety,delay) , linecount)
     
          
       

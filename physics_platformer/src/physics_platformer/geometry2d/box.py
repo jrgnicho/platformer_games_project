@@ -5,7 +5,7 @@ class Box2D(object):
   
   def __init__(self,w,h,center):
     """
-    Box2D(double w,double l,(double, double) center)
+    Box2D(double w,double h,(double, double) center)
     Creates a 2D box for performing collision checks 
     Inputs:
     - w: width. horizontal extent
