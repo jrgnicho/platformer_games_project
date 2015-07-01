@@ -189,10 +189,33 @@ class FFELoader(object):
       sprites.append(sprite)
     
     return (sprites[0],sprites[1])
+     
+     
+     
       
-        
-    
-    
+class AnimationElement(object):
+  """
+  Class that stores the data of an "Animation Element" as defined in a M.U.G.E.N AIR file (http://elecbyte.com/wiki/index.php/AIR)
+  """
+  
+  def __init__(self):
+    self.group_no = 0
+    self.im_no =0
+    self.hit_boxes = []
+    self.collision_boxes = []   
+    self.game_ticks = 0 # Number of ticks that this image will be displayed
+       
+class AnimationAction(object):
+  """
+  Class that stores the animation elements and other relevant data associated with a "Animation Action" as define in a M.U.G.E.N Air file
+  """
+  def __init__(self):
+    self.name = ''
+    self.id = 0
+    loopstar = -1
+    self.static_collision_boxes = []
+    self.static_hit_boxes = []
+    self.animation_elements =[]
   
 class AIRLoader(object):
   
@@ -224,12 +247,12 @@ class AIRLoader(object):
     anim_name =''
     anim_id = 0
     static_col_boxes = []
-    col_boxes_dict = {}
-    hit_boxes_dict ={}
+    col_boxes_dict = {} # key: index into anim_sprites , val: [box]
+    hit_boxes_dict ={} # key: index into anim_sprites , val: [box]
     anim_sprites = [] # list of tuples (group_no, image_no)
     anim_framerate = 10
     
-    parse_animation = False
+    parse_element = False
     while linecount < len(lines):   
       
       line = lines[linecount]      
@@ -250,40 +273,90 @@ class AIRLoader(object):
           logging.error("Animation header was not found");
           return False           
         
-        parse_animation = True
+        parse_element = True
+        anim_elmt = AnimationElement()
       
-        while parse_animation:  
+        while parse_element:  
                
           line = lines[linecount]          
           linecount+=1  
           
-          # find Default Collision Boxes
+          # find Default Collision Boxes "Clsn2Default"
           m = re.search(AIRLoader.__COLLISION_BOX_STATIC_LIST__,line)
           if m is not None:
-            static_col_boxes = int(m.group(1))
+            box_count = int(m.group(1))
+            linecount+=1            
+            box_list,linecount = self.__parseCollisionBoxList__(lines, linecount)   
+            
+            if len(box_list) != box_count:
+              logging.error("Size of static box (Clsn2Default) list is incorrect")    
+              return False
+            
+            static_col_boxes = box_list
+            continue
             
           # find Hit Boxes
           m = re.search(AIRLoader.__HIT_BOX_LIST__,line)
           if m is not None:
             box_count = int(m.group(1))
             linecount+=1
-            box_list,linecount = self.__parseBoxList__(AIRLoader.__HIT_BOX_ENTRY__, lines, linecount)
+            box_list,linecount = self.__parseHitBoxList__(lines, linecount)
             
             if (len(box_list) != box_count ) :
-              logging.error("Size of hit box list is incorrect")
+              logging.error("Size of hit box (Clsn1) list is incorrect")
+              return False  
+            
+            if len(hit_boxes) != 0:
+              logging.error("Current hit boxes array has not been saved")
               return False
+            
+            hit_boxes = box_list    
+            continue     
+
+            
+          # find Collision Boxes
+          m = re.search(AIRLoader.__COLLISION_BOX_LIST__,line)
+          if m is not None:
+            box_count = int(m.group(1))
+            linecount+=1
+            box_list,linecount = self.__parseCollisionBoxList__(lines, linecount)
+            
+            if (len(box_list) != box_count ) :
+              logging.error("Size of collision box (Clsn2) list is incorrect")
+              return False
+            
+            if len(collision_boxes) != 0:
+              logging.error("Current collision boxes array has not been saved")
+              return False
+            
+            collision_boxes = box_list
+            continue
+            
+          # find parent sprite
+          sprite_entry = self.__parseSpriteEntry__(line)
+          if sprite_entry is not None:
             
             linecount+=1
-            sprite_entry = self.__parseSpriteEntry__(lines, linecount)
-            if sprite_entry is None:
-              logging.error("Sprite entry corresponding to hit boxes was not found")
-              return False
+          
+            group_no = sprite_entry[0]
+            image_no = sprite_entry[1]
+            delay = sprite_entry[4]
             
+            # save animation entry
+            anim_sprites.append((group_no,image_no,delay))    
             
+            if (len(hit_boxes) == 0) and (len(collision_boxes) == 0):
+              continue
             
-            
-            
-            
+            key =   len(anim_sprites) - 1                          
+            hit_boxes_dict[key] = hit_boxes
+            col_boxes_dict[key] = collision_boxes
+            hit_boxes = []
+            collision_boxes = []
+            continue
+          
+          # quit parsing current animation
+          parse_element = False
         
   def __parseCollisionBoxList__(self,lines,linecount):
     return self.__parseBoxList__(AIRLoader.__COLLISION_BOX_ENTRY__, lines, linecount)
@@ -324,7 +397,7 @@ class AIRLoader(object):
       
     return (box_list,linecount)
   
-  def __parseSpriteEntry__(self,lines,linecount):
+  def __parseSpriteEntry__(self,line):
     
     group_no = 0
     im_no = 0
@@ -332,10 +405,9 @@ class AIRLoader(object):
     offsety = 0
     delay = 0
     
-    line = lines[linecount]
     m = re.search(AIRLoader.__SPRITE_ENTRY__,line)
     if m is None:
-      return (None,linecount)
+      return None
     
     group_no = int(m.group(1))
     im_no = int(m.group(2))
@@ -343,8 +415,7 @@ class AIRLoader(object):
     offsety = int(m.group(4))
     delay = int(m.group(5))
     
-    linecount+=1
-    return ( (group_no,im_no,offsetx,offsety,delay) , linecount)
+    return (group_no,im_no,offsetx,offsety,delay)
     
          
       
