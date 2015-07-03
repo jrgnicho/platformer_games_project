@@ -44,6 +44,11 @@ class Box2D(object):
     self.w_ = s[0]
     self.h_ = s[1]
     
+    
+  def __str__(self):
+    s = 'left: %f, top: %f, right: %f, bottom: %f'%(self.left_,self.top_,self.right_,self.bottom_)
+    return s
+    
   def checkCollision(self,box2d):
     """
     Checks if this box overlaps with the input box.  Returns True | False
@@ -56,9 +61,9 @@ class Box2D(object):
   def __update__(self):
     
     self.top_ = 0.5*self.h_ + self.centery_
-    self.bottom_ = -0.5*self.h + self.centery_
-    self.left_ = -0.5*self.w + self.centerx_
-    self.right_ = 0.5*self.w + self.centerx_
+    self.bottom_ = -0.5*self.h_ + self.centery_
+    self.left_ = -0.5*self.w_ + self.centerx_
+    self.right_ = 0.5*self.w_ + self.centerx_
     
   def __getCollisionBox__(self):
     return box(self.left_,self.bottom_,self.right_,self.top_)
