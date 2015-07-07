@@ -41,6 +41,9 @@ def main():
 
     air_loader  = AIRLoader()
     air_loader.load(air_file)
+    
+    for anim in air_loader.animations:
+      logging.info(str(anim))
 
 if __name__ == '__main__':
   
