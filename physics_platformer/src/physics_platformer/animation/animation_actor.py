@@ -1,28 +1,51 @@
 from physics_platformer.sprite import Sprite
 from physics_platformer.sprite import SpriteGroup
 from physics_platformer.sprite import SpriteAnimator
+from physics_platformer.animation import AnimationAction
+from panda3d.bullet import BulletRigidBodyNode
+from panda3d.bullet import BulletBoxShape
+from panda3d.core import TransformState
 from panda3d.core import SequenceNode
 from panda3d.core import Texture
+from panda3d.core import Vec3
 import logging
+from panda3d.bullet import BulletRigidBodyNode
 
-class AnimationDetails(object):
-  
-  def __init__(self):
-    
-    self.sprite_group_left = None
-    self.sprite_group_right = None
-    self.collision_boxes = []
-    self.hit_boxes =[]
-    self.framerate = 0
 
 class AnimationActor(SpriteAnimator):
+  
+  __DEFAULT_WIDTH__ = 0.01
+  __DEFAULT_MASS__ = 0.01
   
   def __init__(self,name):
     SpriteAnimator.__init__(self,name)
     
-    self.collision_body_ = None # bullet rigid body that contains the collision boxes
+    self.animation_action_ = None
+    self.rigid_body_ = None # bullet rigid body that contains the collision boxes
+    self.collision_body_ = None # bullet ghost node containing collision boxes
     self.hit_body_ = None # bullet ghost node containing hit boxes
     self.constraint_joint_ = None # bullet constraints that connects the collision body to its parent
+    
+    
+  def loadAnimation(self,animation):
+    """
+    Loads the animation data from a AnimationAction object
+    """    
+    if type(animation) is not AnimationAction:
+      logging.error("Object pass is not an instance of the AnimationAction class")
+      return False
+    
+    # load sprites
+    if not self.loadAnimationSprites(animation.sprites_right, animation.sprites_right, animation.framerate):
+      logging.error('Failed to load sprites from AnimationAction object')
+      return False
+    
+    # saving animation
+    self.animation_action_ = animation
+    
+    return True
+    
+    
     
   def getCollisionBody(self):
     return self.collision_body_
@@ -33,7 +56,7 @@ class AnimationActor(SpriteAnimator):
     """
     return self.hit_body_
     
-  def loadAnimationSprites(self,sprites_right, sprites_left,framerate,scale):
+  def loadAnimationSprites(self,sprites_right, sprites_left,framerate):
     """
     loadAnimationSprites
       Loads Sprites for the right and left animations
@@ -62,10 +85,54 @@ class AnimationActor(SpriteAnimator):
     self.node().addStashed(self.seq_right_)
     self.node().addStashed(self.seq_left_)
     
-    self.setScale(Vec3(scale.getX(),1,scale.getZ()))
     self.faceRight(True)     
     
     return True
+  
+  def setScale(self,scale):
+    """
+    Sets the scale of the animated sprites, collision and hit boxes in the actor
+    """
+    SpriteAnimator.setScale(self,Vec3(scale.getX(),1,scale.getZ()))
+    
+  def __createRigidBody__(self):
+    self.rigid_body_ = BulletRigidBodyNode('RigidBody')
+    
+    # collection all boxes
+    collision_boxes = []
+    if len(self.animation_action_.collision_boxes) > 0:      
+      # use existing collision boxes 
+      collision_boxes = self.animation_action_.collision_boxes
+    else:      
+      # compute bounding box of all collision boxes from every sprite 
+      boxes = []
+      for elemt in self.animation_action_.animation_elements:
+        boxes = boxes + elemt.collision_boxes
+        
+      collision_boxes = [Box2D.createBoundingBox(boxes)]
+      
+    # create rigid body
+    for box in collision_boxes:
+      size = box.size
+      center = box.center
+      transform = TransformState.makeIdentity()
+      box_shape = BulletBoxShape(0.5*size[0],0.5*AnimationActor.__DEFAULT_WIDTH__,0.5 * size[1])
+      transform.setPose(Vec3(center[0],0,center[1]))
+      self.rigid_body_.addShape(box_shape,transform)
+      
+    # completing rigid body setup
+    self.rigid_body_.setMass(AnimationAction.__DEFAULT_MASS__)
+    self.rigid_body_.setLinearFactor((1,0,1))   
+    self.rigid_body_.setAngularFactor((0,1,0))   
+    self.rigid_body_.setIntoCollideMask(BitMask32().allOn())
+    
+  
+  def __createBulletGhostFromBoxes(self,boxes):
+    pass
+      
+      
+    
+      
   
   def __createAnimationSequence__(self,name,sff_images,framerate):
     """

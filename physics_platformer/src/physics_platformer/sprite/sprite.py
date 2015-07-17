@@ -18,8 +18,10 @@ class Sprite(Texture):
     self.axisy = 0 # offset distance to the top side of the sprite from the origin. Y+ is up
     self.group = 0
     self.no = 0
+    
     self.hit_boxes = []
     self.collision_boxes = []
+    
     
     
 class SpriteGroup(object):

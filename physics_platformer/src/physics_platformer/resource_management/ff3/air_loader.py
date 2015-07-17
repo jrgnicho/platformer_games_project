@@ -1,86 +1,10 @@
-from panda3d.core import PNMImage, PNMImageHeader
-from panda3d.core import Texture
-from panda3d.core import LColor
-from physics_platformer.sprite import Sprite
-from physics_platformer.sprite import SpriteGroup
 from physics_platformer.geometry2d import Box2D
+from physics_platformer.animation import AnimationElement, AnimationAction
 import re
 from construct import *
 import os
 import logging
 
-   
-      
-class AnimationElement(object):
-  """
-  Class that stores the data of an "Animation Element" as defined in a M.U.G.E.N AIR file (http://elecbyte.com/wiki/index.php/AIR)
-  """
-  
-  def __init__(self):
-    self.group_no = 0
-    self.im_no =0
-    self.hit_boxes = []
-    self.collision_boxes = []   
-    self.game_ticks = 0 # Number of ticks that this image will be displayed
-    
-  def __str__(self):
-    hit_str =''
-    for b in self.hit_boxes:
-      hit_str += '\t' + str(b) + '\n' 
-    
-    col_str = ''
-    for b in self.collision_boxes:
-      col_str+= '\t' + str(b) + '\n' 
-    
-    s = """
-        Animation Element:
-          group no: %i
-          im no: %i
-          hit boxes: %i 
-          %s
-          collision boxes: %i
-          %s
-          game ticks: %i
-    """%(self.group_no,self.im_no,len(self.hit_boxes),hit_str,len(self.collision_boxes),col_str,self.game_ticks)
-    return s
-       
-class AnimationAction(object):
-  """
-  Class that stores the animation elements and other relevant data associated with a "Animation Action" as define in a M.U.G.E.N Air file
-  """
-  def __init__(self,name = ''):
-    self.name = name
-    self.id = 0
-    loopstar = -1
-    self.static_collision_boxes = []
-    self.static_hit_boxes = []
-    self.animation_elements =[]
-    
-  def __str__(self):
-    hit_str = ''
-    for b in self.static_hit_boxes:
-      hit_str+= '\t' + str(b) + '\n' 
-      
-    col_str = ''
-    for b in self.static_collision_boxes:
-      col_str += '\t' + str(b) + '\n'
-      
-    elmt_str = ''
-    for elmt in self.animation_elements:
-      elmt_str += '\t' + str(elmt) + '\n'
-    
-    s = """
-    Animation Action: %s
-      id : %i
-      collision boxes : %i
-      %s
-      hit boxes: %i
-      %s
-      animation elements: 
-        %s
-    """%(self.name,self.id,len(self.static_collision_boxes),col_str,len(self.static_hit_boxes),hit_str,elmt_str)
-    
-    return s
   
 class AIRLoader(object):
   
@@ -97,10 +21,15 @@ class AIRLoader(object):
   
   def __init__(self):
     self.animations_ = []
+    self.groups_ = []
   
   @property
   def animations(self):
     return self.animations_    
+  
+  @property
+  def groups(self):
+    return self.groups_
   
   def load(self,filename):
     
@@ -127,6 +56,13 @@ class AIRLoader(object):
         
         # save current animation
         if anim_action is not None:
+          
+          # compute average framerate
+          for elmt in anim_action.animation_elements:
+            anim_action.framerate += elmt.game_ticks
+            
+          anim_action.framerate /= len(anim_action.animation_elements)
+          
           self.animations_.append(anim_action)
         
         anim_name = m.group(1)  
@@ -202,7 +138,13 @@ class AIRLoader(object):
         
         continue
       
-      
+    # collecting all groups
+    for anim in self.animations_:
+      for elmt in anim.animation_elements:
+        if self.groups_.count(elmt.group_no)== 0:
+          self.groups_.append(elmt.group_no)
+          
+    return True
         
         
   def __parseCollisionBoxList__(self,lines,linecount):

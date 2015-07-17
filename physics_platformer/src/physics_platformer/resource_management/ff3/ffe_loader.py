@@ -127,7 +127,8 @@ class FFELoader(object):
         
         
       line_counter+=1
-        
+    
+    return True    
       
       
   def __readLine__(self,line,field_text):

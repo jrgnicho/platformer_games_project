@@ -45,7 +45,7 @@ class AnimatableObject(GameObject):
         self.animation_start_cb_ = None
         
         if sprite_animator_dict != None:
-            self.loadSpriteAnimations(sprite_animator_dict)
+            self.setSpriteAnimations(sprite_animator_dict)
         
     def setSpriteAnimations(self,sprite_animator_dict):
         
