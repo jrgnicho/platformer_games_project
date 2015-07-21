@@ -47,19 +47,19 @@ class AnimationAction(object):
     self.id = 0
     self.loopstar = -1
     self.framerate = 0
-    self.static_collision_boxes = []
-    self.static_hit_boxes = []
+    self.rigid_body_boxes = []
+    self.action_boxes = []
     self.animation_elements =[]
     self.sprites_left = []
     self.sprites_right = []
     
   def __str__(self):
     hit_str = ''
-    for b in self.static_hit_boxes:
+    for b in self.action_boxes:
       hit_str+= '\t' + str(b) + '\n' 
       
     col_str = ''
-    for b in self.static_collision_boxes:
+    for b in self.rigid_body_boxes:
       col_str += '\t' + str(b) + '\n'
       
     elmt_str = ''
@@ -76,6 +76,6 @@ class AnimationAction(object):
       %s
       animation elements: 
         %s
-    """%(self.name,self.id,self.framerate,len(self.static_collision_boxes),col_str,len(self.static_hit_boxes),hit_str,elmt_str)
+    """%(self.name,self.id,self.framerate,len(self.rigid_body_boxes),col_str,len(self.action_boxes),hit_str,elmt_str)
     
     return s

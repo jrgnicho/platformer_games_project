@@ -94,7 +94,7 @@ class AIRLoader(object):
           logging.error("Size of static box (Clsn2Default) list is incorrect, expected %i and got %i"%(box_count,len(box_list)))    
           return False
         
-        anim_action.static_collision_boxes = box_list
+        anim_action.rigid_body_boxes = box_list
         continue
         
       # find Hit Boxes

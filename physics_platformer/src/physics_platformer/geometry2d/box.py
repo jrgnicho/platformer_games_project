@@ -55,6 +55,10 @@ class Box2D(object):
   
   @scale.setter
   def scale(self,sc):
+    """
+    scale((double, double) sc)    
+    """
+    
     self.scalex_ = sc[0]
     self.scaley_ = sc[1]    
     self.__update__()
