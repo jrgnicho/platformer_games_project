@@ -15,6 +15,7 @@ class AIRLoader(object):
   __COLLISION_BOX_STATIC_LIST__ = 'Clsn2Default: ([1-9]+)'
   __COLLISION_BOX_LIST__ = 'Clsn2: ([1-9]+)'
   __COLLISION_BOX_ENTRY__ = 'Clsn2\[([0-9]+)\] = '
+  __HIT_BOX_STATIC_LIST__ = 'Clsn1Default: ([1-9]+)'
   __HIT_BOX_LIST__ = 'Clsn1: ([1-9]+)'
   __HIT_BOX_ENTRY__ = 'Clsn1\[([0-9]+)\] = '
   __SPRITE_ENTRY__ = '[,| ]*([0-9]+)'*5 #  group, sprite_no, offsetx, offsety, time(framerate) -> 50,1, 0,0, 6
@@ -95,6 +96,19 @@ class AIRLoader(object):
           return False
         
         anim_action.rigid_body_boxes = box_list
+        continue
+      
+      # find Default Hit Boxes "Clsn1Default"
+      m = re.search(AIRLoader.__HIT_BOX_STATIC_LIST__,line)
+      if m is not None:
+        box_count = int(m.group(1))              
+        box_list,linecount = self.__parseCollisionBoxList__(lines, linecount)   
+        
+        if len(box_list) != box_count:
+          logging.error("Size of static box (Clsn1Default) list is incorrect, expected %i and got %i"%(box_count,len(box_list)))    
+          return False
+        
+        anim_action.action_boxes = box_list
         continue
         
       # find Hit Boxes

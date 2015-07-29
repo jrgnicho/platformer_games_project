@@ -6,6 +6,7 @@ from panda3d.core import NodePath
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletGhostNode
 from panda3d.bullet import BulletBoxShape
+from panda3d.bullet import BulletGenericConstraint
 from panda3d.core import TransformState
 from panda3d.core import SequenceNode
 from panda3d.core import Texture
@@ -23,11 +24,11 @@ class AnimationActor(SpriteAnimator):
     SpriteAnimator.__init__(self,name)
     
     self.animation_action_ = None
-    self.rigid_body_np_ = None # NodePath to a bullet rigid body that contains the collision boxes
-    self.collision_body_np_ = None # NodePath to a bullet ghost node containing collision boxes that are active during the duration of the animation
-    self.action_body_np_ = None # NodePath to a bullet ghost node containing boxes that will be used to trigger a specific player action
-    self.constraint_joint_ = None # bullet constraints that connects the collision body to its parent
-    
+    self.rigid_body_np_ = None # NodePath to a bullet rigid body that contains the collision boxes that are used to handle interactions with the environment    
+    self.action_body_np_ = None # NodePath to a bullet ghost node containing boxes that will be used to trigger a specific player action upon coming into contact with the environment
+    self.attack_collision_np_ = None # NodePath to a bullet ghost node containing collision boxes that are active during the duration of the animation
+    self.attack_hit_np_ = None # NodePath to a bullet ghost node containing hit boxes that are active during the duration of the animation
+   
     
   def loadAnimation(self,animation):
     """
@@ -48,43 +49,63 @@ class AnimationActor(SpriteAnimator):
     # creating representative rigid body (Used to determine collisions with the environment
     self.__createRigidBody__()
     
-    # creating hit body for detecting when player's attacks landed
-    action_boxes = self.animation_action_.action_boxes
-    if len(self.animation_action_.action_boxes) == 0: # collecting boxes from each individual sprite
-      for elmt in self.animation_action_.animation_elements:
-        action_boxes = action_boxes + elmt.hit_boxes
-    
-      # creating bounding box from all boxes
-      action_boxes = [Box2D.union(action_boxes)]     
+    # creating bullet ghost body for detecting interactions with the environment
+    if len(self.animation_action_.action_boxes) > 0: # collecting boxes from each individual sprite          
+      self.action_body_np_ =  self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(self.animation_action_.action_boxes) )
+
+    # creating attack collision and hit ghosts bodies for detecting oponent's attacks
+    col_boxes = []    
+    hit_boxes = []
+    for elmt in self.animation_action_.animation_elements:
+      col_boxes = col_boxes + elmt.collision_boxes
+      hit_boxes = hit_boxes + elmt.hit_boxes
       
-    self.action_body_np_ =  self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(action_boxes) )
-        
-    # creating collision body for detecting oponent's attacks
-    col_boxes = []
-    if len(col_boxes) == 0:
-      for elmt in self.animation_action_.animation_elements:
-        col_boxes = col_boxes + elmt.collision_boxes
-        
-      col_boxes = [Box2D.union(col_boxes)]
-            
-    self.collision_body_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(col_boxes) )
+    if len(col_boxes) > 0:  
+      col_boxes = [Box2D.union(col_boxes)]            
+      self.attack_collision_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(col_boxes) )
+      
+    if len(hit_boxes) > 0:
+      hit_boxes = [Box2D.union(hit_boxes)]
+      self.attack_hit_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(hit_boxes))
+      
+    # reparenting sprite sequence nodes to to rigid body
+    self.reparentTo(self.rigid_body_np_)
     
     
     return True
+  
+  def faceRight(self,face_right):
     
+    if self.rigid_body_np_ is not None:
+      kinematic = self.rigid_body_np_.node().isKinematic()
+      self.rigid_body_np_.node().setKinematic(True)
+      angle  = 0 if face_right else 180    
+      self.rigid_body_np_.setR(angle)
+      self.setKinematic(kinematic)
+      self.setR(self.rigid_body_np_,-angle)
     
+    SpriteAnimator.faceRight(self,face_right)
+    
+  def getRigidBody(self):
+    return (None if (self.rigid_body_np_ is not None) else self.rigid_body_np_.node())
     
   def getCollisionGhostBody(self):
     """
     Returns ghost body used to determing in an opponent's attack reached the player
     """
-    return self.collision_body_np_.node()
+    return (None if (self.attack_collision_np_ is None) else self.attack_collision_np_.node())
+  
+  def getHitGhostBody(self):    
+    """
+    Returns ghost body used to determing in player's attack reached the oponent
+    """
+    return (None if self.attack_hit_np_ is None else self.attack_hit_np_.node())
   
   def getActionGhostBody(self):
     """
     Returns ghost body for determining that the action geometry is in overlap
     """
-    return self.action_body_np_.node()
+    return (None if (self.action_body_np_ is None) else self.action_body_np_.node())
     
   def loadAnimationSprites(self,sprites_right, sprites_left,framerate):
     """
@@ -133,8 +154,7 @@ class AnimationActor(SpriteAnimator):
       boxes = sprt_right.hit_boxes + sprt_right.collision_boxes + sprt_left.hit_boxes + sprt_left.collision_boxes
       for box in boxes:
         box.scale((scale.getX(), scale.getZ()))
-    
-    
+     
     
   def __createRigidBody__(self):
     self.rigid_body_np_ = NodePath(BulletRigidBodyNode('RigidBody'))

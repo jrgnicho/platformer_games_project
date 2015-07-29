@@ -26,7 +26,7 @@ class CharacterLoader(object):
     """
     Loads Animation Actions from an AIR File created in Fighter Factory 3
     """
-    
+        
     self.name_ = ''
     self.displayname_ = ''
     self.dir_ = '' # parent directory
@@ -69,8 +69,7 @@ class CharacterLoader(object):
       
     f = open(filename,'r')
     lines = f.readlines()    
-    logging.debug("File %s contains %i lines"%(filename,len(lines)))
-    
+    logging.debug("File %s contains %i lines"%(filename,len(lines)))    
     
     linecount = 0
     success = True
@@ -109,9 +108,7 @@ class CharacterLoader(object):
         self.anims_dict_[anim.name] = anim
         
       break 
-    
-
-    
+        
     self.sprite_loader_ = None
     self.anim_loader_ = None
     
