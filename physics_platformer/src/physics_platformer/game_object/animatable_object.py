@@ -1,5 +1,6 @@
 from physics_platformer.game_object import GameObject
 from physics_platformer.sprite import SpriteAnimator
+from physics_platformer.animation import AnimationActor
 from panda3d.core import BitMask16
 from panda3d.core import Vec3
 from panda3d.core import TransparencyAttrib
@@ -32,9 +33,9 @@ class AnimatableObject(GameObject):
         GameObject.__init__(self,name,size,mass,False) #creatin GameObject with a default box shape and no Visual
         self.setTransparency(TransparencyAttrib.M_alpha)
         self.node().setAngularFactor((0,0,0))  # no rotation
-        self.animation_np_ = self.attachNewNode('sprite-animations')
-        self.animation_np_.setPos(Vec3(0,0,-0.5*size.getZ()))
-        self.sprite_animators_ = {}
+        self.animation_root_np_ = self.attachNewNode('animations_root')
+        self.animation_root_np_.setPos(Vec3(0,0,-0.5*size.getZ()))
+        self.animators_ = {}
         self.selected_animation_name_ = ''
         self.animator_np_ = None # selected animator NodePath
         self.animator_ = None          
@@ -46,15 +47,16 @@ class AnimatableObject(GameObject):
         
         if sprite_animator_dict != None:
             self.setSpriteAnimations(sprite_animator_dict)
+ 
         
     def setSpriteAnimations(self,sprite_animator_dict):
         
         self.clearSpriteAnimations()
         
         for k,v in sprite_animator_dict:
-            np = self.animation_np_.attachNewNode(v)
+            np = self.animation_root_np_.attachNewNode(v)
             np.hide()
-            self.sprite_animators_[k] = np
+            self.animators_[k] = np
             
         # selecting first animation
         keys = sprite_animator_dict.keys()
@@ -64,10 +66,10 @@ class AnimatableObject(GameObject):
                            align = (AnimationSpriteAlignment.BOTTOM_CENTER_ALIGN),
                            center_offset = Vec3(0,0,0)):
         
-        #np = self.animation_np_.attachNewNode(sprite_animator)
-        np = sprite_animator.instanceTo(self.animation_np_)
+        #np = self.animation_root_np_.attachNewNode(sprite_animator)
+        np = sprite_animator.instanceTo(self.animation_root_np_)
         np.hide()
-        self.sprite_animators_[name] = np
+        self.animators_[name] = np
         
         # setting the node's location
         pos = Vec3(0,0,0)
@@ -95,7 +97,7 @@ class AnimatableObject(GameObject):
         if align == AnimationSpriteAlignment.CENTER_OFFSET_ALIGN:
             pos = center_offset
         
-        np.setPos(self.animation_np_,pos)           
+        np.setPos(self.animation_root_np_,pos)           
         
         # selecting pose if none is
         if self.animator_np_ == None:
@@ -117,17 +119,17 @@ class AnimatableObject(GameObject):
             
     def clearSpriteAnimations(self):
         
-        for np in self.sprite_animators_.values():
+        for np in self.animators_.values():
             np.detachNode()          
         
-        self.sprite_animators_ = {}
+        self.animators_ = {}
         
     def getCurrentAnimation(self):
         return self.selected_animation_name_
         
     def pose(self,animation_name, frame = 0):
         
-        if not self.sprite_animators_.has_key(animation_name):
+        if not self.animators_.has_key(animation_name):
             logging.error( "Invalid animation name '%s'"%(animation_name))
             return False
         
@@ -143,8 +145,8 @@ class AnimatableObject(GameObject):
             self.animator_.stop()
             self.animator_np_.hide()
             
-        self.animator_np_ = self.sprite_animators_[animation_name]   
-        self.animator_ = self.animator_np_.node().getPythonTag(SpriteAnimator.PANDA_TAG)     
+        self.animator_np_ = self.animators_[animation_name]   
+        self.animator_ = self.animator_np_.node().getPythonTag(SpriteAnimator.__name__)     
         self.animator_.faceRight(face_right)
         self.animator_.pose(frame)
         self.animator_np_.show()   
@@ -157,8 +159,8 @@ class AnimatableObject(GameObject):
         if animation_name == None :
             return self.animator_.getNumFrames()
         
-        if self.sprite_animators_.has_key(animation_name):
-            animator_np = self.sprite_animators_[animation_name]   
+        if self.animators_.has_key(animation_name):
+            animator_np = self.animators_[animation_name]   
             animator = animator_np.node().getPythonTag(SpriteAnimator.PANDA_TAG)  
             return animator.getNumFrames()
         
@@ -174,8 +176,8 @@ class AnimatableObject(GameObject):
         if animation_name == None:
             return  self.animator_.getFrameRate()
         
-        if self.sprite_animators_.has_key(animation_name):
-            animator_np = self.sprite_animators_[animation_name]   
+        if self.animators_.has_key(animation_name):
+            animator_np = self.animators_[animation_name]   
             animator = animator_np.node().getPythonTag(SpriteAnimator.PANDA_TAG)  
             return animator.getFrameRate()
             

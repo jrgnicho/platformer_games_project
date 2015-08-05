@@ -2,6 +2,7 @@ from physics_platformer.sprite import Sprite
 from physics_platformer.sprite import SpriteGroup
 from physics_platformer.sprite import SpriteAnimator
 from physics_platformer.animation import AnimationAction
+from physics_platformer.collision_masks import *
 from panda3d.core import NodePath
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletGhostNode
@@ -29,6 +30,7 @@ class AnimationActor(SpriteAnimator):
     self.attack_collision_np_ = None # NodePath to a bullet ghost node containing collision boxes that are active during the duration of the animation
     self.attack_hit_np_ = None # NodePath to a bullet ghost node containing hit boxes that are active during the duration of the animation
    
+    self.node().setPythonTag(AnimationActor.__name__,self)
     
   def loadAnimation(self,animation):
     """
@@ -52,6 +54,7 @@ class AnimationActor(SpriteAnimator):
     # creating bullet ghost body for detecting interactions with the environment
     if len(self.animation_action_.action_boxes) > 0: # collecting boxes from each individual sprite          
       self.action_body_np_ =  self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(self.animation_action_.action_boxes) )
+      self.action_body_np_.node().setIntoCollideMask(CollisionMasks.ACTION_BODY)
 
     # creating attack collision and hit ghosts bodies for detecting oponent's attacks
     col_boxes = []    
@@ -63,15 +66,13 @@ class AnimationActor(SpriteAnimator):
     if len(col_boxes) > 0:  
       col_boxes = [Box2D.union(col_boxes)]            
       self.attack_collision_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(col_boxes) )
+      self.attack_collision_np_.node().setIntoCollideMask(CollsionMasks.ATTACK_COLLISION)
       
     if len(hit_boxes) > 0:
       hit_boxes = [Box2D.union(hit_boxes)]
       self.attack_hit_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(hit_boxes))
-      
-    # reparenting sprite sequence nodes to to rigid body
-    self.reparentTo(self.rigid_body_np_)
-    
-    
+      self.attack_hit_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_HIT)
+          
     return True
   
   def faceRight(self,face_right):
@@ -81,8 +82,7 @@ class AnimationActor(SpriteAnimator):
       self.rigid_body_np_.node().setKinematic(True)
       angle  = 0 if face_right else 180    
       self.rigid_body_np_.setR(angle)
-      self.setKinematic(kinematic)
-      self.setR(self.rigid_body_np_,-angle)
+      self.rigid_body_np_.node().setKinematic(kinematic)
     
     SpriteAnimator.faceRight(self,face_right)
     
@@ -159,6 +159,7 @@ class AnimationActor(SpriteAnimator):
   def __createRigidBody__(self):
     self.rigid_body_np_ = NodePath(BulletRigidBodyNode('RigidBody'))
     rigid_body = self.rigid_body_np_.node()
+    rigid_body.setIntoCollideMask(CollsionMasks.RIGID_BODY)
     
     # collection all boxes
     collision_boxes = []

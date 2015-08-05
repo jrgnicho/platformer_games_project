@@ -15,7 +15,6 @@ from panda3d.core import TransparencyAttrib
 import logging
 
 class SpriteAnimator(NodePath):
-    PANDA_TAG = 'PandaNodeSubclass'
     
     class PlayMode(object):
         
@@ -32,7 +31,7 @@ class SpriteAnimator(NodePath):
     def __init__(self,name):
         
         NodePath.__init__(self,PandaNode(name)) 
-        self.node().setPythonTag(SpriteAnimator.PANDA_TAG,self)       
+        self.node().setPythonTag(SpriteAnimator.__name__,self)       
         self.seq_left_ = None
         self.seq_right_ = None
         self.facing_right_ = True
