@@ -7,8 +7,11 @@ class CharacterObject(AnimatableObject):
   def  __init__(self,name):
     
     AnimatableObject.__init__(self,name,(40,60),1,None)
-    self.clear()
-    
+    self.physics_world_ = None
+   
+   
+  def setParentPhysicsWorld(self,physics_world): 
+    self.physics_world_ = physics_world
     
   def addAnimationActor(self,name,anim_actor,
                         align = (AnimationSpriteAlignment.BOTTOM_CENTER_ALIGN),
@@ -19,46 +22,42 @@ class CharacterObject(AnimatableObject):
     
     self.addSpriteAnimation(name, anim_actor, align, center_offset)
     
-    if self.animator_np_ == None:
+    if (self.animator_np_ == None) and (self.physics_world_ is not None):
       self.pose(name)
       
   def getAnimatorActor(self):
     if self.animator_ is None:
-      return None
+      return None    
+    return self.animator_    
     
-    return self.animator_.getPythonTag(AnimationActor.__name__)
+  def pose(self,animation_name, frame = 0):
     
+    if self.selected_animation_name_ == animation_name:
+        logging.warning(" Animation %s already selected"%(animation_name))
+        return True      
     
-    def pose(self,animation_name, frame = 0):
-        
-        if not self.animators_.has_key(animation_name):
-            logging.error( "Invalid animation name '%s'"%(animation_name))
-            return False
-        
-        if self.selected_animation_name_ == animation_name:
-            logging.warning(" Animation %s already selected"%(animation_name))
-            return True
-        
-        # deselecting current node
-        face_right = True
-        if self.animator_np_ != None :
-            
-            face_right = self.animator_.isFacingRight()
-            self.animator_.stop()
-            self.animator_np_.hide()
-            
-        self.animator_np_ = self.animators_[animation_name]   
-        self.animator_ = self.animator_np_.node().getPythonTag(AnimationActor.__name__)            
-        self.animator_.pose(frame) 
-        self.faceRight(face_right)
-        self.animator_np_.show()   
-        self.selected_animation_name_ = animation_name    
-        
-        return True 
+    self.detachNode()     
+    
+    # removing rigid body from scene
+    parent_np = None
+    if self.rigid_body_np_ is not None: 
+      parent_np = self.rigid_body_np_.getParent() if self.rigid_body_np_.hasParent() else None
+      self.rigid_body_np_.detachNode()
+      self.physics_world_.removeRigidBody(self.rigid_body_np_.node())
       
-    def faceRight(self,face_right = True):
-      if self.animator_np_ != None :
-          self.animator_.faceRight(face_right)
-          angle = 0 if face_right else 180
-          self.animation_root_np_.setR(-angle)
+      
+    if not AnimatableObject.pose(self,animation_name,frame):
+      return False    
+    
+    # reparenting to animator rigid body
+    self.rigid_body_np_ = self.animator_.getRigidBody()
+    self.rigid_body_np_.reparentTo(parent_np)
+    self.reparentTo(self.rigid_body_np_)   
+    self.physics_world_.attachRigidBody(self.rigid_body_np_.node())     
+      
+    return True 
+    
+  def faceRight(self,face_right = True):
+    if self.animator_np_ != None :
+        self.animator_.faceRight(face_right)
           

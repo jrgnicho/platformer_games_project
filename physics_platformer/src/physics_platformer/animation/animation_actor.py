@@ -30,7 +30,7 @@ class AnimationActor(SpriteAnimator):
     self.attack_collision_np_ = None # NodePath to a bullet ghost node containing collision boxes that are active during the duration of the animation
     self.attack_hit_np_ = None # NodePath to a bullet ghost node containing hit boxes that are active during the duration of the animation
    
-    self.node().setPythonTag(AnimationActor.__name__,self)
+    self.node().setPythonTag(SpriteAnimator.__name__,self)
     
   def loadAnimation(self,animation):
     """
@@ -83,29 +83,30 @@ class AnimationActor(SpriteAnimator):
       angle  = 0 if face_right else 180    
       self.rigid_body_np_.setR(angle)
       self.rigid_body_np_.node().setKinematic(kinematic)
+      self.setR(-angle) # rotating sprite so that it faces camera
     
     SpriteAnimator.faceRight(self,face_right)
     
   def getRigidBody(self):
-    return (None if (self.rigid_body_np_ is not None) else self.rigid_body_np_.node())
+    return (None if (self.rigid_body_np_ is not None) else self.rigid_body_np_)
     
   def getCollisionGhostBody(self):
     """
     Returns ghost body used to determing in an opponent's attack reached the player
     """
-    return (None if (self.attack_collision_np_ is None) else self.attack_collision_np_.node())
+    return (None if (self.attack_collision_np_ is None) else self.attack_collision_np_)
   
   def getHitGhostBody(self):    
     """
     Returns ghost body used to determing in player's attack reached the oponent
     """
-    return (None if self.attack_hit_np_ is None else self.attack_hit_np_.node())
+    return (None if self.attack_hit_np_ is None else self.attack_hit_np_)
   
   def getActionGhostBody(self):
     """
     Returns ghost body for determining that the action geometry is in overlap
     """
-    return (None if (self.action_body_np_ is None) else self.action_body_np_.node())
+    return (None if (self.action_body_np_ is None) else self.action_body_np_)
     
   def loadAnimationSprites(self,sprites_right, sprites_left,framerate):
     """

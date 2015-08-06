@@ -41,18 +41,19 @@ class GameObject(NodePath):
         """ 
         
         # instantiating to a bullet rigid body
-        NodePath.__init__(self,BulletRigidBodyNode(name + "-rigid-body"))
+        NodePath.__init__(self,name)
+        self.rigid_body_np_ = NodePath(BulletRigidBodyNode(name + "-rigid-body"))
         
         # size
         self.size_ = size        
         
         # set collision shape
         collision_shape = BulletBoxShape(self.size_/2) 
-        self.node().addShape(collision_shape)
-        self.node().setMass(mass)
-        self.node().setLinearFactor((1,0,1))   
-        self.node().setAngularFactor((0,1,0))   
-        self.setCollideMask(BitMask32().allOn())
+        self.rigid_body_np_.node().addShape(collision_shape)
+        self.rigid_body_np_.node().setMass(mass)
+        self.rigid_body_np_.node().setLinearFactor((1,0,1))   
+        self.rigid_body_np_.node().setAngularFactor((0,1,0))   
+        self.rigid_body_np_.setCollideMask(BitMask32().allOn())
         
         # set visual
         if setup_visual:     
@@ -73,12 +74,17 @@ class GameObject(NodePath):
             self.visual_nh_.setScale(self.size_.getX()*scale_factor,self.size_.getY()*scale_factor,self.size_.getZ()*scale_factor)
         else:
             self.visual_nh_ = NodePath() # create empty node
+            
+        self.reparentTo(self.rigid_body_np_)
     
     def getSize(self):
         return self.size_
             
     def update(self,dt):
         pass
+    
+    def getRigidBody(self):
+        return self.rigid_body_np_
     
         
         

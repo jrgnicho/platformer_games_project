@@ -32,7 +32,7 @@ class AnimatableObject(GameObject):
     def __init__(self,name,size,mass,sprite_animator_dict = None):
         GameObject.__init__(self,name,size,mass,False) #creatin GameObject with a default box shape and no Visual
         self.setTransparency(TransparencyAttrib.M_alpha)
-        self.node().setAngularFactor((0,0,0))  # no rotation
+        self.rigid_body_np_.node().setAngularFactor((0,0,0))  # no rotation
         self.animation_root_np_ = self.attachNewNode('animations_root')
         self.animation_root_np_.setPos(Vec3(0,0,-0.5*size.getZ()))
         self.animators_ = {}
@@ -100,9 +100,9 @@ class AnimatableObject(GameObject):
         np.setPos(self.animation_root_np_,pos)           
         
         # selecting pose if none is
-        if self.animator_np_ == None:
-            self.pose(name)
-            logging.debug("Selecting animation %s"%(name) )
+#         if self.animator_np_ == None:
+#             self.pose(name)
+#             logging.debug("Selecting animation %s"%(name) )
             
     def setAnimationEndCallback(self,cb):
         """
