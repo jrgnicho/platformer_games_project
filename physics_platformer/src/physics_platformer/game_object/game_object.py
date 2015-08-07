@@ -1,4 +1,5 @@
 import rospkg
+import logging
 from panda3d.core import ModelPool
 from panda3d.core import TexturePool
 
@@ -17,6 +18,7 @@ from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletSphereShape
 from panda3d.bullet import BulletConvexHullShape
 from panda3d.bullet import BulletRigidBodyNode
+from panda3d.bullet import BulletWorld
 from direct.showbase.ShowBase import ShowBase
 
 """
@@ -43,6 +45,8 @@ class GameObject(NodePath):
         # instantiating to a bullet rigid body
         NodePath.__init__(self,name)
         self.rigid_body_np_ = NodePath(BulletRigidBodyNode(name + "-rigid-body"))
+        self.physics_world_ = None
+        self.parent_np_ = None
         
         # size
         self.size_ = size        
@@ -75,8 +79,24 @@ class GameObject(NodePath):
         else:
             self.visual_nh_ = NodePath() # create empty node
             
-        self.reparentTo(self.rigid_body_np_)
-    
+        self.reparentTo(self.rigid_body_np_) 
+ 
+    def setParentPhysicsWorld(self,physics_world): 
+      if type(physics_world) is not BulletWorld:
+        logging.error( "Object is not of type %s"%(str(type(BulletWorld))) )
+        
+      self.physics_world_ = physics_world
+      self.physics_world_.attach(self.rigid_body_np_.node())
+      
+    def setParentNodePath(self,np):
+      if type(np) is not NodePath:
+        logging.error("Passed parent node path is not of type "%( str(type(NodePath) )))
+        
+      self.parent_np_ = np
+      if self.rigid_body_np_.getParent() != self.parent_np_ : 
+        self.rigid_body_np_.reparentTo(self.parent_np_)
+      
+       
     def getSize(self):
         return self.size_
             

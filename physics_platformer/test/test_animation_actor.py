@@ -93,7 +93,6 @@ class TestAnimatableObject(TestApplication):
         for i in range(0,NUM_BOXES):            
             obj = GameObject("obj"+str(i),box_size,True)
             obj.setPos(start_pos + Vec3(i*BOX_SIDE_LENGTH*0.5,0,i*BOX_SIDE_LENGTH*1.2))
-            
             self.physics_world_.attachRigidBody(obj.node())
             obj.reparentTo(self.world_node_)
             self.object_nodes_.append(obj)

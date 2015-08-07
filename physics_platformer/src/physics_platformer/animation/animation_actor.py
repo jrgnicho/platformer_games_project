@@ -29,6 +29,7 @@ class AnimationActor(SpriteAnimator):
     self.action_body_np_ = None # NodePath to a bullet ghost node containing boxes that will be used to trigger a specific player action upon coming into contact with the environment
     self.attack_collision_np_ = None # NodePath to a bullet ghost node containing collision boxes that are active during the duration of the animation
     self.attack_hit_np_ = None # NodePath to a bullet ghost node containing hit boxes that are active during the duration of the animation
+    self.parent_physics_world_ = None
    
     self.node().setPythonTag(SpriteAnimator.__name__,self)
     
@@ -86,6 +87,31 @@ class AnimationActor(SpriteAnimator):
       self.setR(-angle) # rotating sprite so that it faces camera
     
     SpriteAnimator.faceRight(self,face_right)
+    
+  def activate(self,physics_world,parent_np):
+    
+    if self.rigid_body_np_ is not None:
+      self.rigid_body_np_.reparentTo(parent_np)    
+    
+    self.parent_physics_world_ = physics_world
+    for np in [self.rigid_body_np_,self.attack_collision_np_,self.attack_hit_np_,self.action_body_np]:
+      if np is not None:
+        self.parent_physics_world_.attach(np.node())
+        
+    self.pose(0)
+    self.show()  
+    
+  def deactivate(self):
+    
+    if self.rigid_body_np_ is not None:
+      self.rigid_body_np_.detachNode()
+    
+    for np in [self.rigid_body_np_,self.attack_collision_np_,self.attack_hit_np_,self.action_body_np]:
+      if np is not None:
+        self.parent_physics_world_.detach(np.node())
+        
+    self.stop()
+    self.hide()
     
   def getRigidBody(self):
     return (None if (self.rigid_body_np_ is not None) else self.rigid_body_np_)

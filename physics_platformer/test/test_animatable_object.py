@@ -92,8 +92,10 @@ class TestAnimatableObject(TestApplication):
             obj = GameObject("obj"+str(i),box_size,True)
             obj.getRigidBody().setPos(start_pos + Vec3(i*BOX_SIDE_LENGTH*0.5,0,i*BOX_SIDE_LENGTH*1.2))
             
-            self.physics_world_.attachRigidBody(obj.getRigidBody().node())
-            obj.getRigidBody().reparentTo(self.world_node_)
+            obj.setParentPhysicsWorld(self.physics_world_)
+            obj.setParentNodePath(self.world_node_)
+            #self.physics_world_.attachRigidBody(obj.getRigidBody().node())
+            #obj.getRigidBody().reparentTo(self.world_node_)
             self.object_nodes_.append(obj.getRigidBody())
             
             
