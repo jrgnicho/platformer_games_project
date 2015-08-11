@@ -14,7 +14,6 @@ from panda3d.core import Texture
 from panda3d.core import Vec3
 import logging
 from panda3d.bullet import BulletRigidBodyNode
-from physics_platformer.src.physics_platformer.collision_masks.collision_masks import CollisionMasks
 
 
 class AnimationActor(SpriteAnimator):
@@ -23,8 +22,9 @@ class AnimationActor(SpriteAnimator):
   __DEFAULT_MASS__ = 0.01
   
   def __init__(self,name):
-    SpriteAnimator.__init__(self,name)
+    SpriteAnimator.__init__(self,name,mass = 1.0)
     
+    self.mass_ = mass
     self.animation_action_ = None
     self.rigid_body_np_ = None # NodePath to a bullet rigid body that contains the collision boxes that are used to handle interactions with the environment    
     self.action_body_np_ = None # NodePath to a bullet ghost node containing boxes that will be used to trigger a specific player action upon coming into contact with the environment
@@ -213,7 +213,7 @@ class AnimationActor(SpriteAnimator):
       rigid_body.addShape(box_shape,transform)
       
     # completing rigid body setup
-    rigid_body.setMass(AnimationActor.__DEFAULT_MASS__)
+    rigid_body.setMass(self.mass_)
     rigid_body.setLinearFactor((1,0,1))   
     rigid_body.setAngularFactor((0,0,0))   
     

@@ -1,4 +1,7 @@
+
+from panda3d.core import Vec3
 from physics_platformer.animation import AnimationActor
+from physics_platformer.game_object import AnimationSpriteAlignment
 from physics_platformer.game_object import AnimatableObject
 
 
@@ -29,7 +32,7 @@ class CharacterObject(AnimatableObject):
     
     self.addSpriteAnimation(name, anim_actor, align, center_offset)
     
-    if (self.animator_np_ == None) and (self.physics_world_ is not None):
+    if (self.animator_np_ is not None) and (self.physics_world_ is not None):
       self.pose(name)
       
   def getAnimatorActor(self):

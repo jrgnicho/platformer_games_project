@@ -27,8 +27,8 @@ IntPersistIndex = 60
 FloatPersistIndex = 40
 
 [Size]
-xscale = 1
-yscale = 1
+xscale = 2.5
+yscale = 3.2
 ground.back = 15
 ground.front = 15
 air.back = 15

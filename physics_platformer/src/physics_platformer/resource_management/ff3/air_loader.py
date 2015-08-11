@@ -61,8 +61,9 @@ class AIRLoader(object):
           # compute average framerate
           for elmt in anim_action.animation_elements:
             anim_action.framerate += elmt.game_ticks
-            
-          anim_action.framerate /= len(anim_action.animation_elements)
+          
+          if len(anim_action.animation_elements) != 0:
+            anim_action.framerate /= len(anim_action.animation_elements)
           
           self.animations_.append(anim_action)
         
