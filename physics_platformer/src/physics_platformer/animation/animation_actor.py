@@ -14,6 +14,7 @@ from panda3d.core import Texture
 from panda3d.core import Vec3
 import logging
 from panda3d.bullet import BulletRigidBodyNode
+from physics_platformer.src.physics_platformer.collision_masks.collision_masks import CollisionMasks
 
 
 class AnimationActor(SpriteAnimator):
@@ -106,9 +107,10 @@ class AnimationActor(SpriteAnimator):
     if self.rigid_body_np_ is not None:
       self.rigid_body_np_.detachNode()
     
-    for np in [self.rigid_body_np_,self.attack_collision_np_,self.attack_hit_np_,self.action_body_np]:
-      if np is not None:
-        self.parent_physics_world_.detach(np.node())
+    if self.parent_physics_world_ is not None:
+      for np in [self.rigid_body_np_,self.attack_collision_np_,self.attack_hit_np_,self.action_body_np]:
+        if np is not None:
+          self.parent_physics_world_.detach(np.node())
         
     self.stop()
     self.hide()
@@ -211,10 +213,9 @@ class AnimationActor(SpriteAnimator):
       rigid_body.addShape(box_shape,transform)
       
     # completing rigid body setup
-    rigid_body.setMass(AnimationAction.__DEFAULT_MASS__)
+    rigid_body.setMass(AnimationActor.__DEFAULT_MASS__)
     rigid_body.setLinearFactor((1,0,1))   
-    rigid_body.setAngularFactor((0,1,0))   
-    rigid_body.setIntoCollideMask(BitMask32().allOn())
+    rigid_body.setAngularFactor((0,0,0))   
     
   
   def __createBulletGhostNodeFromBoxes__(self,boxes):

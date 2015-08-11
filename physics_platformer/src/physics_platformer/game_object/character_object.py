@@ -1,6 +1,6 @@
 from physics_platformer.animation import AnimationActor
 from physics_platformer.game_object import AnimatableObject
-from twisted.trial.runner import LoggedSuite
+
 
 class CharacterObject(AnimatableObject):
   
@@ -8,6 +8,16 @@ class CharacterObject(AnimatableObject):
     
     AnimatableObject.__init__(self,name,(40,60),1,None)
     self.physics_world_ = None   
+  
+  def setParentPhysicsWorld(self,physics_world): 
+    if type(physics_world) is not BulletWorld:
+      logging.error( "Object is not of type %s"%(str(type(BulletWorld))) )      
+    self.physics_world_ = physics_world
+      
+  def setParentNodePath(self,np):
+    if type(np) is not NodePath:
+      logging.error("Passed parent node path is not of type "%( str(type(NodePath) )))      
+    self.parent_np_ = np
 
     
   def addAnimationActor(self,name,anim_actor,
@@ -28,6 +38,10 @@ class CharacterObject(AnimatableObject):
     return self.animator_    
     
   def pose(self,animation_name, frame = 0):
+    
+    if (self.physics_world_ is None) or (self.parent_np_ is None):
+      logging.error("PhysicsWorld or Parent NodePath have not been set on the Character object, pose can not be selected")
+      return False
     
     if not self.animators_.has_key(animation_name):
       logging.error( "Invalid animation name '%s'"%(animation_name))
