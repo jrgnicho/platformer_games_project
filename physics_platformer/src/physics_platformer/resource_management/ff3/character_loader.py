@@ -69,41 +69,67 @@ class CharacterLoader(object):
     
     linecount = 0
     success = True
+    
+    anim_file_path = ''
+    ffe_file_name = ''
+    cns_file_path = ''
     while linecount < len(lines):    
       line = lines[linecount]
       linecount+=1
+      
+      # finding player name
+      m = re.search(CharacterLoader.__PLAYER_NAME_ENTRY__,line)
+      if m is not None:
+        self.name_ = m.group(1)
+        continue
     
       # finding .air file    
-      anim_full_path = ''
       m = re.search(CharacterLoader.__ANIM_FILE_ENTRY__, line)
       if m is not None:
         
         self.anim_file_ = (m.group(1)).rstrip(' \t\n\r')
-        anim_full_path = os.path.join(self.dir_,self.anim_file_)
-      else:
+        anim_file_path = os.path.join(self.dir_,self.anim_file_)
         continue
-        
-      self.anim_loader_ = AIRLoader()
-      if not self.anim_loader_.load(anim_full_path):
-        logging.error("Air file %s failed to load"%(anim_full_path))
-        success = False
-        break
       
-      ffe_file_name = os.path.join(self.dir_,CharacterLoader.__SPRITE_DIR__,CharacterLoader.__SPRITE_FILE__)
-      self.sprite_loader_ = FFELoader()
-      if not self.sprite_loader_.load(ffe_file_name,self.anim_loader_.groups):
-        logging.error("FFE file %s failed to load"%(ffe_file_name))
-        success = False
-        break
-      self.__loadBoxesIntoSprites__()
+      # finding .cns files
+      m = re.search(CharacterLoader.__CNS_FILE_ENTRY__, line)
+      if m is not None:
+                
+        self.cns_file_ = (m.group(1)).rstrip(' \t\n\r')
+        cns_file_path = os.path.join(self.dir_,self.cns_file_)
+        continue
       
-      # creating animations dictionary
-      for anim in self.anim_loader_.animations:
-        if self.anims_dict_.has_key(anim.name):
-          logging.warn("Multiple animations with the name %s have been found, only the last one will be stored")        
-        self.anims_dict_[anim.name] = anim
-        
-      break 
+    if anim_file_path and cns_file_path :
+      success = True
+    else:
+      logging.error("Finished parsing %s file, no valid entries were found"%(filename))
+      return False  
+    
+    logging.debug("Finished parsing %s file"%(filename))
+    logging.debug("The following entries were found:")
+    logging.debug("\tname    :\t%s"%(self.name_))
+    logging.debug("\tair file:\t%s"%(self.anim_file_))
+    logging.debug("\tcns file:\t%s"%(self.cns_file_))
+       
+    # loading air file        
+    self.anim_loader_ = AIRLoader()
+    if not self.anim_loader_.load(anim_file_path):
+      logging.error("Air file %s failed to load"%(anim_file_path))
+      return False
+    
+    # loading sprites from ffe file 
+    ffe_file_name = os.path.join(self.dir_,CharacterLoader.__SPRITE_DIR__,CharacterLoader.__SPRITE_FILE__)
+    self.sprite_loader_ = FFELoader()
+    if not self.sprite_loader_.load(ffe_file_name,self.anim_loader_.groups):
+      logging.error("FFE file %s failed to load"%(ffe_file_name))
+      return False
+    self.__loadBoxesIntoSprites__()
+      
+    # creating animations dictionary
+    for anim in self.anim_loader_.animations:
+      if self.anims_dict_.has_key(anim.name):
+        logging.warn("Multiple animations with the name %s have been found, only the last one will be stored")        
+      self.anims_dict_[anim.name] = anim
         
     self.sprite_loader_ = None
     self.anim_loader_ = None

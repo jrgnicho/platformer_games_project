@@ -7,8 +7,6 @@ This utility will character information from a .cns file generated with Fighter 
 
 """
 
-from StringIO import StringIO
-from PIL import Image
 from physics_platformer.resource_management.ff3 import CNSLoader
 from physics_platformer.game_object import CharacterInfo
 import logging
