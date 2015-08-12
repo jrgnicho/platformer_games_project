@@ -1,15 +1,18 @@
 
 from panda3d.core import Vec3
 from physics_platformer.animation import AnimationActor
+from physics_platformer.game_object import CharacterInfo
 from physics_platformer.game_object import AnimationSpriteAlignment
 from physics_platformer.game_object import AnimatableObject
 
 
 class CharacterObject(AnimatableObject):
   
-  def  __init__(self,name):
+  def  __init__(self,info):
     
-    AnimatableObject.__init__(self,name,(40,60),1,None)
+    self.character_info_ = info
+    
+    AnimatableObject.__init__(self,info.name,(info.width,info.height),info.mass,None)
     self.physics_world_ = None   
   
   def setParentPhysicsWorld(self,physics_world): 

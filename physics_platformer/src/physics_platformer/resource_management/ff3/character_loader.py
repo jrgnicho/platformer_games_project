@@ -1,24 +1,18 @@
 from physics_platformer.resource_management.ff3 import FFELoader
 from physics_platformer.resource_management.ff3 import AIRLoader
+from physics_platformer.resource_management.ff3 import CNSLoader
 import os
 import logging
 import re
 
-class AnimationDetails(object):  
-  
-  def __init__(self):
-    
-    self.name = ''
-    self.hit_boxes_ = []
-    self.action_boxes_ = []
-    self.images_ = []
-    self.framerate_ = 0
     
 
 class CharacterLoader(object):
   
   __EXTENSION__ = '.def'
-  __ANIM_FILE_ENTRY__ = 'anim = (.+)'
+  __PLAYER_NAME_ENTRY__ = 'name\s+=\s+"(.+)"'
+  __ANIM_FILE_ENTRY__ = 'anim\s+=\s+(.+)'
+  __CNS_FILE_ENTRY__ = 'cns\s+=\s+(.+)'
   __SPRITE_DIR__ = 'sprites'
   __SPRITE_FILE__ = 'sprites.ffe'
   
@@ -33,10 +27,12 @@ class CharacterLoader(object):
     self.filename_ = ''
     self.sprite_dir_ = CharacterLoader.__SPRITE_DIR__
     self.anim_file_ = '' # .air file
+    self.cns_file_ = '' # .cns file
     self.sprite_file_ = CharacterLoader.__SPRITE_FILE__
     self.anims_dict_ = {}
     self.sprite_loader_ = None
     self.anim_loader_ = None
+    self.cns_loader_ = None
   
   def getAnimations(self):
     return self.anims_dict_.values()

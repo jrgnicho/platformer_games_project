@@ -3,6 +3,8 @@ from panda3d.core import Vec3
 class CharacterInfo(object):
   
   def __init__(self):
+    self.width = 0.4
+    self.height = 0.6
     self.name = 'Ramapithecus'
     self.mass = 1
     self.scale = Vec3(1,1,1)
