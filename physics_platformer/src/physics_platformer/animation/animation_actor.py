@@ -3,6 +3,7 @@ from physics_platformer.sprite import SpriteGroup
 from physics_platformer.sprite import SpriteAnimator
 from physics_platformer.animation import AnimationAction
 from physics_platformer.collision_masks import *
+from physics_platformer.geometry2d import Box2D
 from panda3d.core import NodePath
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletGhostNode
@@ -12,6 +13,7 @@ from panda3d.core import TransformState
 from panda3d.core import SequenceNode
 from panda3d.core import Texture
 from panda3d.core import Vec3
+from panda3d.core import CardMaker
 import logging
 from panda3d.bullet import BulletRigidBodyNode
 
@@ -21,8 +23,8 @@ class AnimationActor(SpriteAnimator):
   __DEFAULT_WIDTH__ = 0.01
   __DEFAULT_MASS__ = 0.01
   
-  def __init__(self,name):
-    SpriteAnimator.__init__(self,name,mass = 1.0)
+  def __init__(self,name,mass = 1):
+    SpriteAnimator.__init__(self,name)
     
     self.mass_ = mass
     self.animation_action_ = None
@@ -71,7 +73,7 @@ class AnimationActor(SpriteAnimator):
       self.attack_collision_np_.node().setIntoCollideMask(CollsionMasks.ATTACK_COLLISION)
       
     if len(hit_boxes) > 0:
-      hit_boxes = [Box2D.union(hit_boxes)]
+      hit_boxes = [Box2D.createBoundingBox(hit_boxes)]
       self.attack_hit_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(hit_boxes))
       self.attack_hit_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_HIT)
           
@@ -160,8 +162,8 @@ class AnimationActor(SpriteAnimator):
     h = sprites_right[0].getYSize()
     self.size_ = (w,h) # image size in pixels
     
-    self.seq_right_ = self.__createAnimationSequence__(self.getName() + '-right-seq',sprites_right,frame_rate)
-    self.seq_left_ = self.__createAnimationSequence__(self.getName()+ '-left-seq',sprites_left,frame_rate)
+    self.seq_right_ = self.__createAnimationSequence__(str(self.getName() )+ '-right-seq',sprites_right,framerate)
+    self.seq_left_ = self.__createAnimationSequence__(str(self.getName() ) + '-left-seq',sprites_left,framerate)
     self.node().addStashed(self.seq_right_)
     self.node().addStashed(self.seq_left_)
     
@@ -177,38 +179,41 @@ class AnimationActor(SpriteAnimator):
     self.rigid_body_np_.setScale(Vec3(scale.getX(),1,scale.getZ()))
     
     # scaling sprite boxes
-    for i in range(0,self.animation_action_.sprites_left):      
+    for i in range(0,len(self.animation_action_.sprites_left)):      
       sprt_right = self.animation_action_.sprites_right[i]
       sprt_left = self.animation_action_.sprites_left[i]      
       boxes = sprt_right.hit_boxes + sprt_right.collision_boxes + sprt_left.hit_boxes + sprt_left.collision_boxes
       for box in boxes:
-        box.scale((scale.getX(), scale.getZ()))
+        box.scale = (scale.getX(), scale.getZ())
      
     
   def __createRigidBody__(self):
     self.rigid_body_np_ = NodePath(BulletRigidBodyNode('RigidBody'))
     rigid_body = self.rigid_body_np_.node()
-    rigid_body.setIntoCollideMask(CollsionMasks.RIGID_BODY)
+    rigid_body.setIntoCollideMask(CollisionMasks.RIGID_BODY)
     
     # collection all boxes
     collision_boxes = []
-    if len(self.animation_action.rigid_body_boxes) > 0:      
+    if len(self.animation_action_.rigid_body_boxes) > 0:      
       # use existing collision boxes 
-      collision_boxes = self.animation_action.rigid_body_boxes
+      collision_boxes = self.animation_action_.rigid_body_boxes
+      logging.info("Using existing rigid body boxes: %s "%( ';'.join(str(x) for x in collision_boxes ) ))
     else:      
       # compute bounding box of all collision boxes from every sprite 
       boxes = []
       for elemt in self.animation_action_.animation_elements:
         boxes = boxes + elemt.collision_boxes
+      
+      if len(boxes) > 0:
+        collision_boxes = [Box2D.createBoundingBox(boxes)]
         
-      collision_boxes = [Box2D.createBoundingBox(boxes)]
       
     # create rigid body
     for box in collision_boxes:
       size = box.size
       center = box.center
       transform = TransformState.makeIdentity()
-      box_shape = BulletBoxShape(0.5*size[0],0.5*AnimationActor.__DEFAULT_WIDTH__,0.5 * size[1])
+      box_shape = BulletBoxShape(Vec3(0.5*size[0],0.5*AnimationActor.__DEFAULT_WIDTH__,0.5 * size[1]))
       transform = transform.setPos(Vec3(center[0],0,center[1]))
       rigid_body.addShape(box_shape,transform)
       
@@ -226,7 +231,7 @@ class AnimationActor(SpriteAnimator):
     for box in boxes:
       size = box.size
       center = box.center
-      box_shape = BulletBoxShape(0.5*size[0],0.5*AnimationActor.__DEFAULT_WIDTH__,0.5 * size[1])
+      box_shape = BulletBoxShape(Vec3(0.5*size[0],0.5*AnimationActor.__DEFAULT_WIDTH__,0.5 * size[1]))
       transform = transform.setPos(Vec3(center[0],0,center[1]))
       ghost_node.addShape(box_shape,transform)
       
@@ -257,7 +262,7 @@ class AnimationActor(SpriteAnimator):
         card.setPos(Vec3(txtr.axisx,0,txtr.axisy))
      
     seq.setFrameRate(framerate)           
-    print "Sequence Node %s contains %i imagese of size %s and card size of %s"%(name,seq.getNumFrames(),str((w,h)),str((cw,ch)))        
+    logging.debug("Sequence Node %s contains %i images of size %s."%( name,seq.getNumFrames(), str((w,h)) ) )  
     return seq     
     
     

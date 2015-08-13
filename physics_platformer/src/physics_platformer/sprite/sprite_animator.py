@@ -30,7 +30,7 @@ class SpriteAnimator(NodePath):
     
     def __init__(self,name):
         
-        NodePath.__init__(self,PandaNode(name)) 
+        NodePath.__init__(self,name) 
         self.node().setPythonTag(SpriteAnimator.__name__,self)       
         self.seq_left_ = None
         self.seq_right_ = None
@@ -52,7 +52,7 @@ class SpriteAnimator(NodePath):
         """
         
         if (len(images_right) == 0) or (len(images_left) == 0):
-            print "ERROR: Found empty image list"
+            logging.error("Found empty image list")
             return False
     
         # storing individual sprite size
@@ -105,7 +105,7 @@ class SpriteAnimator(NodePath):
             seq.addChild(card.node(),i)
          
         seq.setFrameRate(frame_rate)           
-        print "Sequence Node %s contains %i imagese of size %s and card size of %s"%(name,seq.getNumFrames(),str((w,h)),str((cw,ch)))        
+        logging.debug("Sequence Node %s contains %i imagese of size %s and card size of %s"%(name,seq.getNumFrames(),str((w,h)),str((cw,ch))) )    
         return seq 
     
     def isFacingRight(self):

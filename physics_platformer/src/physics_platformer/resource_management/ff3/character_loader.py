@@ -1,6 +1,7 @@
 from physics_platformer.resource_management.ff3 import FFELoader
 from physics_platformer.resource_management.ff3 import AIRLoader
 from physics_platformer.resource_management.ff3 import CNSLoader
+from physics_platformer.animation import AnimationActor
 import os
 import logging
 import re
@@ -30,6 +31,7 @@ class CharacterLoader(object):
     self.cns_file_ = '' # .cns file
     self.sprite_file_ = CharacterLoader.__SPRITE_FILE__
     self.anims_dict_ = {}
+    self.animation_actors_ = []
     self.sprite_loader_ = None
     self.anim_loader_ = None
     self.cns_loader_ = None
@@ -110,6 +112,11 @@ class CharacterLoader(object):
     logging.debug("\tname    :\t%s"%(self.name_))
     logging.debug("\tair file:\t%s"%(self.anim_file_))
     logging.debug("\tcns file:\t%s"%(self.cns_file_))
+    
+    self.cns_loader_ = CNSLoader()
+    if not self.cns_loader_.load(cns_file_path):
+      logging.error("CNS file %s failed to load"%(cns_file_path))
+      return False
        
     # loading air file        
     self.anim_loader_ = AIRLoader()
@@ -123,20 +130,23 @@ class CharacterLoader(object):
     if not self.sprite_loader_.load(ffe_file_name,self.anim_loader_.groups):
       logging.error("FFE file %s failed to load"%(ffe_file_name))
       return False
-    self.__loadBoxesIntoSprites__()
+    self.__loadSpritesIntoAnimations__()
       
     # creating animations dictionary
     for anim in self.anim_loader_.animations:
       if self.anims_dict_.has_key(anim.name):
         logging.warn("Multiple animations with the name %s have been found, only the last one will be stored")        
       self.anims_dict_[anim.name] = anim
+      
+    self.__createAnimationActors__()
         
+    self.cns_loader_ = None
     self.sprite_loader_ = None
     self.anim_loader_ = None
     
     return success
   
-  def __loadBoxesIntoSprites__(self):
+  def __loadSpritesIntoAnimations__(self):
     
     for anim in self.anim_loader_.animations:
       for elemt in anim.animation_elements:
@@ -157,6 +167,16 @@ class CharacterLoader(object):
         
         anim.sprites_right.append(sprt_right)
         anim.sprites_left.append(sprt_left)
+        
+  def __createAnimationActors__(self):
+    
+    self.animation_actors_ = []
+    character_info = self.cns_loader_.getCharacterInfo()
+    for anim in self.anim_loader_.animations:
+      actor = AnimationActor(anim.name,character_info.mass)
+      actor.loadAnimation(anim)
+      actor.setScale(character_info.scale)
+      self.animation_actors_.append(actor)
         
         
     
