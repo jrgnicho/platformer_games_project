@@ -92,6 +92,7 @@ class TestHingeConstraint(TestApplication):
     
     # create box rigid body
     box_rigid_body = self.world_node_.attachNewNode(BulletRigidBodyNode("Box"))
+    #box_rigid_body = NodePath(BulletRigidBodyNode("Box"))
     box_rigid_body.node().addShape(BulletBoxShape(Vec3(0.5 * BOX_SIDE_LENGTH,0.5 * BOX_SIDE_LENGTH,0.5 * BOX_SIDE_LENGTH)),
                                TransformState.makePos(Vec3(0,0,0.5 * BOX_SIDE_LENGTH)))
     box_rigid_body.node().setMass(1)
