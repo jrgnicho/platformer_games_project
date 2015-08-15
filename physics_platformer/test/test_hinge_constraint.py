@@ -13,6 +13,7 @@ import getopt
 from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletGhostNode
+from panda3d.bullet import BulletGenericConstraint
 from panda3d.bullet import BulletHingeConstraint
 from panda3d.bullet import BulletBoxShape
 from panda3d.core import TransformState
@@ -26,7 +27,11 @@ class TestHingeConstraint(TestApplication):
   
   def __init__(self):
     
-    self.hinge_ = None
+    self.active_constraint_ = None
+    self.left_constraint_ = None
+    self.right_constraint_ = None
+    self.parent_rigid_body_ = None
+    self.child_rigid_body_ = None
     TestApplication.__init__(self)
     
   def setupControls(self):
@@ -34,8 +39,44 @@ class TestHingeConstraint(TestApplication):
     
     self.accept('t',self.toggleLeftRight)
     self.accept('i',lambda: sys.stdout.write(str(taskMgr)))
-    self.instructions_.append(self.addInstructions(0.36, "t: Toggle Left Right"))
-    self.instructions_.append(self.addInstructions(0.42, "b: Print TaskManager Info"))
+    self.input_state_.watchWithModifiers("move right","j")
+    self.input_state_.watchWithModifiers("move left", 'g')
+    self.input_state_.watchWithModifiers('move up', 'y')
+    self.input_state_.watchWithModifiers('move halt', 'h')
+    pos = 0.36
+    incr = 0.06
+    self.instructions_.append(self.addInstructions(pos, "t: Toggle Left Right")); pos+=incr
+    self.instructions_.append(self.addInstructions(pos, "b: Print TaskManager Info")); pos+=incr
+    
+    self.instructions_.append(self.addInstructions(pos, "j: Move Right")); pos+=incr
+    self.instructions_.append(self.addInstructions(pos, "g: Move Left")); pos+=incr
+    self.instructions_.append(self.addInstructions(pos, "y: Move Up")); pos+=incr
+    self.instructions_.append(self.addInstructions(pos, "h: Move Halt")); pos+=incr
+    
+  def processInput(self,dt):
+    TestApplication.processInput(self,dt)
+    
+    apply_vel = False
+    vel = self.parent_rigid_body_.node().getLinearVelocity()
+    if self.input_state_.isSet('move right'): 
+      vel.setX(2)
+      apply_vel = True
+
+    if self.input_state_.isSet('move left'): 
+      vel.setX(-2)
+      apply_vel = True
+
+    if self.input_state_.isSet('move up'): 
+      vel.setZ(4)
+      apply_vel = True
+
+    if self.input_state_.isSet('move halt'): 
+      vel.setX(0)
+      apply_vel = True
+    
+    if apply_vel:
+      self.parent_rigid_body_.node().setActive(True,True)
+      self.parent_rigid_body_.node().setLinearVelocity(vel)
     
   def setupPhysics(self):
     
@@ -60,28 +101,33 @@ class TestHingeConstraint(TestApplication):
     vnp = visual.instanceTo(box_rigid_body)   
     vnp.setPos(Vec3(0,0,0.5*BOX_SIDE_LENGTH)) 
     vnp.setScale(BOX_SIDE_LENGTH*scale_factor,BOX_SIDE_LENGTH*scale_factor,BOX_SIDE_LENGTH*scale_factor)    
-    box_rigid_body.setPos(Vec3(1,0,2))
+    box_rigid_body.setPos(Vec3(1.5,0,2))
     
     # create h_shaped rigid body
     h_shaped_body = self.createHShapedRigidBody("HBody", 1.5*BOX_SIDE_LENGTH)
     h_shaped_body.reparentTo(self.world_node_)
+    h_shaped_body.setPos(box_rigid_body,Vec3(0,0,0))
+    h_shaped_body.setH(box_rigid_body,180)
     
-    # create hinge
-    hinge = self.hingeRigidBodies(box_rigid_body.node(), h_shaped_body.node(),
-                                   Vec3(0.5*BOX_SIDE_LENGTH,0,BOX_SIDE_LENGTH), 
-                                   Vec3(0,0,BOX_SIDE_LENGTH))
-    self.hinge_ = hinge
+    # create constraints
+    self.right_constraint_, self.left_constraint_ = self.createConstraints(box_rigid_body.node(),h_shaped_body.node())
+    self.active_constraint_ = self.left_constraint_
+    self.active_constraint_.setEnabled(True)
+    self.parent_rigid_body_ = box_rigid_body
+    self.child_rigid_body_ = h_shaped_body
 
     self.physics_world_.attach(box_rigid_body.node())
     self.physics_world_.attach(h_shaped_body.node())
-    self.physics_world_.attach(hinge)
+    self.physics_world_.attach(self.active_constraint_)
     self.object_nodes_.append(box_rigid_body)
     self.object_nodes_.append(h_shaped_body)
     
+    
   def cleanup(self):
       
-    self.physics_world_.remove(self.hinge_)
-    self.hinge_ = None
+    self.physics_world_.remove(self.active_constraint_)
+    self.right_constraint_ = None
+    self.left_constraint_ = None
     TestApplication.cleanup(self) 
     
   def createHShapedRigidBody(self,name,side_length):
@@ -98,16 +144,16 @@ class TestHingeConstraint(TestApplication):
     rigid_body = NodePath(BulletRigidBodyNode(name))
     
     transforms = [
-                  TransformState.makePos(Vec3(3*half_side_length,0,half_side_length)),    # bottom 
-                  TransformState.makePos(Vec3(3*half_side_length,0,3*half_side_length)),  # center 1
-                  TransformState.makePos(Vec3(3*half_side_length,0,5*half_side_length)) , # center 2
-                  TransformState.makePos(Vec3(3*half_side_length,0,7*half_side_length)) , # top
-                  TransformState.makePos(Vec3(-3*half_side_length,0,half_side_length)) ,  # bottom
-                  TransformState.makePos(Vec3(-3*half_side_length,0,3*half_side_length)), # center 1
-                  TransformState.makePos(Vec3(-3*half_side_length,0,5*half_side_length)), # center 2
-                  TransformState.makePos(Vec3(-3*half_side_length,0,7*half_side_length)), # top 
-                  TransformState.makePos(Vec3(-half_side_length,0,4*half_side_length)),   # left
-                  TransformState.makePos(Vec3(half_side_length,0,4*half_side_length))     # right
+                  TransformState.makePos(Vec3(0.5*side_length + 3*half_side_length,0,half_side_length)),    # bottom 
+                  TransformState.makePos(Vec3(0.5*side_length + 3*half_side_length,0,3*half_side_length)),  # center 1
+                  TransformState.makePos(Vec3(0.5*side_length + 3*half_side_length,0,5*half_side_length)) , # center 2
+                  TransformState.makePos(Vec3(0.5*side_length + 3*half_side_length,0,7*half_side_length)) , # top
+                  TransformState.makePos(Vec3(0.5*side_length + -3*half_side_length,0,half_side_length)) ,  # bottom
+                  TransformState.makePos(Vec3(0.5*side_length + -3*half_side_length,0,3*half_side_length)), # center 1
+                  TransformState.makePos(Vec3(0.5*side_length + -3*half_side_length,0,5*half_side_length)), # center 2
+                  TransformState.makePos(Vec3(0.5*side_length + -3*half_side_length,0,7*half_side_length)), # top 
+                  TransformState.makePos(Vec3(0.5*side_length + -half_side_length,0,4*half_side_length)),   # left
+                  TransformState.makePos(Vec3(0.5*side_length + half_side_length,0,4*half_side_length))     # right
                   ]
     
     count = 0
@@ -128,35 +174,35 @@ class TestHingeConstraint(TestApplication):
     
     return rigid_body
   
-  def hingeRigidBodies(self,bodyA,bodyB,pointA,pointB):
+  
+  def createConstraints(self,bodyA,bodyB):
     
-    bodyB.setTransform(bodyA.getTransform())    
-    hinge = BulletHingeConstraint(bodyA,bodyB,pointA,pointB,Vec3(0,0,1),Vec3(0,0,1))
-    hinge.setLimit(HINGE_ANGLE_RIGHT,HINGE_ANGLE_RIGHT)
-    return hinge
+    left_constraint = BulletGenericConstraint(bodyA,bodyB,TransformState.makeIdentity(),TransformState.makeHpr(Vec3(180,0,0)),False)
+    right_constraint = BulletGenericConstraint(bodyA,bodyB,TransformState.makeIdentity(),TransformState.makeIdentity(),False)
+    left_constraint.setEnabled(False)
+    right_constraint.setEnabled(False)
+    return (right_constraint,left_constraint)
   
   
   # callbacks
   def toggleLeftRight(self):  
       
-#     body_btransform = self.hinge_.getFrameB()
-#     #body_btransform = TransformState.makeHpr(Vec3(0,0,180))*body_btransform
-#     body_btransform = TransformState.makeMat(TransformState.makeHpr(Vec3(0,0,180)).getMat()*body_btransform.getMat())
-#     self.hinge_.setFrames(self.hinge_.getFrameA(),body_btransform)
-    if abs(self.hinge_.getHingeAngle() - HINGE_ANGLE_RIGHT) < 0.01: 
-      self.hinge_.setLimit(HINGE_ANGLE_LEFT,HINGE_ANGLE_LEFT)  
-      self.hinge_.enableAngularMotor(True,1000,2)   
-      self.hinge_.setMotorTarget(HINGE_ANGLE_LEFT,0.01)
+    self.active_constraint_.setEnabled(False)
+    self.physics_world_.remove(self.active_constraint_)
+    self.child_rigid_body_.node().setStatic(True)
+    if self.active_constraint_ == self.right_constraint_:
+      self.active_constraint_ = self.left_constraint_
+      self.child_rigid_body_.setH(self.parent_rigid_body_,180)
+      logging.info("Left Constraint is active")
+    else:
+      self.active_constraint_ = self.right_constraint_
+      self.child_rigid_body_.setH(self.parent_rigid_body_,0)
+      logging.info("Right Constraint is active")
+    
+    self.child_rigid_body_.node().setStatic(False) 
+    self.active_constraint_.setEnabled(True)  
+    self.physics_world_.attach(self.active_constraint_)
       
-    else:      
-      self.hinge_.setLimit(HINGE_ANGLE_RIGHT,HINGE_ANGLE_RIGHT)
-      self.hinge_.enableAngularMotor(True,-1000,2) 
-      self.hinge_.setMotorTarget(HINGE_ANGLE_RIGHT,0.01)
-      
-    #self.hinge_.enableMotor(False)
-      
-    logging.info("Hinge angle set to %f"%(self.hinge_.getHingeAngle()))
-    logging.info("Hinge limits are [%f , %f]"%(self.hinge_.getLowerLimit(),self.hinge_.getUpperLimit()))
     
     
 
