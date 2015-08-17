@@ -78,18 +78,6 @@ class AnimationActor(SpriteAnimator):
       self.attack_hit_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_HIT)
           
     return True
-  
-  def faceRight(self,face_right):
-    
-    if self.rigid_body_np_ is not None:
-      kinematic = self.rigid_body_np_.node().isKinematic()
-      self.rigid_body_np_.node().setKinematic(True)
-      angle  = 0 if face_right else 180    
-      self.rigid_body_np_.setR(angle)
-      self.rigid_body_np_.node().setKinematic(kinematic)
-      self.setR(-angle) # rotating sprite so that it faces camera
-    
-    SpriteAnimator.faceRight(self,face_right)
     
   def activate(self,physics_world,parent_np):
     
@@ -112,7 +100,7 @@ class AnimationActor(SpriteAnimator):
     if self.parent_physics_world_ is not None:
       for np in [self.rigid_body_np_,self.attack_collision_np_,self.attack_hit_np_,self.action_body_np]:
         if np is not None:
-          self.parent_physics_world_.detach(np.node())
+          self.parent_physics_world_.remove(np.node())
         
     self.stop()
     self.hide()
