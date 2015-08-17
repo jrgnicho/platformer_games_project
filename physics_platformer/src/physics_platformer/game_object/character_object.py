@@ -4,7 +4,9 @@ from physics_platformer.animation import AnimationActor
 from physics_platformer.game_object import CharacterInfo
 from physics_platformer.game_object import AnimationSpriteAlignment
 from physics_platformer.game_object import AnimatableObject
+from panda3d.core import TransformState
 from panda3d.bullet import BulletGenericConstraint
+from docutils import TransformSpec
 
 
 class CharacterObject(AnimatableObject):
@@ -18,7 +20,20 @@ class CharacterObject(AnimatableObject):
     self.right_constraint_ = None
     self.active_constraint_ = None
     
-    AnimatableObject.__init__(self,info.name,(info.width,info.height),info.mass,None)
+    size = Vec3(info.width, AnimationActor.DEFAULT_WIDTH , info.height)
+    AnimatableObject.__init__(self,info.name,size,info.mass,None)
+    
+    # re-creating shape
+    shapes = self.rigid_body_np_.node().getNumShapes()
+    for shape in shapes:
+      self.rigid_body_np_.node().removeShape(shape)
+      
+    box_shape = BulletBoxShape(self.size_/2) 
+    self.rigid_body_np_.node().addShape(box_shape,TransformState.makePos(Vec3(0,0,0.5*size.getZ()))) # box bottom center coincident with the origin
+    self.rigid_body_np_.node().setMass(mass)
+    self.rigid_body_np_.node().setLinearFactor((1,0,1))   
+    self.rigid_body_np_.node().setAngularFactor((0,0,0)) 
+    self.rigid_body_np_.setCollideMask(CollisionMasks.NONE)
   
   def setParentPhysicsWorld(self,physics_world): 
     if type(physics_world) is not BulletWorld:

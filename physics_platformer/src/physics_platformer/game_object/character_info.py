@@ -24,6 +24,8 @@ class CharacterInfo(object):
     Character Info:
       name:   %s
       mass:   %f
+      height: %f
+      width:  %f
       scale:  (%f, %f)
       life:   %i
       power:  %i
@@ -36,6 +38,8 @@ class CharacterInfo(object):
       jump_forward:  %f
     """%(self.name,
          self.mass,
+         self.height,
+         self.width,
          self.scale.getX(),self.scale.getZ(),
          self.life,
          self.power,

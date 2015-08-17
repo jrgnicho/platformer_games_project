@@ -21,6 +21,8 @@ from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletWorld
 from direct.showbase.ShowBase import ShowBase
 
+from physics_platformer.collision_masks import *
+
 """
 Game Object class
 
@@ -57,7 +59,7 @@ class GameObject(NodePath):
         self.rigid_body_np_.node().setMass(mass)
         self.rigid_body_np_.node().setLinearFactor((1,0,1))   
         self.rigid_body_np_.node().setAngularFactor((0,1,0))   
-        self.rigid_body_np_.setCollideMask(BitMask32().allOn())
+        self.rigid_body_np_.setCollideMask(CollisionMasks.ALL)
         
         # set visual
         if setup_visual:     

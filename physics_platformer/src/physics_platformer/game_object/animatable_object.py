@@ -29,7 +29,7 @@ class AnimationSpriteAlignment(object):
 
 class AnimatableObject(GameObject):
     
-    def __init__(self,name,size,mass,sprite_animator_dict = None):
+    def __init__(self,name,size,mass):
         GameObject.__init__(self,name,size,mass,False) #creatin GameObject with a default box shape and no Visual
         self.setTransparency(TransparencyAttrib.M_alpha)
         self.rigid_body_np_.node().setAngularFactor((0,0,0))  # no rotation
@@ -44,10 +44,7 @@ class AnimatableObject(GameObject):
         self.frame_monitor_seq_ = Sequence() # Used to monitor animation frames and invoke callbacks
         self.animation_end_cb_ = None
         self.animation_start_cb_ = None
-        
-        if sprite_animator_dict != None:
-            self.setSpriteAnimations(sprite_animator_dict)
- 
+         
         
     def setSpriteAnimations(self,sprite_animator_dict):
         

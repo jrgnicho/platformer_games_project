@@ -20,10 +20,10 @@ from panda3d.bullet import BulletRigidBodyNode
 
 class AnimationActor(SpriteAnimator):
   
-  __DEFAULT_WIDTH__ = 0.01
-  __DEFAULT_MASS__ = 0.01
+  DEFAULT_WIDTH = 0.01
+  DEFAULT_MASS = 0.01
   
-  def __init__(self,name,mass = 1):
+  def __init__(self,name,mass = DEFAULT_MASS):
     SpriteAnimator.__init__(self,name)
     
     self.mass_ = mass
@@ -164,7 +164,12 @@ class AnimationActor(SpriteAnimator):
     Sets the scale of the animated sprites, collision and hit boxes in the actor
     """
     SpriteAnimator.setScale(self,Vec3(scale.getX(),1,scale.getZ()))
-    self.rigid_body_np_.setScale(Vec3(scale.getX(),1,scale.getZ()))
+    
+    if self.animation_action_ is None:
+      return
+    
+    if self.rigid_body_np_ is not None:
+      self.rigid_body_np_.setScale(Vec3(scale.getX(),1,scale.getZ()))   
     
     # scaling sprite boxes
     for i in range(0,len(self.animation_action_.sprites_left)):      
@@ -201,7 +206,7 @@ class AnimationActor(SpriteAnimator):
       size = box.size
       center = box.center
       transform = TransformState.makeIdentity()
-      box_shape = BulletBoxShape(Vec3(0.5*size[0],0.5*AnimationActor.__DEFAULT_WIDTH__,0.5 * size[1]))
+      box_shape = BulletBoxShape(Vec3(0.5*size[0],0.5*AnimationActor.DEFAULT_WIDTH,0.5 * size[1]))
       transform = transform.setPos(Vec3(center[0],0,center[1]))
       rigid_body.addShape(box_shape,transform)
       
@@ -219,7 +224,7 @@ class AnimationActor(SpriteAnimator):
     for box in boxes:
       size = box.size
       center = box.center
-      box_shape = BulletBoxShape(Vec3(0.5*size[0],0.5*AnimationActor.__DEFAULT_WIDTH__,0.5 * size[1]))
+      box_shape = BulletBoxShape(Vec3(0.5*size[0],0.5*AnimationActor.DEFAULT_WIDTH,0.5 * size[1]))
       transform = transform.setPos(Vec3(center[0],0,center[1]))
       ghost_node.addShape(box_shape,transform)
       
