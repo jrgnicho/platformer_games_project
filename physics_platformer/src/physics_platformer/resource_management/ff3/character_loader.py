@@ -16,6 +16,7 @@ class CharacterLoader(object):
   __CNS_FILE_ENTRY__ = 'cns\s+=\s+(.+)'
   __SPRITE_DIR__ = 'sprites'
   __SPRITE_FILE__ = 'sprites.ffe'
+  __DEFAULT_ACTOR_MASS__ = 0.1
   
   def __init__(self):
     """
@@ -173,7 +174,7 @@ class CharacterLoader(object):
     self.animation_actors_ = []
     character_info = self.cns_loader_.getCharacterInfo()
     for anim in self.anim_loader_.animations:
-      actor = AnimationActor(anim.name,character_info.mass)
+      actor = AnimationActor(anim.name,CharacterLoader.__DEFAULT_ACTOR_MASS__)
       actor.loadAnimation(anim)
       actor.setScale(character_info.scale)
       self.animation_actors_.append(actor)
