@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <name>platformer_resources package for holding various resources used by the platformer games</name>
+  <version>0.0.0</version>
+  <description>The platformer_resources package</description>
+  <maintainer email="jrgnichodevel@gmail.com">JorgeNicho</maintainer>
+  <license>TODO</license>
+  <author email="jrgnichodevel@gmail.com">JorgeNicho</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <run_depend>rospy</run_depend>
+
+  <export>
+  </export>
+</package>
