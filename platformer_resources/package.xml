@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>platformer_resources package for holding various resources used by the platformer games</name>
+  <name>platformer_resources</name>
   <version>0.0.0</version>
-  <description>The platformer_resources package</description>
+  <description>The platformer_resources package for holding various resources used by the platformer games</description>
   <maintainer email="jrgnichodevel@gmail.com">JorgeNicho</maintainer>
   <license>TODO</license>
   <author email="jrgnichodevel@gmail.com">JorgeNicho</author>

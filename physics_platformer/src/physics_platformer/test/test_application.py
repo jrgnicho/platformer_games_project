@@ -46,6 +46,7 @@ class TestApplication(ShowBase):
     
     self.name_ = name
     self.setupRendering()
+    self.setupResources()
     self.setupControls()
     self.setupPhysics()
     self.clock_ = ClockObject()
@@ -65,6 +66,8 @@ class TestApplication(ShowBase):
                 parent=base.a2dBottomRight, align=TextNode.ARight,
                 pos=(-0.1, 0.09), shadow=(0, 0, 0, 1))
 
+  def setupResources(self):
+    pass
 
   def setupRendering(self):
 

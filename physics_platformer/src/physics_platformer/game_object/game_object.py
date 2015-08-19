@@ -71,7 +71,7 @@ class GameObject(NodePath):
             self.visual_nh_.setTexture(GameObject.DEFAULT_TEXTURE,1)   
             
             if GameObject.DEFAULT_TEXTURE == None:
-                print 'ERROR: Texture failed to load'
+                logging.error('Texture failed to load')
             
             # scaling visual model
             bounds = self.visual_nh_.getTightBounds()

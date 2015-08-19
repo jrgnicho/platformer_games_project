@@ -75,7 +75,7 @@ class AnimatableObject(GameObject):
         max = Vec3(bounds[1])
         extends = max - min
         
-        logging.info("align bitmask %s"%(str(align)))
+        logging.debug("align bitmask %s"%(str(align)))
         
         # Sprites origin is at the image's topleft corner
         if (align & AnimationSpriteAlignment.TOP_ALIGN) == AnimationSpriteAlignment.TOP_ALIGN:

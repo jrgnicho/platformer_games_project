@@ -32,9 +32,16 @@ class CharacterLoader(object):
     self.sprite_file_ = CharacterLoader.__SPRITE_FILE__
     self.anims_dict_ = {}
     self.animation_actors_ = []
+    self.character_info_ = None
     self.sprite_loader_ = None
     self.anim_loader_ = None
     self.cns_loader_ = None
+    
+  def getCharacterInfo(self):
+    return self.character_info_
+  
+  def getAnimationActors(self):
+    return self.animation_actors_
   
   def getAnimations(self):
     return self.anims_dict_.values()
@@ -117,6 +124,7 @@ class CharacterLoader(object):
     if not self.cns_loader_.load(cns_file_path):
       logging.error("CNS file %s failed to load"%(cns_file_path))
       return False
+    self.character_info_ =  self.cns_loader_.getCharacterInfo()
        
     # loading air file        
     self.anim_loader_ = AIRLoader()
@@ -173,9 +181,11 @@ class CharacterLoader(object):
     self.animation_actors_ = []
     character_info = self.cns_loader_.getCharacterInfo()
     for anim in self.anim_loader_.animations:
+      anim.scalex = character_info.scale.getX()
+      anim.scaley = character_info.scale.getZ()
       actor = AnimationActor(anim.name)
       actor.loadAnimation(anim)
-      actor.setScale(character_info.scale)
+      #actor.setScale(character_info.scale)
       self.animation_actors_.append(actor)
         
         

@@ -46,6 +46,8 @@ class AnimationAction(object):
     self.name = name
     self.id = 0
     self.loopstar = -1
+    self.scalex = 1
+    self.scaley = 1
     self.framerate = 0
     self.rigid_body_boxes = []
     self.action_boxes = []

@@ -64,10 +64,11 @@ class AIRLoader(object):
           
           if len(anim_action.animation_elements) != 0:
             anim_action.framerate /= len(anim_action.animation_elements)
+            anim_action.framerate = 60.0/anim_action.framerate
           
           self.animations_.append(anim_action)
         
-        anim_name = m.group(1)  
+        anim_name = (m.group(1)).rstrip(' \t\n\r') 
         anim_action = AnimationAction(anim_name)
         anim_elmt = AnimationElement()
         
@@ -103,7 +104,7 @@ class AIRLoader(object):
       m = re.search(AIRLoader.__HIT_BOX_STATIC_LIST__,line)
       if m is not None:
         box_count = int(m.group(1))              
-        box_list,linecount = self.__parseCollisionBoxList__(lines, linecount)   
+        box_list,linecount = self.__parseHitBoxList__(lines, linecount)   
         
         if len(box_list) != box_count:
           logging.error("Size of static box (Clsn1Default) list is incorrect, expected %i and got %i"%(box_count,len(box_list)))    

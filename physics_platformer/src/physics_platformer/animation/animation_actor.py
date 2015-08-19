@@ -20,8 +20,8 @@ from panda3d.bullet import BulletRigidBodyNode
 
 class AnimationActor(SpriteAnimator):
   
-  DEFAULT_WIDTH = 0.01
-  DEFAULT_MASS = 0.01
+  DEFAULT_WIDTH = 0.001
+  DEFAULT_MASS = 1
   
   def __init__(self,name,mass = DEFAULT_MASS):
     SpriteAnimator.__init__(self,name)
@@ -45,19 +45,22 @@ class AnimationActor(SpriteAnimator):
       return False
     
     # load sprites
-    if not self.loadAnimationSprites(animation.sprites_right, animation.sprites_right, animation.framerate):
+    if not self.loadAnimationSprites(animation.sprites_right, animation.sprites_left, animation.framerate):
       logging.error('Failed to load sprites from AnimationAction object')
       return False
+    
+    # scale    
+    scale = (animation.scalex, animation.scaley)
     
     # saving animation
     self.animation_action_ = animation
     
     # creating representative rigid body (Used to determine collisions with the environment
-    self.__createRigidBody__()
+    self.__createRigidBody__(scale)
     
     # creating bullet ghost body for detecting interactions with the environment
     if len(self.animation_action_.action_boxes) > 0: # collecting boxes from each individual sprite          
-      self.action_body_np_ =  self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(self.animation_action_.action_boxes) )
+      self.action_body_np_ =  self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(self.animation_action_.action_boxes,scale) )
       self.action_body_np_.node().setIntoCollideMask(CollisionMasks.ACTION_BODY)
 
     # creating attack collision and hit ghosts bodies for detecting oponent's attacks
@@ -68,14 +71,16 @@ class AnimationActor(SpriteAnimator):
       hit_boxes = hit_boxes + elmt.hit_boxes
       
     if len(col_boxes) > 0:  
-      col_boxes = [Box2D.union(col_boxes)]            
-      self.attack_collision_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(col_boxes) )
-      self.attack_collision_np_.node().setIntoCollideMask(CollsionMasks.ATTACK_COLLISION)
+      col_boxes = [Box2D.createBoundingBox(col_boxes)]            
+      self.attack_collision_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(col_boxes,scale) )
+      self.attack_collision_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_COLLISION)
       
     if len(hit_boxes) > 0:
       hit_boxes = [Box2D.createBoundingBox(hit_boxes)]
-      self.attack_hit_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(hit_boxes))
+      self.attack_hit_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(hit_boxes,scale))
       self.attack_hit_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_HIT)
+      
+    self.setScale(Vec3(scale[0],1,scale[1]))
           
     return True
     
@@ -85,9 +90,10 @@ class AnimationActor(SpriteAnimator):
       self.rigid_body_np_.reparentTo(parent_np)    
     
     self.parent_physics_world_ = physics_world
-    for np in [self.rigid_body_np_,self.attack_collision_np_,self.attack_hit_np_,self.action_body_np]:
+    for np in [self.rigid_body_np_,self.attack_collision_np_,self.attack_hit_np_,self.action_body_np_]:
       if np is not None:
         self.parent_physics_world_.attach(np.node())
+        
         
     self.pose(0)
     self.show()  
@@ -98,15 +104,16 @@ class AnimationActor(SpriteAnimator):
       self.rigid_body_np_.detachNode()
     
     if self.parent_physics_world_ is not None:
-      for np in [self.rigid_body_np_,self.attack_collision_np_,self.attack_hit_np_,self.action_body_np]:
+      for np in [self.rigid_body_np_,self.attack_collision_np_,self.attack_hit_np_,self.action_body_np_]:
         if np is not None:
           self.parent_physics_world_.remove(np.node())
+          
         
     self.stop()
     self.hide()
     
   def getRigidBody(self):
-    return (None if (self.rigid_body_np_ is not None) else self.rigid_body_np_)
+    return (None if (self.rigid_body_np_ is None) else self.rigid_body_np_)
     
   def getCollisionGhostBody(self):
     """
@@ -150,8 +157,8 @@ class AnimationActor(SpriteAnimator):
     h = sprites_right[0].getYSize()
     self.size_ = (w,h) # image size in pixels
     
-    self.seq_right_ = self.__createAnimationSequence__(str(self.getName() )+ '-right-seq',sprites_right,framerate)
-    self.seq_left_ = self.__createAnimationSequence__(str(self.getName() ) + '-left-seq',sprites_left,framerate)
+    self.seq_right_ = self.__createAnimationSequence__(str(self.getName() )+ '-right-seq',sprites_right,framerate,False)
+    self.seq_left_ = self.__createAnimationSequence__(str(self.getName() ) + '-left-seq',sprites_left,framerate,True)
     self.node().addStashed(self.seq_right_)
     self.node().addStashed(self.seq_left_)
     
@@ -166,10 +173,7 @@ class AnimationActor(SpriteAnimator):
     SpriteAnimator.setScale(self,Vec3(scale.getX(),1,scale.getZ()))
     
     if self.animation_action_ is None:
-      return
-    
-    if self.rigid_body_np_ is not None:
-      self.rigid_body_np_.setScale(Vec3(scale.getX(),1,scale.getZ()))   
+      return  
     
     # scaling sprite boxes
     for i in range(0,len(self.animation_action_.sprites_left)):      
@@ -180,7 +184,7 @@ class AnimationActor(SpriteAnimator):
         box.scale = (scale.getX(), scale.getZ())
      
     
-  def __createRigidBody__(self):
+  def __createRigidBody__(self,scale):
     self.rigid_body_np_ = NodePath(BulletRigidBodyNode('RigidBody'))
     rigid_body = self.rigid_body_np_.node()
     rigid_body.setIntoCollideMask(CollisionMasks.RIGID_BODY)
@@ -203,6 +207,7 @@ class AnimationActor(SpriteAnimator):
       
     # create rigid body
     for box in collision_boxes:
+      box.scale = scale
       size = box.size
       center = box.center
       transform = TransformState.makeIdentity()
@@ -216,12 +221,13 @@ class AnimationActor(SpriteAnimator):
     rigid_body.setAngularFactor((0,0,0))   
     
   
-  def __createBulletGhostNodeFromBoxes__(self,boxes):
+  def __createBulletGhostNodeFromBoxes__(self,boxes,scale ):
         
     ghost_node = BulletGhostNode("HitBody")    
     transform  = TransformState.makeIdentity()      
     
     for box in boxes:
+      box.scale = scale
       size = box.size
       center = box.center
       box_shape = BulletBoxShape(Vec3(0.5*size[0],0.5*AnimationActor.DEFAULT_WIDTH,0.5 * size[1]))
@@ -231,7 +237,7 @@ class AnimationActor(SpriteAnimator):
     return ghost_node
       
   
-  def __createAnimationSequence__(self,name,sff_images,framerate):
+  def __createAnimationSequence__(self,name,sff_images,framerate,is_left = False):
     """
       Creates the sequence node that plays these images
     """
@@ -239,23 +245,28 @@ class AnimationActor(SpriteAnimator):
     
     for i in range(0,len(sff_images)):
         
-        txtr = sff_images[i]
-        
-        w = txtr.getXSize() 
-        h = txtr.getYSize()       
-        
-        # creating CardMaker to hold the texture
-        cm = CardMaker(name +    str(i))
-        cm.setFrame(0,w,-h,0)  # This configuration places the image's topleft corner at the origin
-        card = NodePath(cm.generate())            
-        card.setTexture(txtr)
-        seq.addChild(card.node(),i)
-        
-        # offseting image
-        card.setPos(Vec3(txtr.axisx,0,txtr.axisy))
+      txtr = sff_images[i]
+      
+      w = txtr.getXSize() 
+      h = txtr.getYSize()       
+      
+      # creating CardMaker to hold the texture
+      cm = CardMaker(name +    str(i))
+      cm.setFrame(0,w,-h,0 )  # This configuration places the image's topleft corner at the origin
+      #cm.setFrame(-0.5*w,0.5*w,-h,0)  # This configuration places the image's topleft corner at the origin
+      card = NodePath(cm.generate())            
+      card.setTexture(txtr)
+      seq.addChild(card.node(),i)
+      
+      # offseting image
+      #card.setPos(Vec3(txtr.axisx,0,txtr.axisy))
+      xoffset = float(txtr.axisx + (-w if is_left else 0))
+      yoffset = float(txtr.axisy)
+      card.setPos(Vec3(xoffset,0,yoffset))
+      
+      logging.debug("Animation %s Sprite [%i] image size %s and offset %s."%( name,i, str((w,h)), str((txtr.axisx,txtr.axisy)) ) ) 
      
-    seq.setFrameRate(framerate)           
-    logging.debug("Sequence Node %s contains %i images of size %s."%( name,seq.getNumFrames(), str((w,h)) ) )  
+    seq.setFrameRate(framerate)            
     return seq     
     
     

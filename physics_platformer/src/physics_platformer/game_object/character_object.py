@@ -1,12 +1,18 @@
 
 from panda3d.core import Vec3
+from physics_platformer.collision_masks import CollisionMasks
+from physics_platformer.sprite import SpriteAnimator
 from physics_platformer.animation import AnimationActor
 from physics_platformer.game_object import CharacterInfo
 from physics_platformer.game_object import AnimationSpriteAlignment
 from physics_platformer.game_object import AnimatableObject
+from panda3d.core import NodePath
 from panda3d.core import TransformState
+from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletGenericConstraint
+from panda3d.bullet import BulletWorld
 from docutils import TransformSpec
+import logging
 
 
 class CharacterObject(AnimatableObject):
@@ -21,33 +27,38 @@ class CharacterObject(AnimatableObject):
     self.active_constraint_ = None
     
     size = Vec3(info.width, AnimationActor.DEFAULT_WIDTH , info.height)
-    AnimatableObject.__init__(self,info.name,size,info.mass,None)
+    AnimatableObject.__init__(self,info.name,size,info.mass)
     
     # re-creating shape
-    shapes = self.rigid_body_np_.node().getNumShapes()
+    shapes = self.rigid_body_np_.node().getShapes()
     for shape in shapes:
       self.rigid_body_np_.node().removeShape(shape)
       
     box_shape = BulletBoxShape(self.size_/2) 
     self.rigid_body_np_.node().addShape(box_shape,TransformState.makePos(Vec3(0,0,0.5*size.getZ()))) # box bottom center coincident with the origin
-    self.rigid_body_np_.node().setMass(mass)
+    self.rigid_body_np_.node().setMass(self.character_info_.mass)
     self.rigid_body_np_.node().setLinearFactor((1,0,1))   
     self.rigid_body_np_.node().setAngularFactor((0,0,0)) 
-    self.rigid_body_np_.setCollideMask(CollisionMasks.NONE)
+    self.rigid_body_np_.setCollideMask(CollisionMasks.NO_COLLISION)
+    
+    self.animation_root_np_.setPos(Vec3(0,0,0))
   
   def setParentPhysicsWorld(self,physics_world): 
     if type(physics_world) is not BulletWorld:
       logging.error( "Object is not of type %s"%(str(type(BulletWorld))) )      
     self.physics_world_ = physics_world
+    self.physics_world_.attach(self.rigid_body_np_.node())
       
   def setParentNodePath(self,np):
     if type(np) is not NodePath:
       logging.error("Passed parent node path is not of type "%( str(type(NodePath) )))      
     self.parent_np_ = np
+    
+    self.rigid_body_np_.reparentTo(self.parent_np_)
 
     
   def addAnimationActor(self,name,anim_actor,
-                        align = (AnimationSpriteAlignment.BOTTOM_CENTER_ALIGN),
+                        align = (AnimationSpriteAlignment.CENTER_OFFSET_ALIGN),
                         center_offset = Vec3(0,0,0)):
     if type(anim_actor) != AnimationActor:
       logging.error("Second argument is not of type 'AnimationActor'")
@@ -66,11 +77,11 @@ class CharacterObject(AnimatableObject):
   def pose(self,animation_name, frame = 0):
     
     if (self.physics_world_ is None) or (self.parent_np_ is None):
-      logging.error("PhysicsWorld or Parent NodePath have not been set on the Character object, pose can not be selected")
+      logging.warning("PhysicsWorld or Parent NodePath have not been set on the Character object, pose can not be selected")
       return False
     
     if not self.animators_.has_key(animation_name):
-      logging.error( "Invalid animation name '%s'"%(animation_name))
+      logging.warning( "Invalid animation name '%s'"%(animation_name))
       return False
     
     if self.selected_animation_name_ == animation_name:
@@ -103,8 +114,8 @@ class CharacterObject(AnimatableObject):
     constraint = self.right_constraint_ if face_right else self.left_constraint_
     self.__activateConstraint__(constraint)
     
-    if self.animator_np_ != None :
-        self.animator_.faceRight(face_right)
+    if self.animator_np_ is not None :
+      self.animator_.faceRight(face_right)
         
   def __setupConstraints__(self,actor_rigid_body_np):
     
