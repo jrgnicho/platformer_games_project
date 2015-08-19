@@ -1,0 +1,27 @@
+;***************************************************************************;
+;******************* Created in Fighter Factory Ultimate *******************;
+;*******************      http://www.virtualltek.com     *******************;
+;***************************************************************************;
+
+[Info]
+name = "Hiei"
+displayname = "Hiei"
+versiondate = 1
+mugenversion = 
+author = ""
+pal.defaults = 1
+
+[Files]
+sprite = player.sff
+anim = player.air
+;sound = player.snd
+cmd = player.cmd
+cns = player.cns
+stcommon = common1.cns
+st = player.cns
+pal1 = player.act
+;pal2 = portrait.act
+
+[Arcade]
+;intro.storyboard = 
+;ending.storyboard = 
