@@ -30,9 +30,9 @@ class AnimationSpriteAlignment(object):
 class AnimatableObject(GameObject):
     
     def __init__(self,name,size,mass):
-        GameObject.__init__(self,name,size,mass,False) #creatin GameObject with a default box shape and no Visual
+        GameObject.__init__(self,name,size,mass,False) # creating GameObject with a default box shape and no Visual
         self.setTransparency(TransparencyAttrib.M_alpha)
-        self.rigid_body_np_.node().setAngularFactor((0,0,0))  # no rotation
+        self.node().setAngularFactor((0,0,0))  # no rotation
         self.animation_root_np_ = self.attachNewNode('animations_root')
         self.animation_root_np_.setPos(Vec3(0,0,-0.5*size.getZ()))
         self.animators_ = {}
@@ -63,7 +63,6 @@ class AnimatableObject(GameObject):
                            align = (AnimationSpriteAlignment.BOTTOM_CENTER_ALIGN),
                            center_offset = Vec3(0,0,0)):
         
-        #np = self.animation_root_np_.attachNewNode(sprite_animator)
         np = sprite_animator.instanceTo(self.animation_root_np_)
         np.hide()
         self.animators_[name] = np
@@ -111,8 +110,7 @@ class AnimatableObject(GameObject):
         """
         Invokes the callback 'cb()' at the start of the animation. Pass 'None' to remove callback.
         """
-        self.animation_start_cb_ = cb        
-            
+        self.animation_start_cb_ = cb                   
             
     def clearSpriteAnimations(self):
         

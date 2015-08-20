@@ -90,13 +90,12 @@ class TestAnimatableObject(TestApplication):
         start_pos = Vec3(-NUM_BOXES*BOX_SIDE_LENGTH*0.5,0,6)
         for i in range(0,NUM_BOXES):            
             obj = GameObject("obj"+str(i),box_size,True)
-            obj.getRigidBody().setPos(start_pos + Vec3(i*BOX_SIDE_LENGTH*0.5,0,i*BOX_SIDE_LENGTH*1.2))
+            obj.setPos(start_pos + Vec3(i*BOX_SIDE_LENGTH*0.5,0,i*BOX_SIDE_LENGTH*1.2))
             
-            obj.setParentPhysicsWorld(self.physics_world_)
-            obj.setParentNodePath(self.world_node_)
-            #self.physics_world_.attachRigidBody(obj.getRigidBody().node())
-            #obj.getRigidBody().reparentTo(self.world_node_)
-            self.object_nodes_.append(obj.getRigidBody())
+            obj.setPhysicsWorld(self.physics_world_)
+            obj.reparentTo(self.world_node_)
+            #obj.setParentNodePath(self.world_node_)
+            self.object_nodes_.append(obj)
             
             
         # Setting up animatable object
@@ -104,9 +103,9 @@ class TestAnimatableObject(TestApplication):
         for anim in self.animator_set_:
             actor2d.addSpriteAnimation(anim.getName(), anim, AnimationSpriteAlignment.BOTTOM_CENTER_ALIGN)
         
-        actor2d.getRigidBody().setPos(Vec3(1,0,actor2d.getSize().getZ()+1))  
-        actor2d.getRigidBody().reparentTo(self.world_node_)
-        self.physics_world_.attachRigidBody(actor2d.getRigidBody().node())
+        actor2d.setPos(Vec3(1,0,actor2d.getSize().getZ()+1))  
+        actor2d.reparentTo(self.world_node_)
+        self.physics_world_.attachRigidBody(actor2d.node())
         self.controlled_obj_ =  actor2d
         self.animation_index_ = 0
         
@@ -121,7 +120,7 @@ class TestAnimatableObject(TestApplication):
         
     def cleanup(self):
         
-        self.physics_world_.removeRigidBody(self.controlled_obj_.getRigidBody().node())
+        self.physics_world_.removeRigidBody(self.controlled_obj_.node())
         self.controlled_obj_.removeNode()
         self.controlled_obj_ = None
         TestApplication.cleanup(self) 

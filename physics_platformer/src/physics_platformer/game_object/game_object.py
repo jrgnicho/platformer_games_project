@@ -45,21 +45,19 @@ class GameObject(NodePath):
         """ 
         
         # instantiating to a bullet rigid body
-        NodePath.__init__(self,name)
-        self.rigid_body_np_ = NodePath(BulletRigidBodyNode(name + "-rigid-body"))
+        NodePath.__init__(self,BulletRigidBodyNode(name ))
         self.physics_world_ = None
-        self.parent_np_ = None
         
         # size
         self.size_ = size        
         
         # set collision shape
         collision_shape = BulletBoxShape(self.size_/2) 
-        self.rigid_body_np_.node().addShape(collision_shape)
-        self.rigid_body_np_.node().setMass(mass)
-        self.rigid_body_np_.node().setLinearFactor((1,0,1))   
-        self.rigid_body_np_.node().setAngularFactor((0,1,0))   
-        self.rigid_body_np_.setCollideMask(CollisionMasks.ALL)
+        self.node().addShape(collision_shape)
+        self.node().setMass(mass)
+        self.node().setLinearFactor((1,0,1))   
+        self.node().setAngularFactor((0,1,0))   
+        self.setCollideMask(CollisionMasks.ALL)
         
         # set visual
         if setup_visual:     
@@ -67,7 +65,6 @@ class GameObject(NodePath):
             visual_nh = GameObject.DEFAULT_BOX_MODEL 
             visual_nh.clearModelNodes()            
             self.visual_nh_ = visual_nh.instanceUnderNode(self,name + '-visual');    
-            #self.visual_nh_ = visual_nh.instanceTo(self);          
             self.visual_nh_.setTexture(GameObject.DEFAULT_TEXTURE,1)   
             
             if GameObject.DEFAULT_TEXTURE == None:
@@ -80,24 +77,20 @@ class GameObject(NodePath):
             self.visual_nh_.setScale(self.size_.getX()*scale_factor,self.size_.getY()*scale_factor,self.size_.getZ()*scale_factor)
         else:
             self.visual_nh_ = NodePath() # create empty node
-            
-        self.reparentTo(self.rigid_body_np_) 
- 
-    def setParentPhysicsWorld(self,physics_world): 
+             
+    def setPhysicsWorld(self,physics_world): 
       if type(physics_world) is not BulletWorld:
         logging.error( "Object is not of type %s"%(str(type(BulletWorld))) )
         
       self.physics_world_ = physics_world
-      self.physics_world_.attach(self.rigid_body_np_.node())
+      self.physics_world_.attach(self.node())
       
-    def setParentNodePath(self,np):
-      if type(np) is not NodePath:
-        logging.error("Passed parent node path is not of type "%( str(type(NodePath) )))
+    def clearPhysicsWorld(self):
+      if self.physics_world_ is not None:
+        self.physics_world_.remove(self.node())
         
-      self.parent_np_ = np
-      if self.rigid_body_np_.getParent() != self.parent_np_ : 
-        self.rigid_body_np_.reparentTo(self.parent_np_)
-      
+      self.physics_world_ = None
+            
        
     def getSize(self):
         return self.size_
@@ -106,7 +99,7 @@ class GameObject(NodePath):
         pass
     
     def getRigidBody(self):
-        return self.rigid_body_np_
+        return self
     
         
         
