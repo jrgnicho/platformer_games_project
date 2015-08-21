@@ -110,15 +110,15 @@ class TestCharacterObject(TestApplication):
         start_pos = Vec3(-NUM_BOXES*BOX_SIDE_LENGTH*0.5,0,6)
         for i in range(0,NUM_BOXES):            
             obj = GameObject("obj"+str(i),box_size,True)
-            obj.getRigidBody().setPos(start_pos + Vec3(i*BOX_SIDE_LENGTH*0.5,0,i*BOX_SIDE_LENGTH*1.2))            
-            obj.setParentPhysicsWorld(self.physics_world_)
-            obj.setParentNodePath(self.world_node_)
-            self.object_nodes_.append(obj.getRigidBody())
+            obj.setPos(start_pos + Vec3(i*BOX_SIDE_LENGTH*0.5,0,i*BOX_SIDE_LENGTH*1.2))            
+            obj.setPhysicsWorld(self.physics_world_)
+            obj.reparentTo(self.world_node_)
+            self.object_nodes_.append(obj)
             
         
-        self.character_.setParentPhysicsWorld(self.physics_world_)     
-        self.character_.setParentNodePath(self.world_node_)       
-        self.character_.getRigidBody().setPos(Vec3(1,0,self.character_.getSize().getZ()+1))  
+        self.character_.setPhysicsWorld(self.physics_world_)     
+        self.character_.reparentTo(self.world_node_)       
+        self.character_.setPos(Vec3(1,0,self.character_.getSize().getZ()+1))  
         #self.character_.getRigidBody().reparentTo(self.world_node_)
         #self.physics_world_.attachRigidBody(self.character_.getRigidBody().node())
         self.controlled_obj_ =  self.character_
@@ -135,7 +135,7 @@ class TestCharacterObject(TestApplication):
         
     def cleanup(self):
       
-        self.physics_world_.removeRigidBody(self.controlled_obj_.getRigidBody().node())
+        self.physics_world_.remove(self.controlled_obj_.node())
         self.controlled_obj_.removeNode()
         self.controlled_obj_ = None
         self.character_ = None
