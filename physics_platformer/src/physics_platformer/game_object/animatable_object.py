@@ -44,7 +44,11 @@ class AnimatableObject(GameObject):
         self.frame_monitor_seq_ = Sequence() # Used to monitor animation frames and invoke callbacks
         self.animation_end_cb_ = None
         self.animation_start_cb_ = None
-         
+        
+    def setObjectID(self,id):
+      GameObject.setObjectID(self,id)      
+      for animator in self.animators_.values():
+        animator.setPythonTag(GameObject.ID_PYTHON_TAG,id)         
         
     def setSpriteAnimations(self,sprite_animator_dict):
         

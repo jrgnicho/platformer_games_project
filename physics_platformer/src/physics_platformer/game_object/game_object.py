@@ -32,6 +32,8 @@ class GameObject(NodePath):
     DEFAULT_TEXTURE = TexturePool.loadTexture(DEFAULT_RESOURCES_DIRECTORY +'/models/limba.jpg')
     DEFAULT_BOX_MODEL = NodePath(ModelPool.loadModel( DEFAULT_RESOURCES_DIRECTORY + '/models/box.egg'))
     
+    ID_PYTHON_TAG = "ObjectID"
+    
     
     def __init__(self,name,size,mass = 0,setup_visual = True):   
         """
@@ -90,6 +92,15 @@ class GameObject(NodePath):
         self.physics_world_.remove(self.node())
         
       self.physics_world_ = None
+      
+    def setObjectID(self,id):            
+      self.setPythonTag(GameObject.ID_PYTHON_TAG,str(id))
+      nps = self.getChildren()
+      for np in nps:
+        np.setPythonTag(GameObject.ID_PYTHON_TAG,str(id))
+        
+    def getObjectID(self):      
+      return self.getPythonTag(GameObject.ID_PYTHON_TAG)
             
        
     def getSize(self):

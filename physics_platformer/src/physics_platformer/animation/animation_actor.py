@@ -30,11 +30,17 @@ class AnimationActor(SpriteAnimator):
     self.animation_action_ = None
     self.rigid_body_np_ = None # NodePath to a bullet rigid body that contains the collision boxes that are used to handle interactions with the environment    
     self.action_body_np_ = None # NodePath to a bullet ghost node containing boxes that will be used to trigger a specific player action upon coming into contact with the environment
-    self.attack_collision_np_ = None # NodePath to a bullet ghost node containing collision boxes that are active during the duration of the animation
+    self.attack_damage_np_ = None # NodePath to a bullet ghost node containing collision boxes that are active during the duration of the animation
     self.attack_hit_np_ = None # NodePath to a bullet ghost node containing hit boxes that are active during the duration of the animation
     self.parent_physics_world_ = None
    
     self.node().setPythonTag(SpriteAnimator.__name__,self)
+    
+  def setPythonTag(self,tag,obj):
+    SpriteAnimator.setPythonTag(self,tag,obj)    
+    for np in [self.rigid_body_np_,self.attack_damage_np_,self.attack_hit_np_,self.action_body_np_]:
+      if np is not None:
+        np.setPythonTag(tag,obj)
     
   def loadAnimation(self,animation):
     """
@@ -72,8 +78,8 @@ class AnimationActor(SpriteAnimator):
       
     if len(col_boxes) > 0:  
       col_boxes = [Box2D.createBoundingBox(col_boxes)]            
-      self.attack_collision_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(col_boxes,scale) )
-      self.attack_collision_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_COLLISION)
+      self.attack_damage_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(col_boxes,scale) )
+      self.attack_damage_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_DAMAGE)
       
     if len(hit_boxes) > 0:
       hit_boxes = [Box2D.createBoundingBox(hit_boxes)]
@@ -90,7 +96,7 @@ class AnimationActor(SpriteAnimator):
       self.rigid_body_np_.reparentTo(parent_np)    
     
     self.parent_physics_world_ = physics_world
-    for np in [self.rigid_body_np_,self.attack_collision_np_,self.attack_hit_np_,self.action_body_np_]:
+    for np in [self.rigid_body_np_,self.attack_damage_np_,self.attack_hit_np_,self.action_body_np_]:
       if np is not None:
         self.parent_physics_world_.attach(np.node())
         
@@ -104,7 +110,7 @@ class AnimationActor(SpriteAnimator):
       self.rigid_body_np_.detachNode()
     
     if self.parent_physics_world_ is not None:
-      for np in [self.rigid_body_np_,self.attack_collision_np_,self.attack_hit_np_,self.action_body_np_]:
+      for np in [self.rigid_body_np_,self.attack_damage_np_,self.attack_hit_np_,self.action_body_np_]:
         if np is not None:
           self.parent_physics_world_.remove(np.node())
           
@@ -119,7 +125,7 @@ class AnimationActor(SpriteAnimator):
     """
     Returns ghost body used to determing in an opponent's attack reached the player
     """
-    return (None if (self.attack_collision_np_ is None) else self.attack_collision_np_)
+    return (None if (self.attack_damage_np_ is None) else self.attack_damage_np_)
   
   def getHitGhostBody(self):    
     """

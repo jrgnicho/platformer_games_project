@@ -13,6 +13,7 @@ from panda3d.bullet import BulletGenericConstraint
 from panda3d.bullet import BulletWorld
 from docutils import TransformSpec
 import logging
+from physics_platformer.src.physics_platformer.game_object.game_object import GameObject
 
 
 class CharacterObject(AnimatableObject):
@@ -55,6 +56,7 @@ class CharacterObject(AnimatableObject):
     
     if (self.animator_np_ is None):
       self.pose(name)
+      
       
   def getAnimatorActor(self):
     if self.animator_ is None:
