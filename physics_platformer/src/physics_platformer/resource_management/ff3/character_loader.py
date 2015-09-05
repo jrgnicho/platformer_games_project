@@ -162,15 +162,15 @@ class CharacterLoader(object):
         # saving right sprite
         sprt_right = self.sprite_loader_.getSprite(elemt.group_no,elemt.im_no)
         sprt_right.hit_boxes = elemt.hit_boxes
-        sprt_right.collision_boxes = elemt.collision_boxes        
+        sprt_right.damage_boxes = elemt.damage_boxes        
         
         # saving left sprite
         sprt_left = self.sprite_loader_.getSprite(elemt.group_no,elemt.im_no,False) 
         for hb in elemt.hit_boxes:
           sprt_left.hit_boxes.append(hb.flipX())
         
-        for cb in elemt.collision_boxes:
-          sprt_left.collision_boxes.append(cb.flipX())
+        for cb in elemt.damage_boxes:
+          sprt_left.damage_boxes.append(cb.flipX())
         
         
         anim.sprites_right.append(sprt_right)

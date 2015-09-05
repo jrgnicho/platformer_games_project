@@ -14,7 +14,7 @@ class AnimationElement(object):
     self.group_no = 0
     self.im_no =0
     self.hit_boxes = []
-    self.collision_boxes = []   
+    self.damage_boxes = []   
     self.game_ticks = 0 # Number of ticks that this image will be displayed
     
   def __str__(self):
@@ -23,7 +23,7 @@ class AnimationElement(object):
       hit_str += '\t' + str(b) + '\n' 
     
     col_str = ''
-    for b in self.collision_boxes:
+    for b in self.damage_boxes:
       col_str+= '\t' + str(b) + '\n' 
     
     s = """
@@ -35,7 +35,7 @@ class AnimationElement(object):
           collision boxes: %i
           %s
           game ticks: %i
-    """%(self.group_no,self.im_no,len(self.hit_boxes),hit_str,len(self.collision_boxes),col_str,self.game_ticks)
+    """%(self.group_no,self.im_no,len(self.hit_boxes),hit_str,len(self.damage_boxes),col_str,self.game_ticks)
     return s
        
 class AnimationAction(object):

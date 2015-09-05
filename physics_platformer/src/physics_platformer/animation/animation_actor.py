@@ -73,7 +73,7 @@ class AnimationActor(SpriteAnimator):
     col_boxes = []    
     hit_boxes = []
     for elmt in self.animation_action_.animation_elements:
-      col_boxes = col_boxes + elmt.collision_boxes
+      col_boxes = col_boxes + elmt.damage_boxes
       hit_boxes = hit_boxes + elmt.hit_boxes
       
     if len(col_boxes) > 0:  
@@ -185,7 +185,7 @@ class AnimationActor(SpriteAnimator):
     for i in range(0,len(self.animation_action_.sprites_left)):      
       sprt_right = self.animation_action_.sprites_right[i]
       sprt_left = self.animation_action_.sprites_left[i]      
-      boxes = sprt_right.hit_boxes + sprt_right.collision_boxes + sprt_left.hit_boxes + sprt_left.collision_boxes
+      boxes = sprt_right.hit_boxes + sprt_right.damage_boxes + sprt_left.hit_boxes + sprt_left.damage_boxes
       for box in boxes:
         box.scale = (scale.getX(), scale.getZ())
      
@@ -205,7 +205,7 @@ class AnimationActor(SpriteAnimator):
       # compute bounding box of all collision boxes from every sprite 
       boxes = []
       for elemt in self.animation_action_.animation_elements:
-        boxes = boxes + elemt.collision_boxes
+        boxes = boxes + elemt.damage_boxes
       
       if len(boxes) > 0:
         collision_boxes = [Box2D.createBoundingBox(boxes)]

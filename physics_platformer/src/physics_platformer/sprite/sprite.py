@@ -20,7 +20,7 @@ class Sprite(Texture):
     self.no = 0
     
     self.hit_boxes = []
-    self.collision_boxes = []
+    self.damage_boxes = []
     
     
     

@@ -137,7 +137,7 @@ class AIRLoader(object):
           logging.error("Size of collision box (Clsn2) list is incorrect")
           return False
                 
-        anim_elmt.collision_boxes = box_list
+        anim_elmt.damage_boxes = box_list
         continue
         
       # find parent sprite
