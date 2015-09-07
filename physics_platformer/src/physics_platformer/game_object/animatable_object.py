@@ -77,9 +77,7 @@ class AnimatableObject(GameObject):
         min = Vec3(bounds[0])
         max = Vec3(bounds[1])
         extends = max - min
-        
-        logging.debug("align bitmask %s"%(str(align)))
-        
+                
         # Sprites origin is at the image's topleft corner
         if (align & AnimationSpriteAlignment.TOP_ALIGN) == AnimationSpriteAlignment.TOP_ALIGN:
             pos.setZ(self.size_.getZ())            
@@ -99,10 +97,6 @@ class AnimatableObject(GameObject):
         
         np.setPos(self.animation_root_np_,pos)           
         
-        # selecting pose if none is
-#         if self.animator_np_ == None:
-#             self.pose(name)
-#             logging.debug("Selecting animation %s"%(name) )
             
     def setAnimationEndCallback(self,cb):
         """
