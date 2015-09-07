@@ -1,6 +1,6 @@
 
 from panda3d.core import Vec3
-from physics_platformer.collision_masks import CollisionMasks
+from physics_platformer.collision import CollisionMasks
 from physics_platformer.sprite import SpriteAnimator
 from physics_platformer.animation import AnimationActor
 from physics_platformer.game_object import CharacterInfo

@@ -1,21 +1,22 @@
 #import pygame.event
-from physics_platformer.state_machine import StateMachineActionKeys
+from physics_platformer.state_machine import Action
+from physics_platformer.state_machine import StateMachineActions
 from physics_platformer.state_machine import State
 import logging
 
 class StateEvent(object):
     
-    def __init__(self,state_mach,action_key):
+    def __init__(self,state_mach,action):
         
         self.sm_ = state_mach
-        self.action_key_ = action_key
+        self.action_= action
         
     def notify(self,args= ()):
         """
         Executes the action on the state machine
         """
-        logging.debug("State event executing %s action"%(self.action_key_))
-        self.sm_.execute(self.action_key_,*args)
+        logging.debug("State event executing %s action"%(self.action_.key))
+        self.sm_.execute(self.action_,*args)
         
 
 class StateEventHandler(object):
@@ -132,9 +133,9 @@ class StateMachine(object):
         logging.info( "Added transition rule : From %s state : %s action : To %s state"%(state_key,action_key,next_state_key) ) 
         return True           
         
-    def execute(self,action_key,action_cb_args=()):
+    def execute(self,action,action_cb_args=()):
         
-        
+        action_key = action.key
         if self.transitions_dict_.has_key(self.active_state_key_):            
             transition_dict = self.transitions_dict_[self.active_state_key_]
             
@@ -145,7 +146,7 @@ class StateMachine(object):
                 # execute action on active state
                 active_state_obj = self.states_dict_[self.active_state_key_]               
                 if active_state_obj.hasAction(action_key):
-                    active_state_obj.execute(action_key,action_cb_args)
+                    active_state_obj.execute(action,action_cb_args)
                 
                 #endif
                 
@@ -194,7 +195,7 @@ class StateMachine(object):
                 # no transition for this action, check if current state supports action
                 active_state_obj = self.states_dict_[self.active_state_key_]
                 if (active_state_obj.hasAction(action_key) and 
-                    active_state_obj.execute(action_key,action_cb_args)):
+                    active_state_obj.execute(action,action_cb_args)):
                     
                     # executed supported action under current state
                     return True
@@ -263,10 +264,10 @@ class SubStateMachine(StateMachine):
         """
         Submachine
         Subclasses a state machine. It requires that you add the following transition for entering to the first functional state:
-            - addTransition(SubStateMachine.StateKeys.START ,StateMachineActionKeys.SUBMACHINE_START , my_entry_state_key)
+            - addTransition(SubStateMachine.StateKeys.START ,StateMachineActions.SUBMACHINE_START , my_entry_state_key)
         
             It alse requires that you add another transition to exit the state machine:
-            - addTransition(my_terminal_state ,StateMachineActionKeys.SUBMACHINE_STOP , SubStateMachine.StateKeys.STOP)
+            - addTransition(my_terminal_state ,StateMachineActions.SUBMACHINE_STOP , SubStateMachine.StateKeys.STOP)
         """
         StateMachine.__init__(self)
         
@@ -277,9 +278,9 @@ class SubStateMachine(StateMachine):
         self.stop_state_ = SubStateMachine.StopState(self)  
         
         # adding start and stop sub machine states to transition table
-        self.addTransition(self.start_state_, StateMachineActionKeys.__IGNORE_ACTION__,
+        self.addTransition(self.start_state_, StateMachineActions.IGNORE,
                             SubStateMachine.StateKeys.START, None)
-        self.addTransition(self.stop_state_, StateMachineActionKeys.__IGNORE_ACTION__,
+        self.addTransition(self.stop_state_, StateMachineActions.IGNORE,
                     SubStateMachine.StateKeys.STOP, None)
         
         
@@ -307,7 +308,7 @@ class SubStateMachine(StateMachine):
     def start(self):
         
         if self.parent_sm_ != None:
-            StateMachine.postEvent(StateEvent(self.parent_sm_, StateMachineActionKeys.SUBMACHINE_START))
+            StateMachine.postEvent(StateEvent(self.parent_sm_, StateMachineActions.SUBMACHINE_START))
             
     def stop(self):
         
@@ -315,7 +316,7 @@ class SubStateMachine(StateMachine):
         self.active_state_key_ = self.start_state_.getKey()
         
         if self.parent_sm_ != None:
-            StateMachine.postEvent(StateEvent(self.parent_sm_, StateMachineActionKeys.DONE))
+            StateMachine.postEvent(StateEvent(self.parent_sm_, StateMachineActions.DONE))
         
     def enter(self):        
         

@@ -1,11 +1,17 @@
 
-class StateMachineActionKeys(object):
+class Action(object):
+  
+  def __init__(self,key):
+    self.key = key
     
-    __IGNORE_ACTION__ = 'IGNORE_ACTION'
-    SUBMACHINE_START = 'SUBMACHINE_START'
-    SUBMACHINE_RESTART = 'SUBMACHINE_RESTART'
-    SUBMACHINE_PAUSE = 'SUBMACHINE_PAUSE'
-    SUBMACHINE_STOP = 'SUBMACHINE_STOP'
-    DONE = 'DONE'
+
+class StateMachineActions(object):
+    
+    IGNORE = Action('IGNORE')
+    SUBMACHINE_START = Action('SUBMACHINE_START')
+    SUBMACHINE_RESTART = Action('SUBMACHINE_RESTART')
+    SUBMACHINE_PAUSE = Action('SUBMACHINE_PAUSE')
+    SUBMACHINE_STOP = Action('SUBMACHINE_STOP')
+    DONE = Action('DONE')
     
     

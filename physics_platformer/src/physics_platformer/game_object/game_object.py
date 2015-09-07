@@ -21,7 +21,7 @@ from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletWorld
 from direct.showbase.ShowBase import ShowBase
 
-from physics_platformer.collision_masks import *
+from physics_platformer.collision import *
 
 """
 Game Object class

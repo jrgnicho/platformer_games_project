@@ -2,8 +2,7 @@ from panda3d.core import TransformState
 from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletGhostNode
 from physics_platformer.game_object import GameObject
-from physics_platformer.collision_masks import *
-from physics_platformer.src.physics_platformer.collision_masks.collision_masks import CollisionMasks
+from physics_platformer.collision import *
 
 class Platform(GameObject):
   

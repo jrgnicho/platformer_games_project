@@ -2,7 +2,7 @@ from physics_platformer.sprite import Sprite
 from physics_platformer.sprite import SpriteGroup
 from physics_platformer.sprite import SpriteAnimator
 from physics_platformer.animation import AnimationAction
-from physics_platformer.collision_masks import *
+from physics_platformer.collision import *
 from physics_platformer.geometry2d import Box2D
 from panda3d.core import NodePath
 from panda3d.bullet import BulletRigidBodyNode

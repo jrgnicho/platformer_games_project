@@ -1,4 +1,5 @@
 import sys
+from physics_platformer.state_machine import Action
     
 class State(object):
     
@@ -19,7 +20,7 @@ class State(object):
       self.exit_callback_ = exit_cb        
       
   def addAction(self,action_key,
-                     action_cb = lambda: sys.stdout.write("No action callback\n")):
+                     action_cb = lambda action : sys.stdout.write("No action callback\n")):
                       # ,condition_cb = lambda: True):
       """
       Adds supported action to the state
@@ -34,22 +35,23 @@ class State(object):
       
       return self.actions_dict_.has_key(action_key)
       
-  def execute(self,action_key,action_cb_args=()):
+  def execute(self,action,action_cb_args=()):
       """
+        execute(Action action)
           Invokes the callback corresponding to this action upon entering this state.  
           
           Inputs:
-          - action_key: action to be executed.
+          - action: action to be executed.
           - action_cb_args: tuple containing optional arguments to the registered action_callback
           Outputs:
           - Succeeded: True when action is registered within state.  False otherwise
                   
       """
       
-      if self.actions_dict_.has_key(action_key):
+      if self.actions_dict_.has_key(action.key):
           
-          action_cb = self.actions_dict_[action_key]
-          action_cb(*action_cb_args)
+          action_cb = self.actions_dict_[action.key]
+          action_cb(action)
           #condition_cb = action_tuple[1]
           return True
       else:

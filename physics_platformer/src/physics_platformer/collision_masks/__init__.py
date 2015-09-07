@@ -1,1 +1,0 @@
-from collision_masks import *

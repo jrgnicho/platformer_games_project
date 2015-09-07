@@ -11,23 +11,23 @@ from direct.showbase.DirectObject import DirectObject
 from direct.showbase.MessengerGlobal import messenger
 from direct.controls.InputState import InputState
 
+from physics_platformer.state_machine import Action
 from physics_platformer.state_machine import State
 from physics_platformer.state_machine import StateMachine
 from physics_platformer.state_machine import StateEvent
-from physics_platformer.state_machine import StateMachineActionKeys
+from physics_platformer.state_machine import StateMachineActions
 
 
 PLAY_TASK_DELAY = 2.0
 INPUT_DELAY = 1.0
 
 # actions
-PLAY_ACTION ='PLAY'
-LOOP_ACTION = 'LOOP'
-MONITOR_ACTION = 'MONITOR'
-PRINT_DIRECTION_ACTION = 'PRINT_DIRECTION'
-DONE_ACTION= 'DONE'
-EXIT_ACTION = 'EXIT'
-VERBOSE = 'PRINT_VERBOSITY'
+PLAY_ACTION = Action('PLAY')
+LOOP_ACTION = Action('LOOP')
+MONITOR_ACTION = Action('MONITOR')
+DONE_ACTION= Action('DONE')
+EXIT_ACTION = Action('EXIT')
+VERBOSE = Action('PRINT_VERBOSITY')
 
 # states
 PLAYING_STATE = 'PLAYING'
@@ -37,6 +37,15 @@ MONITORING_STATE = 'MONITORING'
 
 # hiding window
 #ConfigVariableString("window-type","none").setValue("none") 
+
+class InputAction(Action):
+    
+  def __init__(self,key,direction):
+    Action.__init__(self,key)
+    self.direction = direction
+    
+
+PRINT_DIRECTION_ACTION = InputAction('PRINT_DIRECTION','None')
 
 class LoopState(State):
     
@@ -86,7 +95,21 @@ class PlayState(State):
         else:
             logging.debug('Play State posting event with %s_action'%(DONE_ACTION))
             StateMachine.postEvent(StateEvent(self.parent_sm_, DONE_ACTION))
-            return task.done        
+            return task.done    
+          
+          
+class MonitorState(State):         
+  
+  def __init__(self):
+    
+    State.__init__(self,MONITORING_STATE)
+    self.addAction(PRINT_DIRECTION_ACTION.key,self.printDirection)    
+    
+  def printDirection(self,action):
+    logging.info('Direction %s pressed'%(action.direction))
+    
+          
+    
 
 class TestStateMachine(ShowBase):
     
@@ -131,43 +154,43 @@ class TestStateMachine(ShowBase):
         idle_state = State(IDLED_STATE)
         idle_state.setEntryCallback(self.printIdleInstructions)
         idle_state.setExitCallback(lambda: logging.info("Exited Idled State"))  
-        idle_state.addAction(VERBOSE,self.printTaskVerbose)
-        idle_state.addAction(EXIT_ACTION,self.exitCallback) 
+        idle_state.addAction(VERBOSE.key,self.printTaskVerbose)
+        idle_state.addAction(EXIT_ACTION.key,self.exitCallback) 
         sm.addState(idle_state)
              
         
-        monitor_state = State(MONITORING_STATE)
+        monitor_state = MonitorState()
         monitor_state.setEntryCallback(lambda : logging.info("""
             Press an arrow
             Press 'd' to exit the state
         """))
-        monitor_state.addAction(PRINT_DIRECTION_ACTION,lambda d : logging.info('Direction %s pressed'%(d)))
+        #monitor_state.addAction(PRINT_DIRECTION_ACTION.key,lambda d : logging.info('Direction %s pressed'%(d)))
         sm.addState(monitor_state)
         
         loop_state = LoopState()
-        loop_state.addAction(VERBOSE,self.printTaskVerbose)
+        loop_state.addAction(VERBOSE.key,self.printTaskVerbose)
         sm.addState(loop_state)
         
         play_state = PlayState(self.state_machine_)   
-        play_state.addAction(VERBOSE,self.printTaskVerbose) 
+        play_state.addAction(VERBOSE.key,self.printTaskVerbose) 
         sm.addState(play_state)
         
         # creating transitions
         
-        sm.addTransition(IDLED_STATE,LOOP_ACTION,LOOPING_STATE)
-        sm.addTransition(IDLED_STATE,PLAY_ACTION,PLAYING_STATE)
-        sm.addTransition(IDLED_STATE,MONITOR_ACTION,MONITORING_STATE)
+        sm.addTransition(IDLED_STATE,LOOP_ACTION.key,LOOPING_STATE)
+        sm.addTransition(IDLED_STATE,PLAY_ACTION.key,PLAYING_STATE)
+        sm.addTransition(IDLED_STATE,MONITOR_ACTION.key,MONITORING_STATE)
         
-        sm.addTransition(PLAYING_STATE,DONE_ACTION,IDLED_STATE)
+        sm.addTransition(PLAYING_STATE,DONE_ACTION.key,IDLED_STATE)
         
-        sm.addTransition(LOOPING_STATE,DONE_ACTION,IDLED_STATE)
+        sm.addTransition(LOOPING_STATE,DONE_ACTION.key,IDLED_STATE)
         
-        sm.addTransition(MONITORING_STATE,DONE_ACTION,IDLED_STATE)      
+        sm.addTransition(MONITORING_STATE,DONE_ACTION.key,IDLED_STATE)      
         
         self.printIdleInstructions()        
         
         
-    def printTaskVerbose(self):                
+    def printTaskVerbose(self,action):                
         logging.info(str(taskMgr))
         
     def printIdleInstructions(self):
@@ -187,15 +210,19 @@ class TestStateMachine(ShowBase):
         
         # check directions
         if self.input_state_.isSet('right'): 
+          PRINT_DIRECTION_ACTION.direction = 'RIGHT'
           self.state_machine_.execute(PRINT_DIRECTION_ACTION,['RIGHT'])
     
         if self.input_state_.isSet('left'): 
+          PRINT_DIRECTION_ACTION.direction = 'LEFT'
           self.state_machine_.execute(PRINT_DIRECTION_ACTION,['LEFT'])
     
         if self.input_state_.isSet('up'): 
+          PRINT_DIRECTION_ACTION.direction = 'UP'
           self.state_machine_.execute(PRINT_DIRECTION_ACTION,['UP'])
     
         if self.input_state_.isSet('down'): 
+          PRINT_DIRECTION_ACTION.direction = 'DOWN'
           self.state_machine_.execute(PRINT_DIRECTION_ACTION,['DOWN'])
         
         # check transitions
@@ -222,7 +249,7 @@ class TestStateMachine(ShowBase):
           
           
         
-    def exitCallback(self):
+    def exitCallback(self,action):
         sys.exit(0)
         
 

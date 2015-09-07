@@ -6,11 +6,9 @@ from panda3d.core import NodePath
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletWorld
-from physics_platformer.collision_masks import *
 from physics_platformer.game_level import Platform
-from physics_platformer.src.physics_platformer.collision_masks.collision_masks import CollisionMasks
-from twisted.trial.runner import LoggedSuite
-from physics_platformer.src.physics_platformer.game_object.game_object import GameObject
+from physics_platformer.collision import CollisionMasks
+from physics_platformer.game_object import GameObject
 
 class Level(NodePath):
   

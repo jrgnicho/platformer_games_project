@@ -1,5 +1,5 @@
 import logging
-from physics_platformer.collision_masks import *
+from physics_platformer.collision import *
 
 class CollisionActionMatrix(object):
   
