@@ -8,6 +8,8 @@ from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletWorld
 from physics_platformer.game_level import Platform
 from physics_platformer.collision import CollisionMasks
+from physics_platformer.collision import CollisionAction
+from physics_platformer.collision import CollisionActionMatrix
 from physics_platformer.game_object import GameObject
 
 class Level(NodePath):
@@ -27,6 +29,7 @@ class Level(NodePath):
     self.bound_boxes_ = [] # node paths to rigid bodies 
     self.game_object_map_ = {} # controllers for every game object in the world
     self.id_counter_ = 0
+    self.collision_action_matrix_ = CollisionActionMatrix()
     
     self.__createLevelBounds__()
     self.__createCollisionRules__()
@@ -82,6 +85,14 @@ class Level(NodePath):
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.LEVEL_BOUND.getLowestOnBit(),True)
     
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.ACTION_BODY.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),True)
+    
+    # populating collision action matrix
+    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.LANDING_SURFACE,CollisionAction.COLLIDE_LANDING_SURFACE)
+    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.CEILING_SURFACE,CollisionAction.COLLIDE_CEILING)
+    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.LEFT_WALL_SURFACE,CollisionAction.COLLIDE_LEFT_WALL)
+    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.RIGHT_WALL_SURFACE,CollisionAction.COLLIDE_RIGHT_WALL)
+    self.collision_action_matrix_.addEntry(CollisionMasks.ACTION_BODY,CollisionMasks.LEDGE,CollisionAction.HOLD_LEDGE)
+    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.LEVEL_BOUND,CollisionAction.COLLIDE_LEVEL_BOUND)
   
   def __processCollisions__(self):
     
@@ -93,9 +104,17 @@ class Level(NodePath):
       node1 = contact_manifold.getNode1()
       
       obj1 = self.game_object_map_[node0.getPythonTag(GameObject.ID_PYTHON_TAG)]
-      obj2 = self.game_object_map_[node1.getPythonTag(GameObject.ID_PYTHON_TAG)]
+      obj2 = self.game_object_map_[node1.getPythonTag(GameObject.ID_PYTHON_TAG)]      
       
-      logging.debug("Found contact between '%s' and '%s'"%(obj1.getName(),obj2.getName()))
+      if self.collision_action_matrix_.hasEntry(node0.getIntoCollideMask() , node1.getIntoCollideMask()):
+        action_key = self.collision_action_matrix_.getAction(node0.getIntoCollideMask() , node1.getIntoCollideMask())
+        action = CollisionAction(action_key,obj1,obj2,contact_manifold)
+        logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj1.getName(),obj2.getName()))
+        
+      if self.collision_action_matrix_.hasEntry(node1.getIntoCollideMask() , node0.getIntoCollideMask()):
+        action_key = self.collision_action_matrix_.getAction(node1.getIntoCollideMask() , node0.getIntoCollideMask())
+        action = CollisionAction(action_key,obj2,obj1,contact_manifold)
+        logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj2.getName(),obj1.getName()))
       
     
   
