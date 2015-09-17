@@ -1,5 +1,5 @@
 from physics_platformer.geometry2d import Box2D
-from physics_platformer.animation import AnimationElement, AnimationAction
+from physics_platformer.animation import AnimationElement, AnimationInfo
 import re
 from construct import *
 import os
@@ -44,7 +44,7 @@ class AIRLoader(object):
     
     self.animations_ = []    
     linecount = 0    
-    anim_action = None
+    anim_info = None
     anim_elmt = None
     
     while linecount < len(lines):   
@@ -56,20 +56,20 @@ class AIRLoader(object):
       if m is not None: # new animation found
         
         # save current animation
-        if anim_action is not None:
+        if anim_info is not None:
           
           # compute average framerate
-          for elmt in anim_action.animation_elements:
-            anim_action.framerate += elmt.game_ticks
+          for elmt in anim_info.animation_elements:
+            anim_info.framerate += elmt.game_ticks
           
-          if len(anim_action.animation_elements) != 0:
-            anim_action.framerate /= len(anim_action.animation_elements)
-            anim_action.framerate = 60.0/anim_action.framerate
+          if len(anim_info.animation_elements) != 0:
+            anim_info.framerate /= len(anim_info.animation_elements)
+            anim_info.framerate = 60.0/anim_info.framerate
           
-          self.animations_.append(anim_action)
+          self.animations_.append(anim_info)
         
         anim_name = (m.group(1)).rstrip(' \t\n\r') 
-        anim_action = AnimationAction(anim_name)
+        anim_info = AnimationInfo(anim_name)
         anim_elmt = AnimationElement()
         
         
@@ -79,7 +79,7 @@ class AIRLoader(object):
         m = re.search(AIRLoader.__BEGIN_HEADER__,line)
         if m is not None: # animation header found
           anim_id  = int(m.group(1))
-          anim_action.id = anim_id
+          anim_info.id = anim_id
         else:
           logging.error("Animation header was not found");
           return False       
@@ -97,7 +97,7 @@ class AIRLoader(object):
           logging.error("Size of static box (Clsn2Default) list is incorrect, expected %i and got %i"%(box_count,len(box_list)))    
           return False
         
-        anim_action.rigid_body_boxes = box_list
+        anim_info.rigid_body_boxes = box_list
         continue
       
       # find Default Hit Boxes "Clsn1Default"
@@ -110,7 +110,7 @@ class AIRLoader(object):
           logging.error("Size of static box (Clsn1Default) list is incorrect, expected %i and got %i"%(box_count,len(box_list)))    
           return False
         
-        anim_action.action_boxes = box_list
+        anim_info.action_boxes = box_list
         continue
         
       # find Hit Boxes
@@ -149,7 +149,7 @@ class AIRLoader(object):
         anim_elmt.game_ticks = sprite_entry[4]
         
         # save animation element
-        anim_action.animation_elements.append(anim_elmt)
+        anim_info.animation_elements.append(anim_elmt)
         anim_elmt = AnimationElement()
         
         continue

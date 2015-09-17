@@ -1,7 +1,7 @@
 from physics_platformer.sprite import Sprite
 from physics_platformer.sprite import SpriteGroup
 from physics_platformer.sprite import SpriteAnimator
-from physics_platformer.animation import AnimationAction
+from physics_platformer.animation import AnimationInfo
 from physics_platformer.collision import *
 from physics_platformer.geometry2d import Box2D
 from panda3d.core import NodePath
@@ -44,15 +44,15 @@ class AnimationActor(SpriteAnimator):
     
   def loadAnimation(self,animation):
     """
-    Loads the animation data from a AnimationAction object
+    Loads the animation data from a AnimationInfo object
     """    
-    if type(animation) is not AnimationAction:
-      logging.error("Object pass is not an instance of the AnimationAction class")
+    if type(animation) is not AnimationInfo:
+      logging.error("Object pass is not an instance of the AnimationInfo class")
       return False
     
     # load sprites
     if not self.loadAnimationSprites(animation.sprites_right, animation.sprites_left, animation.framerate):
-      logging.error('Failed to load sprites from AnimationAction object')
+      logging.error('Failed to load sprites from AnimationInfo object')
       return False
     
     # scale    

@@ -38,7 +38,7 @@ class AnimationElement(object):
     """%(self.group_no,self.im_no,len(self.hit_boxes),hit_str,len(self.damage_boxes),col_str,self.game_ticks)
     return s
        
-class AnimationAction(object):
+class AnimationInfo(object):
   """
   Class that stores the animation elements and other relevant data associated with a "Animation Action" as define in a M.U.G.E.N Air file
   """
