@@ -42,4 +42,24 @@ class StandingState(CharacterState):
     
     CharacterState.__init__(self, CharacterStateKeys.STANDING, character_obj, parent_state_machine)
     
+  def enter(self):
+    pass
+  
+  def exit(self):
+    pass
+  
+  def stepGame(self,action):
+    if self.checkFalling():
+      pass
+    
+    if self.checkOnLedge():
+      pass
+  
+  def checkFalling(self):
+    return False
+  
+  def checkOnLedge(self):
+    return False
+    
+    
     
