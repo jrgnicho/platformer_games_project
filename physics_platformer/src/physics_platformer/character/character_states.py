@@ -1,6 +1,5 @@
 from physics_platformer.state_machine import *
-
-from physics_platformer.state_machine import *
+from physics_platformer.game_actions import GeneralActions
 
 class CharacterState(State):
   

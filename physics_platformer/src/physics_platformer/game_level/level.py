@@ -8,7 +8,7 @@ from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletWorld
 from physics_platformer.game_level import Platform
 from physics_platformer.collision import CollisionMasks
-from physics_platformer.collision import CollisionAction
+from physics_platformer.game_actions import CollisionAction
 from physics_platformer.collision import CollisionActionMatrix
 from physics_platformer.game_object import GameObject
 
