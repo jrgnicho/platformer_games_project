@@ -91,7 +91,7 @@ class Level(NodePath):
     self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.CEILING_SURFACE,CollisionAction.COLLIDE_CEILING)
     self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.LEFT_WALL_SURFACE,CollisionAction.COLLIDE_LEFT_WALL)
     self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.RIGHT_WALL_SURFACE,CollisionAction.COLLIDE_RIGHT_WALL)
-    self.collision_action_matrix_.addEntry(CollisionMasks.ACTION_BODY,CollisionMasks.LEDGE,CollisionAction.HOLD_LEDGE)
+    self.collision_action_matrix_.addEntry(CollisionMasks.ACTION_BODY,CollisionMasks.LEDGE,CollisionAction.ACTION_BODY_OVERLAP)
     self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.LEVEL_BOUND,CollisionAction.COLLIDE_LEVEL_BOUND)
   
   def __processCollisions__(self):

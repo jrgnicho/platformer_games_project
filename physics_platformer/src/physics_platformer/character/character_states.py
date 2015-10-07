@@ -50,7 +50,7 @@ class StandingState(CharacterState):
   
   def stepGame(self,action):
     if self.checkFalling():
-      pass
+      self.parent_state_machine_.execute()
     
     if self.checkOnLedge():
       pass
