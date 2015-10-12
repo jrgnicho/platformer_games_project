@@ -1,5 +1,6 @@
 from physics_platformer.state_machine import *
 from physics_platformer.game_actions import GeneralActions
+from panda3d.core import LVector3
 
 class CharacterState(State):
   
@@ -43,23 +44,19 @@ class StandingState(CharacterState):
     CharacterState.__init__(self, CharacterStateKeys.STANDING, character_obj, parent_state_machine)
     
   def enter(self):
-    pass
-  
-  def exit(self):
-    pass
-  
-  def stepGame(self,action):
-    if self.checkFalling():
-      self.parent_state_machine_.execute()
+    self.character_obj_.play(self.animation_key_)
     
-    if self.checkOnLedge():
-      pass
+    direction = 1
+    direction = direction if self.character_obj_.isFacingRight() else -direction    
+    self.character_obj_.setLinearVelocity(LVector3(direction,0,0))
   
-  def checkFalling(self):
-    return False
   
-  def checkOnLedge(self):
-    return False
+class RunningState(CharacterState):
+  
+  def __init__(self,character_obj,parent_state_machine):
+    CharacterState.__init__(self, CharacterStateKeys.RUNNING, character_obj, parent_state_machine)
+    
+  
     
     
     

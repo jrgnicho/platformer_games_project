@@ -87,11 +87,11 @@ class Level(NodePath):
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.ACTION_BODY.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),True)
     
     # populating collision action matrix
-    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.LANDING_SURFACE,CollisionAction.COLLIDE_LANDING_SURFACE)
-    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.CEILING_SURFACE,CollisionAction.COLLIDE_CEILING)
-    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.LEFT_WALL_SURFACE,CollisionAction.COLLIDE_LEFT_WALL)
-    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.RIGHT_WALL_SURFACE,CollisionAction.COLLIDE_RIGHT_WALL)
-    self.collision_action_matrix_.addEntry(CollisionMasks.ACTION_BODY,CollisionMasks.LEDGE,CollisionAction.ACTION_BODY_OVERLAP)
+    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.LANDING_SURFACE,CollisionAction.SURFACE_COLLISION)
+    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.CEILING_SURFACE,CollisionAction.CEILING_COLLISION)
+    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.LEFT_WALL_SURFACE,CollisionAction.LEFT_WALL_COLLISION)
+    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.RIGHT_WALL_SURFACE,CollisionAction.RIGHT_WALL_COLLISION)
+    self.collision_action_matrix_.addEntry(CollisionMasks.ACTION_BODY,CollisionMasks.LEDGE,CollisionAction.ACTION_BODY_COLLISION)
     self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.LEVEL_BOUND,CollisionAction.COLLIDE_LEVEL_BOUND)
   
   def __processCollisions__(self):
