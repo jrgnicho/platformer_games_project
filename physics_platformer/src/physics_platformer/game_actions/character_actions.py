@@ -9,6 +9,7 @@ class CharacterAction(Action):
   JUMP = CharacterAction('JUMP')
   DASH = CharacterAction('DASH')
   HALT = CharacterAction('DASH_HALT')
+  FALL = CharacterAction('FALL')
   
   def __init__(self,key,animation_name = None):
     
