@@ -1,4 +1,3 @@
-#import pygame.event
 from physics_platformer.state_machine import Action
 from physics_platformer.state_machine import StateMachineActions
 from physics_platformer.state_machine import State

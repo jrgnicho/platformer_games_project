@@ -46,8 +46,11 @@ class StandingState(CharacterState):
     CharacterState.__init__(self, CharacterStateKeys.STANDING, character_obj, parent_state_machine)
     
   def enter(self):
-    self.character_obj_.play(self.animation_key_)    
+    self.character_obj_.loop(self.animation_key_)    
     self.character_obj_.setLinearVelocity(LVector3(0,0,0))
+    
+  def exit(self):
+    self.character_obj_.stop()
   
   
 class RunningState(CharacterState):
@@ -63,7 +66,10 @@ class RunningState(CharacterState):
     self.addAction(GeneralActions.GAME_STEP.key,self.moveUpdate)  
     
   def enter(self):
-    self.character_obj_.play(self.animation_key_)   
+    self.character_obj_.loop(self.animation_key_)   
+    
+  def exit(self):
+    self.character_obj_.stop()
     
     
   def turnRight(self):   
@@ -93,21 +99,22 @@ class TakeoffState(CharacterState):
     
   def enter(self):
     self.character_obj_.setAnimationEndCallback(self.done)
+    self.character_obj_.play(self.animation_key_)
     
   def done(self):
-    action = AnimationActions.ANIMATION_COMPLETED
-    self.parent_state_machine_.execute(action)
+    StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))
   
   def exit(self):
     speed_up = self.character_obj_.character_info_.jump_force
     self.character_obj_.setLinearVelocity(LVector3(0,0,speed_up))
+    self.character_obj_.stop()
+    self.character_obj_.setAnimationEndCallback(None)
       
 class JumpState(CharacterState):
   
   def __init__(self,character_obj,parent_state_machine):
     CharacterState.__init__(self, CharacterStateKeys.JUMPING, character_obj, parent_state_machine)
     self.forward_speed_ = self.character_obj_.character_info_.jump_forward
-    self.forward_direction_ = LVector3(self.forward_speed_,0,0)
       
     self.addAction(CharacterActions.MOVE_RIGHT.key,self.moveRight)
     self.addAction(CharacterActions.MOVE_LEFT.key,self.moveLeft)
@@ -118,31 +125,93 @@ class JumpState(CharacterState):
     
     if abs(vel.getX()) > self.forward_speed_:
       self.forward_speed_ = abs(vel.getX())
+    else:
+      self.forward_speed_ = self.character_obj_.character_info_.jump_forward
       
     vel.setZ(self.character_obj_.character_info_.jump_force)
     self.character_obj_.setLinearVelocity(vel)
+    
+    self.character_obj_.loop(self.animation_key_)
+    
+  def exit(self):
+    vel = self.character_obj_.getLinearVelocity()
+    vel.setZ(0)
+    self.character_obj_.setLinearVelocity(vel)
+    self.character_obj_.stop()    
       
   def moveRight(self):   
     if not self.character_obj_.isFacingRight():
       self.character_obj_.faceRight(True)
       
-    self.forward_direction_.setX(self.forward_speed_)
-    self.character_obj_.setLinearVelocity(self.forward_direction_)
+    vel = self.character_obj_.getLinearVelocity()
+    vel.setX(self.forward_speed_)    
+    self.character_obj_.setLinearVelocity(vel)
     
   def moveLeft(self):
     if self.character_obj_.isFacingRight():
       self.character_obj_.faceRight(False)
       
-    self.forward_direction_.setX(-self.forward_speed_)
-    self.character_obj_.setLinearVelocity(self.forward_direction_)
+    vel = self.character_obj_.getLinearVelocity()
+    vel.setX(-self.forward_speed_)    
+    self.character_obj_.setLinearVelocity(vel)
     
   def checkAscendFinished(self):
     
     vel = self.character_obj_.getLinearVelocity()
     if vel.getZ() < 0.01:
-      vel.setZ(0)
-      self.character_obj_.setLinearVelocity(vel)
-      self.parent_state_machine_.execute(CharacterActions.FALL)
+      StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))
+      
+class FallState(CharacterState):
+  
+  def __init__(self,character_obj,parent_state_machine):
+    CharacterState.__init__(self, CharacterStateKeys.FALLING, character_obj, parent_state_machine)
+    
+    self.addAction(CharacterActions.MOVE_RIGHT.key,self.moveRight)
+    self.addAction(CharacterActions.MOVE_LEFT.key,self.moveLeft)
+    
+  def enter(self):
+    self.character_obj_.loop(self.animation_key_)
+    
+  def exit(self):
+    self.character_obj_.stop()
+    
+  def moveRight(self):   
+    if not self.character_obj_.isFacingRight():
+      self.character_obj_.faceRight(True)
+      
+    vel = self.character_obj_.getLinearVelocity()
+    vel.setX(self.forward_speed_)    
+    self.character_obj_.setLinearVelocity(vel)
+    
+  def moveLeft(self):
+    if self.character_obj_.isFacingRight():
+      self.character_obj_.faceRight(False)
+      
+    vel = self.character_obj_.getLinearVelocity()
+    vel.setX(-self.forward_speed_)    
+    self.character_obj_.setLinearVelocity(vel)
+    
+class LandState(CharacterState):
+  
+  def __init__(self,character_obj,parent_state_machine):
+    CharacterState.__init__(self, CharacterStateKeys.LANDING, character_obj, parent_state_machine)
+    
+  def enter(self):
+    self.character_obj_.setAnimationEndCallback(self.done)
+    vel = self.character_obj_.getLinearVelocity()
+    vel.setZ(0)
+    self.character_obj_.setLinearVelocity(vel)
+    self.character_obj_.setLinearFactor(LVector3(1,0,0)) # prevent movement in z
+    self.character_obj_.play(self.animation_key_)
+    
+  def exit(self):
+    
+    self.character_obj_.setLinearFactor(LVector3(1,0,1)) # re-enable movement in z
+    self.character_obj_.stop()
+    self.character_obj_.setAnimationEndCallback(None)
+    
+    
+    
       
     
     
