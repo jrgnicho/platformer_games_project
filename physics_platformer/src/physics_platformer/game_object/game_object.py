@@ -22,6 +22,7 @@ from panda3d.bullet import BulletWorld
 from direct.showbase.ShowBase import ShowBase
 
 from physics_platformer.collision import *
+from physics_platformer.state_machine import Action
 
 """
 Game Object class
@@ -111,6 +112,9 @@ class GameObject(NodePath):
     
     def getRigidBody(self):
         return self
+      
+    def execute(self,action):
+      logging.warn("execute(Action action) method has not been implemented")
     
         
         

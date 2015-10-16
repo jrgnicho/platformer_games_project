@@ -6,6 +6,7 @@ class CharacterAction(Action):
   MOVE_LEFT = CharacterAction('MOVE_LEFT')
   MOVE_UP = CharacterAction("MOVE_UP")
   MOVE_DOWN = CharacterAction("MOVE_DOWN")
+  MOVE_NONE = CharacterAction("MOVE_NONE")
   JUMP = CharacterAction('JUMP')
   DASH = CharacterAction('DASH')
   HALT = CharacterAction('DASH_HALT')
