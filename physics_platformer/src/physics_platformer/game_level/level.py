@@ -109,11 +109,15 @@ class Level(NodePath):
       if self.collision_action_matrix_.hasEntry(node0.getIntoCollideMask() , node1.getIntoCollideMask()):
         action_key = self.collision_action_matrix_.getAction(node0.getIntoCollideMask() , node1.getIntoCollideMask())
         action = CollisionAction(action_key,obj1,obj2,contact_manifold)
+                
+        obj1.execute(action)
         logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj1.getName(),obj2.getName()))
         
       if self.collision_action_matrix_.hasEntry(node1.getIntoCollideMask() , node0.getIntoCollideMask()):
         action_key = self.collision_action_matrix_.getAction(node1.getIntoCollideMask() , node0.getIntoCollideMask())
         action = CollisionAction(action_key,obj2,obj1,contact_manifold)
+        
+        obj2.execute(action)
         logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj2.getName(),obj1.getName()))
       
     

@@ -66,4 +66,7 @@ class Platform(GameObject):
     # adding all ghost nodes
     for gn in ghost_nodes:
       self.attachNewNode(gn)
+      
+  def execute(self):
+    pass
     
