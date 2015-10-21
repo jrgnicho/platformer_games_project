@@ -2,8 +2,7 @@ from panda3d.core import BitMask32
 
 class JoystickButtons(object):
   
-  __BIT_OFFSET__ = 1
-  
+  __BIT_OFFSET__ = 0 
     
   # directions
   NONE            =   BitMask32.bit(0 + JoystickButtons.__BIT_OFFSET__)  # bitarray('0000000000000000')
@@ -15,6 +14,8 @@ class JoystickButtons(object):
   DPAD_UPLEFT     =   DPAD_UP | DPAD_LEFT
   DPAD_DOWNRIGHT  =   DPAD_DOWN | DPAD_RIGHT
   DPAD_DOWNLEFT   =   DPAD_DOWN | DPAD_LEFT
+  
+  # buttons
   BUTTON_A        =   BitMask32.bit(5 + JoystickButtons.__BIT_OFFSET__)  # bitarray('0000000000010000')
   BUTTON_B        =   BitMask32.bit(6 + JoystickButtons.__BIT_OFFSET__)  # bitarray('0000000000100000')
   BUTTON_X        =   BitMask32.bit(7 + JoystickButtons.__BIT_OFFSET__)  # bitarray('0000000001000000')
