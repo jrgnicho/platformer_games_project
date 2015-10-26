@@ -1,5 +1,5 @@
 import sys
-from physics_platformer.input import JoystickButtons
+import logging
 
 class Move(object):
     """
@@ -15,7 +15,7 @@ class Move(object):
         
         self.name = name
         self.button_sequence = button_sequence;
-        self.callback = callback if (callback != None) else (lambda : sys.stdout.write("Move '%s' executed\n"%(name)))
+        self.callback = callback if (callback != None) else (lambda : logging.info("Move '%s' executed\n"%(name)))
         self.is_submove = is_submove
         
     def match(self,sequence):
@@ -32,7 +32,8 @@ class Move(object):
             
             # finding the first button entry
             if sequence.count(self.button_sequence[0]) > 0 :
-                start_ind = sequence.index(self.button_sequence[0])
+                #start_ind = sequence.index(self.button_sequence[0])
+                start_ind = -len(self.button_sequence)
                 subsequence = sequence[start_ind:]
                                 
                 # Exit if subsequence has fewer entries

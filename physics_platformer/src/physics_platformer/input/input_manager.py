@@ -18,6 +18,9 @@ class InputManager(object):
         self.set_moves(self.moves_)  
         
         print "Added new %s move to InputManager"%(move.name)  
+        
+    def reset(self):
+      pass
  
     def update(self,dt = 0):
         """

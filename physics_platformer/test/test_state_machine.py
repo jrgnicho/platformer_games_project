@@ -2,7 +2,6 @@
 import logging
 import sys
 
-from pandac.PandaModules import * 
 from direct.showbase.ShowBase import ShowBase
 from direct.interval.IntervalGlobal import Sequence
 from direct.interval.LerpInterval import LerpFunc

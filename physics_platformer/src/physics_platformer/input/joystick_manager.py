@@ -90,7 +90,11 @@ class JoystickManager(InputManager):
             self.joystick_state_ = JoystickState(self.joystick_)
         else:
             print "ERROR: Joystick was not found"
-        
+            
+    def reset(self):
+      
+      self.time_elapsed_ = 0
+      self.button_buffer_ = []        
                                          
     def update(self,dt = 0):
         
@@ -102,7 +106,6 @@ class JoystickManager(InputManager):
         self.time_elapsed_ = self.time_elapsed_ + dt
         if self.time_elapsed_ > self.buffer_timeout_:
             
-            #print "Time Elapsed %i exceeded Buffer Timeout %i"%(self.time_elapsed_,self.buffer_timeout_)
             self.time_elapsed_ = 0
             self.button_buffer_ = []
         
@@ -111,9 +114,7 @@ class JoystickManager(InputManager):
             return   
    
         # Capturing Joystick Buttons
-        #with self.suppress_stdout():
         self.joystick_state_.capture(self.joystick_)
-
                 
         # Combining pressed buttons
         buttons = self.joystick_axes_.get_direction(self.joystick_state_)                 
@@ -130,7 +131,6 @@ class JoystickManager(InputManager):
         else:
             if buttons != self.button_buffer_[-1]:
                 self.button_buffer_.append(buttons)
-        #print "Button Buffer has %i entries"%(len(self.button_buffer_))
         
         
         
@@ -148,7 +148,6 @@ class JoystickManager(InputManager):
                     self.moves_[i].execute()
                     self.button_buffer_ = []      
                     break   
-
             else:                 
                         
                 num_buttons = len(self.moves_[i])
@@ -157,7 +156,6 @@ class JoystickManager(InputManager):
 
         
         
-        #print "JoystickManager Update Completed"
             
     @contextmanager       
     def suppress_stdout(self):
