@@ -19,42 +19,36 @@ class Move(object):
         self.is_submove = is_submove
         
     def match(self,sequence):
-        """
-            match(sequence)            
-            Checks is 'sequence' matches the button sequence in this move.
-            Inputs:
-                - sequence : List of button bitmasks
-            Outputs:
-                - Bool : True if match is found, false otherwise
-        """
+      """
+          match(sequence)            
+          Checks is 'sequence' matches the button sequence in this move.
+          Inputs:
+              - sequence : List of button bitmasks
+          Outputs:
+              - Bool : True if match is found, false otherwise
+      """
+      
+      if len(sequence) >= len(self.button_sequence):
         
-        if len(sequence) >= len(self.button_sequence):
-            
-            # finding the first button entry
-            if sequence.count(self.button_sequence[0]) > 0 :
-                #start_ind = sequence.index(self.button_sequence[0])
-                start_ind = -len(self.button_sequence)
-                subsequence = sequence[start_ind:]
-                                
-                # Exit if subsequence has fewer entries
-                if len(subsequence) < len(self.button_sequence):
-                    return False
-            
-                
-                for i in range(len(self.button_sequence)):
-                    if (subsequence[i] & self.button_sequence[i]) != self.button_sequence[i]:
-                        return False
-                    #endif
-                #endfor
-            else:
-                # Button 'sequence' array doesn't have the first button entry
-                return False
+        start_ind = -len(self.button_sequence)
+        subsequence = sequence[start_ind:]
+                        
+        # Exit if subsequence has fewer entries
+        if len(subsequence) < len(self.button_sequence):
+            return False    
+        
+        for i in range(len(self.button_sequence)):
+            if (subsequence[i] & self.button_sequence[i]) != self.button_sequence[i]:
+              return False
+            #endif
+        #endfor
+
                             
-        else:
-            return False
-        #endif
-        
-        return True  
+      else:
+          return False
+      #endif
+      
+      return True  
     
     def __len__(self):
         return len(self.button_sequence)
