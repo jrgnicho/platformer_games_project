@@ -10,11 +10,11 @@ from panda3d.core import ClockObject
 
 from physics_platformer.input import Move
 from physics_platformer.input import KeyboardButtons
-from physics_platformer.input import KeyboardManager
+from physics_platformer.input import KeyboardController
 import sys
 import logging
 
-class TestKeyboardManager(ShowBase):
+class TestKeyboardController(ShowBase):
   
   def __init__(self):    
     ShowBase.__init__(self)
@@ -46,7 +46,7 @@ class TestKeyboardManager(ShowBase):
                   'escape' : KeyboardButtons.KEY_ESC}
   
     
-    self.input_manager_ = KeyboardManager(self.input_state_, button_map)
+    self.input_manager_ = KeyboardController(self.input_state_, button_map)
     
     # Creating directional moves
     self.input_manager_.add_move(Move('UP',[KeyboardButtons.DPAD_UP],True))
@@ -88,6 +88,6 @@ if __name__ == '__main__':
   log_level = logging.DEBUG
   logging.basicConfig(format='%(levelname)s: %(message)s',level=log_level)  
   
-  t = TestKeyboardManager()    
+  t = TestKeyboardController()    
   t.run()  
   

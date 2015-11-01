@@ -1,5 +1,5 @@
 
-from physics_platformer.input import InputManager
+from physics_platformer.input import ControllerInterface
 from physics_platformer.input import JoystickButtons
 from physics_platformer.input import JoystickState
 import pygame.joystick
@@ -7,7 +7,7 @@ import logging
 
 
         
-class JoystickManager(InputManager):
+class JoystickController(ControllerInterface):
     
     __DEFAULT_BUFFER_TIMEOUT__ = 2 # 2 seconds
     __MAX_BUFFER_SIZE__ = 30   
@@ -56,16 +56,17 @@ class JoystickManager(InputManager):
     
     
     """
-    ## JoystickManager(button_map, joystick_axes, buffer_timeout)
+    ## JoystickController(dict<int,JoystickButton> button_map, pyagame.joystick.Joystick joystick_obj, JoystickAxes joystick_axes, buffer_timeout)
     #  @param button_map     A dictionary containing the mapping between the indices for buttons as defined by the pygame.joystick.Joystick
     #                        interface (keys) and the constants defined in the physics_platformer.input.JoystickButtons class (values).
+    #  @param joystick_obj  The joystick interface.  Make sure that the pygame.joystick.init() method has been invoked
     #  @param joystick_axes  A physics_platformer.input.JoystickAxes object for detection the direction of the D-pad
     #  @param buffer_timeout A float in seconds.  The button buffer is cleared when this value is exceeded 
     """  
-    def __init__(self,button_map,joystick_axes,buffer_timeout = __DEFAULT_BUFFER_TIMEOUT__):
+    def __init__(self,button_map,joystick_obj,joystick_axes,buffer_timeout = __DEFAULT_BUFFER_TIMEOUT__):
 
         
-        InputManager.__init__(self)
+        ControllerInterface.__init__(self)
         
         self.buffer_timeout_ = buffer_timeout    # Buffer is cleared when this value is exceeded.
         self.button_map_ = button_map            # Dictionary containing the mapping of the device button index (key) in the 
@@ -80,17 +81,12 @@ class JoystickManager(InputManager):
         
         # Initializing joystick support members        
         self.joystick_state_ = None   
-        self.joystick_ = None    
+        self.joystick_ = joystick_obj   
         
-        if pygame.joystick.get_count() > 0 :
-            logging.info("Enabling Joystick 0")
-            self.joystick_ = pygame.joystick.Joystick(0)
-            self.joystick_.init()
-            
-            # Instantiating a JoystickState 
-            self.joystick_state_ = JoystickState(self.joystick_)
-        else:
-            logging.error( "ERROR: Joystick was not found")
+        if not self.joystick_.get_init():
+          self.joystick_.init()
+          
+        self.joystick_state_ = JoystickState(self.joystick_)
             
     def reset(self):
       
@@ -101,7 +97,7 @@ class JoystickManager(InputManager):
     def update(self,dt = 0):
         
       
-      InputManager.update(self,dt)
+      ControllerInterface.update(self,dt)
       
       # Update internal time elapsed and clear buffer if timeout exceeded
       self.time_elapsed_ = self.time_elapsed_ + dt
@@ -133,7 +129,7 @@ class JoystickManager(InputManager):
       
       
       # Keeping buffer size to max allowed
-      if len(self.button_buffer_) > JoystickManager.__MAX_BUFFER_SIZE__:
+      if len(self.button_buffer_) > JoystickController.__MAX_BUFFER_SIZE__:
         del self.button_buffer_[0]
           
           

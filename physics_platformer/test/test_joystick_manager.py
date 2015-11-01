@@ -13,11 +13,11 @@ from panda3d.core import ClockObject
 
 from physics_platformer.input import Move
 from physics_platformer.input import JoystickButtons
-from physics_platformer.input import JoystickManager
+from physics_platformer.input import JoystickController
 import sys
 import logging
 
-class TestJoystickManager(ShowBase):
+class TestJoystickController(ShowBase):
   
   def __init__(self):    
     ShowBase.__init__(self)
@@ -49,8 +49,13 @@ class TestJoystickManager(ShowBase):
                   6 : JoystickButtons.TRIGGER_L1 , 4 : JoystickButtons.TRIGGER_L2,
                   9 : JoystickButtons.BUTTON_START , 8 : JoystickButtons.BUTTON_SELECT}
     
-    
-    self.joystick_manager_ = JoystickManager(button_map,JoystickManager.JoystickAxes(),2)
+
+    if pygame.joystick.get_count() <=  0:
+      logging.error("No Joysticks were found, exiting")
+      sys.exit(-1)
+      
+    joystick = pygame.joystick.Joystick(0)
+    self.joystick_manager_ = JoystickController(button_map,joystick, JoystickController.JoystickAxes(),2)
     
     # Creating directional moves
     self.joystick_manager_.add_move(Move('UP',[JoystickButtons.DPAD_UP],True))
@@ -109,7 +114,7 @@ if __name__ == '__main__':
   # Initializing joystick support
   pygame.init()
   pygame.joystick.init()
-  t = TestJoystickManager()    
+  t = TestJoystickController()    
   t.run()
   pygame.joystick.quit()          
         

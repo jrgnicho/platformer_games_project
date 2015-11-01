@@ -15,7 +15,7 @@ class Character(CharacterObject):
   def __init__(self,character_info):
     CharacterObject.__init__(self.character_info)
     
-    self.controller_sm_ = StateMachine()    
+    self.sm_ = StateMachine()    
     
   def setup(self):    
 
@@ -25,39 +25,39 @@ class Character(CharacterObject):
     return True
     
   def execute(self,action):
-    self.controller_sm_.execute(action)
+    self.sm_.execute(action)
     
   def __setupDefaultStates__(self):
     
     # creating default states
-    standing_state = CharacterStates.StandingState(self, self.controller_sm_)
-    running_state = CharacterStates.RunningState(self,self.controller_sm_)
-    takeoff_state = CharacterStates.TakeoffState(self,self.controller_sm_)
-    jump_state = CharacterStates.JumpState(self,self.controller_sm_)
-    fall_state = CharacterStates.FallState(self,self.controller_sm_)
-    land_state = CharacterStates.LandState(self,self.controller_sm_)
+    standing_state = CharacterStates.StandingState(self, self.sm_)
+    running_state = CharacterStates.RunningState(self,self.sm_)
+    takeoff_state = CharacterStates.TakeoffState(self,self.sm_)
+    jump_state = CharacterStates.JumpState(self,self.sm_)
+    fall_state = CharacterStates.FallState(self,self.sm_)
+    land_state = CharacterStates.LandState(self,self.sm_)
     
-    self.controller_sm_.addState(standing_state.key)
-    self.controller_sm_.addState(running_state.key)
-    self.controller_sm_.addState(takeoff_state.key)
-    self.controller_sm_.addState(jump_state.key)
-    self.controller_sm_.addState(fall_state.key)
-    self.controller_sm_.addState(land_state.key)
+    self.sm_.addState(standing_state.key)
+    self.sm_.addState(running_state.key)
+    self.sm_.addState(takeoff_state.key)
+    self.sm_.addState(jump_state.key)
+    self.sm_.addState(fall_state.key)
+    self.sm_.addState(land_state.key)
     
     
   def __setupTransitionRules__(self):    
     
-    self.controller_sm_.addTransition(CharacterStateKeys.STANDING,CharacterAction.MOVE_RIGHT.key,CharacterStateKeys.RUNNING)
-    self.controller_sm_.addTransition(CharacterStateKeys.STANDING,CharacterAction.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
-    self.controller_sm_.addTransition(CharacterStateKeys.STANDING,CharacterAction.JUMP.key,CharacterStateKeys.TAKEOFF)
-    self.controller_sm_.addTransition(CharacterStateKeys.STANDING,CollisionAction.COLLISION_FREE,CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterAction.MOVE_RIGHT.key,CharacterStateKeys.RUNNING)
+    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterAction.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
+    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterAction.JUMP.key,CharacterStateKeys.TAKEOFF)
+    self.sm_.addTransition(CharacterStateKeys.STANDING,CollisionAction.COLLISION_FREE,CharacterStateKeys.FALLING)
     
-    self.controller_sm_.addTransition(CharacterStateKeys.RUNNING,CollisionAction.COLLISION_FREE,CharacterStateKeys.FALLING)
-    self.controller_sm_.addTransition(CharacterStateKeys.RUNNING,CharacterAction.JUMP.key,CharacterStateKeys.TAKEOFF)
-    self.controller_sm_.addTransition(CharacterStateKeys.RUNNING,CharacterAction.MOVE_NONE.key,CharacterStateKeys.STANDING)
+    self.sm_.addTransition(CharacterStateKeys.RUNNING,CollisionAction.COLLISION_FREE,CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterAction.JUMP.key,CharacterStateKeys.TAKEOFF)
+    self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterAction.MOVE_NONE.key,CharacterStateKeys.STANDING)
     
-    self.controller_sm_.addTransition(CharacterStateKeys.TAKEOFF, StateMachineActions.DONE.key, CharacterStateKeys.JUMPING)
-    self.controller_sm_.addTransition(CharacterStateKeys.JUMPING, StateMachineActions.DONE.key, CharacterStateKeys.FALLING)
-    self.controller_sm_.addTransition(CharacterStateKeys.FALLING, CollisionAction.SURFACE_COLLISION, CharacterStateKeys.LANDING)
-    self.controller_sm_.addTransition(CharacterStateKeys.LANDING, StateMachineActions.DONE.key, CharacterStateKeys.STANDING)
+    self.sm_.addTransition(CharacterStateKeys.TAKEOFF, StateMachineActions.DONE.key, CharacterStateKeys.JUMPING)
+    self.sm_.addTransition(CharacterStateKeys.JUMPING, StateMachineActions.DONE.key, CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.FALLING, CollisionAction.SURFACE_COLLISION, CharacterStateKeys.LANDING)
+    self.sm_.addTransition(CharacterStateKeys.LANDING, StateMachineActions.DONE.key, CharacterStateKeys.STANDING)
     

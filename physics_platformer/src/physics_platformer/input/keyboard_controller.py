@@ -1,4 +1,4 @@
-from physics_platformer.input import InputManager
+from physics_platformer.input import ControllerInterface
 from panda3d.core import BitMask32
 import logging
 
@@ -30,12 +30,12 @@ class KeyboardButtons(object):
   KEY_SHIFT     =   BitMask32.bit(14 + __BIT_OFFSET__) # bitarray('0010000000000000')
   KEY_ESC       =   BitMask32.bit(15 + __BIT_OFFSET__) # bitarray('0010000000000000')
 
-class KeyboardManager(InputManager):  
+class KeyboardController(ControllerInterface):  
   __DEFAULT_BUFFER_TIMEOUT__ = 2 # 2 seconds
   __MAX_BUFFER_SIZE__ = 30 
   
   def __init__(self,input_state,key_button_map, buffer_timeout = __DEFAULT_BUFFER_TIMEOUT__):
-    InputManager.__init__(self)
+    ControllerInterface.__init__(self)
     self.input_state_ = input_state
     self.key_button_map_ = key_button_map
     
@@ -93,7 +93,7 @@ class KeyboardManager(InputManager):
             
             
     # Keeping buffer size to max allowed
-    if len(self.button_buffer_) > KeyboardManager.__MAX_BUFFER_SIZE__:
+    if len(self.button_buffer_) > KeyboardController.__MAX_BUFFER_SIZE__:
         del self.button_buffer_[0]      
       
     # checking direction matches

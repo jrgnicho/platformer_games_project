@@ -2,7 +2,7 @@ from physics_platformer.input import JoystickButtons
 from physics_platformer.input import Move
 
 
-class InputManager(object):
+class ControllerInterface(object):
     """
         Interface class for input devices
     """
@@ -17,7 +17,7 @@ class InputManager(object):
         self.moves_.append(move)
         self.set_moves(self.moves_)  
         
-        print "Added new %s move to InputManager"%(move.name)  
+        print "Added new %s move to ControllerInterface"%(move.name)  
         
     def reset(self):
       pass
