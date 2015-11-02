@@ -27,7 +27,7 @@ class Level(NodePath):
     self.physics_world_.setGravity(Level.__GRAVITY__)
     self.size_ = size   
     self.bound_boxes_ = [] # node paths to rigid bodies 
-    self.game_object_map_ = {} # controllers for every game object in the world
+    self.game_object_map_ = {}  # game objects in the world
     self.id_counter_ = 0
     self.collision_action_matrix_ = CollisionActionMatrix()
     
@@ -36,13 +36,17 @@ class Level(NodePath):
     
   def addPlatform(self,platform):    
     self.physics_world_.attach(platform.node())
+    platform.setPhysicsWorld(self.physics_world_)
+    platform.reparentTo(self)
     
   def addGameObject(self,game_object):
     
     self.id_counter_+=1
     new_id = self.id_counter_
     game_object.setObjectID(str(new_id))    
-    self.game_object_map_[game_object.getObjectID(),game_object]
+    self.game_object_map_[game_object.getObjectID()] = game_object
+    game_object.setPhysicsWorld(self.physics_world_)
+    game_object.reparentTo(self)
     
   
   def update(self,dt):
