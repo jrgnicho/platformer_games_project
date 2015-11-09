@@ -33,7 +33,10 @@ from panda3d.bullet import BulletDebugNode
 
 from physics_platformer.game_level import Level
 from physics_platformer.game_level import Platform
-
+from physics_platformer.input import Move
+from physics_platformer.input import KeyboardButtons
+from physics_platformer.input import KeyboardController
+from physics_platformer.game_object import GameObject
 
 class TestGame(ShowBase):
   
@@ -42,9 +45,19 @@ class TestGame(ShowBase):
   __NUM_BOXES__ = 20
   __BOX_SIDE_LENGTH__ = 0.4
   
-  def __init__(self):
+  def __init__(self,name ='TestGame'):
     
     ShowBase.__init__(self)
+    
+    self.name_ = name
+    self.setupRendering()
+    self.setupResources()
+    self.setupControls()
+    self.setupScene()
+    self.clock_ = ClockObject()
+  
+    # Task
+    taskMgr.add(self.update, 'updateWorld')
     
     
   def setupRendering(self):
@@ -67,7 +80,9 @@ class TestGame(ShowBase):
     self.render.setLight(dlightNP)
     
   def setupControls(self):
-    button_map = {'a' : KeyboardButtons.KEY_A , 'q' : KeyboardButtons.KEY_Q,'space' : KeyboardButtons.KEY_SPACE }
+    
+    self.input_state_ = InputState()
+    button_map = {'a' : KeyboardButtons.KEY_A , 'q' : KeyboardButtons.KEY_Q,'escape' : KeyboardButtons.KEY_ESC}
     self.input_manager_ = KeyboardController(self.input_state_, button_map)
     
     # Creating directional moves
@@ -75,8 +90,8 @@ class TestGame(ShowBase):
     self.input_manager_.add_move(Move('DOWN',[KeyboardButtons.DPAD_DOWN],False,lambda : self.moveCamDown()))
     self.input_manager_.add_move(Move('LEFT',[KeyboardButtons.DPAD_LEFT],False,lambda : self.moveCamLeft()))
     self.input_manager_.add_move(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],False,lambda : self.moveCamRight()))
-    self.input_manager_.add_move(Move('RIGHT',[KeyboardButtons.KEY_A],False,lambda : self.zoomIn()))
-    self.input_manager_.add_move(Move('RIGHT',[KeyboardButtons.KEY_Q],False,lambda : self.zoomOut()))
+    self.input_manager_.add_move(Move('ZoomIn',[KeyboardButtons.KEY_A],False,lambda : self.zoomIn()))
+    self.input_manager_.add_move(Move('ZoomOut',[KeyboardButtons.KEY_Q],False,lambda : self.zoomOut()))
     self.input_manager_.add_move(Move('EXIT',[KeyboardButtons.KEY_ESC],False,lambda : self.exit()))
     
     
@@ -91,18 +106,30 @@ class TestGame(ShowBase):
   def setupScene(self):
     
     self.__setupLevel__()
-    self.__setupGameObjects()
-
+    self.__setupGameObjects__()
+    
     self.cam.reparentTo(self.level_)
-    self.cam.setPos(self.level_,0, -CAM_ZOOM*6, CAM_STEP*25)
-  
-  
-  def cleanup(self):
+    self.cam.setPos(self.level_,0, -TestGame.__CAM_ZOOM__*6, TestGame.__CAM_STEP__*25)
+    
+  def setupResources(self):
     pass  
+  
+  def cleanup(self):    
+    self.level_.detachNode()
+    self.level_ = None
+    self.input_manager_ = None
+  
+  def update(self,task):
+    self.clock_.tick()
+    dt = self.clock_.getDt()
+    self.level_.update(dt)
+    self.input_manager_.update(dt)
+    
+    return task.cont
     
   def __setupLevel__(self):
 
-    self.level_ = Level("Level1")
+    self.level_ = Level("Level1",Vec3(60,1,60))
     self.level_.reparentTo(self.render)
 
     # Adding platforms
@@ -122,47 +149,47 @@ class TestGame(ShowBase):
       self.level_.addPlatform(platform)
       platform.setPos(pos)
       
-  def __setupGameObjects(self):
+  def __setupGameObjects__(self):
     
-    box_size = Vec3(BOX_SIDE_LENGTH,BOX_SIDE_LENGTH,BOX_SIDE_LENGTH)
-    start_pos = Vec3(-NUM_BOXES*BOX_SIDE_LENGTH*0.5,0,6)
-    for i in range(0,NUM_BOXES):            
+    box_size = Vec3(TestGame.__BOX_SIDE_LENGTH__,TestGame.__BOX_SIDE_LENGTH__,TestGame.__BOX_SIDE_LENGTH__)
+    start_pos = Vec3(-TestGame.__NUM_BOXES__*TestGame.__BOX_SIDE_LENGTH__*0.5,0,6)
+    for i in range(0,TestGame.__NUM_BOXES__):            
         obj = GameObject("obj"+str(i),box_size,True)
         self.level_.addGameObject(obj)
-        obj.setPos(start_pos + Vec3(i*BOX_SIDE_LENGTH*0.5,0,i*BOX_SIDE_LENGTH*1.2))    
+        obj.setPos(start_pos + Vec3(i*TestGame.__BOX_SIDE_LENGTH__*0.5,0,i*TestGame.__BOX_SIDE_LENGTH__*1.2))    
         
   # __ CAM_METHODS __
   def moveCamUp(self):
-      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,__CAM_STEP__))
+      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,TestGame.__CAM_STEP__))
       
   def moveCamDown(self):
-      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,-__CAM_STEP__))
+      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,-TestGame.__CAM_STEP__))
   
   def moveCamRight(self):
-      self.cam.setPos(self.cam.getPos() + Vec3(__CAM_STEP__,0,0))
+      self.cam.setPos(self.cam.getPos() + Vec3(TestGame.__CAM_STEP__,0,0))
   
   def moveCamLeft(self):
-      self.cam.setPos(self.cam.getPos() + Vec3(-__CAM_STEP__,0,0))
+      self.cam.setPos(self.cam.getPos() + Vec3(-TestGame.__CAM_STEP__,0,0))
       
   def zoomIn(self):
-    self.cam.setY(self.cam.getY()+__CAM_ZOOM__)
+    self.cam.setY(self.cam.getY()+TestGame.__CAM_ZOOM__)
 
   def zoomOut(self):
-    self.cam.setY(self.cam.getY()-__CAM_ZOOM__)
+    self.cam.setY(self.cam.getY()-TestGame.__CAM_ZOOM__)
       
   # __ END OF CAM METHODS __
   
   # SUPPORT METHODS
   def createInstruction(self,pos, msg):
-      return OnscreenText(text=msg, style=1, fg=(1, 1, 1, 1), scale=.05,
-                shadow=(0, 0, 0, 1), parent=base.a2dTopLeft,
-                pos=(0.08, -pos - 0.04), align=TextNode.ALeft)
+    return OnscreenText(text=msg, style=1, fg=(1, 1, 1, 1), scale=.05,
+              shadow=(0, 0, 0, 1), parent=base.a2dTopLeft,
+              pos=(0.08, -pos - 0.04), align=TextNode.ALeft)
     
     # Function to put title on the screen.
   def createTitle(self,text):
-      return OnscreenText(text=text, style=1, fg=(1, 1, 1, 1), scale=.08,
-                parent=base.a2dBottomRight, align=TextNode.ARight,
-                pos=(-0.1, 0.09), shadow=(0, 0, 0, 1))
+    return OnscreenText(text=text, style=1, fg=(1, 1, 1, 1), scale=.08,
+              parent=base.a2dBottomRight, align=TextNode.ARight,
+              pos=(-0.1, 0.09), shadow=(0, 0, 0, 1))
       
   def exit(self):
     self.cleanup()

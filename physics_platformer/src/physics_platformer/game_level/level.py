@@ -11,6 +11,7 @@ from physics_platformer.collision import CollisionMasks
 from physics_platformer.game_actions import CollisionAction
 from physics_platformer.collision import CollisionActionMatrix
 from physics_platformer.game_object import GameObject
+from pip.index import INSECURE_SCHEMES
 
 class Level(NodePath):
   
@@ -21,6 +22,10 @@ class Level(NodePath):
   __PHYSICS_SIM_STEPSIZE__ = 1.0/180.0
   
   def __init__(self,name,size):
+    """
+    Level(string name, Vec3 size)
+    Creates a Level object.
+    """
     
     NodePath.__init__(self,name)
     self.physics_world_ = BulletWorld()
@@ -30,24 +35,49 @@ class Level(NodePath):
     self.game_object_map_ = {}  # game objects in the world
     self.id_counter_ = 0
     self.collision_action_matrix_ = CollisionActionMatrix()
+    self.platforms_ = []
     
     self.__createLevelBounds__()
     self.__createCollisionRules__()
     
+  def __del__(self):
+    
+    for gobj in self.game_object_map_.values():
+      gobj.clearPhysicsWorld()
+      
+    for pltf in self.platforms_:
+      pltf.clearPhysicsWorld()
+    
+    # removing all remaining objects from physics world
+    num_objects = self.physics_world_.getNumRigidBodies()
+    for i in range(0,num_objects):
+      self.physics_world_.remove(self.physics_world_.getRigidBody(i))
+      
+    num_objects = self.physics_world_.getNumConstraints()
+    for i in range(0,num_objects):
+      self.physics_world_.remove(self.physics_world_.getConstraint(i))
+    
+    num_objects = self.physics_world_.getNumGhosts()
+    for i in range(0,num_objects):
+      self.physics_world_.remove(self.physics_world_.getGhost(i)) 
+      
+    num_objects = self.getNumChildren()
+    for i in range(0,num_objects):
+      np = self.getChild(i)
+      np.detachNode()
+    
   def addPlatform(self,platform):    
-    self.physics_world_.attach(platform.node())
     platform.setPhysicsWorld(self.physics_world_)
     platform.reparentTo(self)
+    self.platforms_.append(platform)
     
-  def addGameObject(self,game_object):
-    
+  def addGameObject(self,game_object):    
     self.id_counter_+=1
     new_id = self.id_counter_
     game_object.setObjectID(str(new_id))    
     self.game_object_map_[game_object.getObjectID()] = game_object
     game_object.setPhysicsWorld(self.physics_world_)
-    game_object.reparentTo(self)
-    
+    game_object.reparentTo(self)    
   
   def update(self,dt):
     self.physics_world_.doPhysics(dt, Level.__PHYSICS_SIM_SUBSTEPS__, Level.__PHYSICS_SIM_STEPSIZE__)
@@ -64,10 +94,10 @@ class Level(NodePath):
                   Vec3(0.5*self.size_.getX(), half_depth, half_thickness),
                   Vec3(half_thickness, half_depth, 0.5*self.size_.getZ())]
     
-    poses = [TransformState.makePos(0,0,0.5*self.size_.getZ()),
-             TransformState.makePos(0.5*self.size_.getX(),0,0),
-             TransformState.makePos(0,0,-0.5*self.size_.getZ()),
-             TransformState.makePos(-0.5*self.size_.getX(),0,0)]
+    poses = [TransformState.makePos(Vec3(0,0,0.5*self.size_.getZ())),
+             TransformState.makePos(Vec3(0.5*self.size_.getX(),0,0)),
+             TransformState.makePos(Vec3(0,0,-0.5*self.size_.getZ())),
+             TransformState.makePos(Vec3(-0.5*self.size_.getX(),0,0))]
     
     for i in range(0,4):
       
@@ -107,8 +137,14 @@ class Level(NodePath):
       node0 = contact_manifold.getNode0()
       node1 = contact_manifold.getNode1()
       
-      obj1 = self.game_object_map_[node0.getPythonTag(GameObject.ID_PYTHON_TAG)]
-      obj2 = self.game_object_map_[node1.getPythonTag(GameObject.ID_PYTHON_TAG)]      
+      key1 = node0.getPythonTag(GameObject.ID_PYTHON_TAG)
+      key2 = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
+      
+      if (key1 is None) or (key2 is None) :
+        return
+      
+      obj1 = self.game_object_map_[key1]
+      obj2 = self.game_object_map_[key2]      
       
       if self.collision_action_matrix_.hasEntry(node0.getIntoCollideMask() , node1.getIntoCollideMask()):
         action_key = self.collision_action_matrix_.getAction(node0.getIntoCollideMask() , node1.getIntoCollideMask())

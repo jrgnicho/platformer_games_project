@@ -1,3 +1,5 @@
+from panda3d.core import Vec3
+from panda3d.core import TexturePool
 from panda3d.core import TransformState
 from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletGhostNode
@@ -8,9 +10,11 @@ class Platform(GameObject):
   
   __PERIMETER_THICKNESS__ = 0.01
   __LEDGE_BOX_SIDE_LENGHT = 0.01
+  __DEFAULT_TEXTURE__ = TexturePool.loadTexture(GameObject.DEFAULT_RESOURCES_DIRECTORY +'/models/iron.jpg')
   def __init__(self,name,size):
     GameObject.__init__(self,name,size,0)
-    self.setIntoCollideMask(CollisionMasks.LEVEL_OBSTACLE)
+    self.setCollideMask(CollisionMasks.LEVEL_OBSTACLE)
+    self.visual_nh_.setTexture(Platform.__DEFAULT_TEXTURE__,1) 
     
     # creating Bullet Ghost boxes around the perimeter 
     width = size.getX()
@@ -22,31 +26,32 @@ class Platform(GameObject):
     half_height = 0.5*height
     half_depth = 0.5*depth
     half_thickness = 0.5*Platform.__PERIMETER_THICKNESS__
-    ghost_nodes = []
+    self.ghost_nodes_ = []
     
     left_box = BulletGhostNode(name + 'surface-left')    
-    left_box.addShape(BulletBoxShape(Vec3(half_thickness,half_depth,half_height),
-                                     TransformState.makePos(-half_width+half_thickness,0,0)))
+    left_box.addShape(BulletBoxShape(Vec3(half_thickness,half_depth,half_height)),
+                                     TransformState.makePos(Vec3(-half_width+half_thickness,0,0)))
     left_box.setIntoCollideMask(CollisionMasks.LEFT_WALL_SURFACE)
-    ghost_nodes.append(left_box)
+    self.ghost_nodes_.append(left_box)
     
     right_box = BulletGhostNode(name + 'surface-right')    
-    right_box.addShape(BulletBoxShape(Vec3(half_thickness,half_depth,half_height),
-                                     TransformState.makePos(half_width-half_thickness,0,0)))    
+    right_box.addShape(BulletBoxShape(Vec3(half_thickness,half_depth,half_height)),
+                                     TransformState.makePos(Vec3(half_width-half_thickness,0,0) ) ) 
+                           
     right_box.setIntoCollideMask(CollisionMasks.RIGHT_WALL_SURFACE)
-    ghost_nodes.append(right_box)
+    self.ghost_nodes_.append(right_box)
     
     top_box = BulletGhostNode(name + 'surface-top')    
-    top_box.addShape(BulletBoxShape(Vec3(half_width,half_depth,half_thickness),
-                                     TransformState.makePos(0,0,half_height- half_thickness)))
+    top_box.addShape(BulletBoxShape(Vec3(half_width,half_depth,half_thickness)),
+                                     TransformState.makePos(Vec3(0,0,half_height- half_thickness) ) )
     top_box.setIntoCollideMask(CollisionMasks.LANDING_SURFACE)
-    ghost_nodes.append(top_box)
+    self.ghost_nodes_.append(top_box)
     
     bottom_box = BulletGhostNode(name + 'surface-bottom')    
-    bottom_box.addShape(BulletBoxShape(Vec3(half_width,half_depth,half_thickness),
-                                     TransformState.makePos(0,0,-half_height + half_thickness)))
+    bottom_box.addShape(BulletBoxShape(Vec3(half_width,half_depth,half_thickness)),
+                                     TransformState.makePos(Vec3(0,0,-half_height + half_thickness)))
     bottom_box.setIntoCollideMask(CollisionMasks.CEILING_SURFACE)
-    ghost_nodes.append(bottom_box)
+    self.ghost_nodes_.append(bottom_box)
     
     # creating ledges
     half_side_lenght = 0.5*Platform.__LEDGE_BOX_SIDE_LENGHT
@@ -55,17 +60,28 @@ class Platform(GameObject):
     left_ledge.addShape(BulletBoxShape(Vec3(half_side_lenght,half_depth,half_side_lenght)),
                         TransformState.makePos(Vec3(-half_width + half_side_lenght,0,half_height)))
     left_ledge.setIntoCollideMask(CollisionMasks.LEDGE)
-    ghost_nodes.append(left_ledge)
+    self.ghost_nodes_.append(left_ledge)
     
     right_ledge = BulletGhostNode('ledge-right')
     right_ledge.addShape(BulletBoxShape(Vec3(half_side_lenght,half_depth,half_side_lenght)),
                         TransformState.makePos(Vec3(half_width - half_side_lenght,0,half_height)))
     right_ledge.setIntoCollideMask(CollisionMasks.LEDGE)
-    ghost_nodes.append(right_ledge)
+    self.ghost_nodes_.append(right_ledge)
     
     # adding all ghost nodes
-    for gn in ghost_nodes:
+    for gn in self.ghost_nodes_:
       self.attachNewNode(gn)
+      
+  def setPhysicsWorld(self,physics_world): 
+    GameObject.setPhysicsWorld(self,physics_world)
+    
+    for gn in self.ghost_nodes_:
+      self.physics_world_.attach(gn)
+      
+  def clearPhysicsWorld(self):
+    for gn in self.ghost_nodes_:
+      self.physics_world_.remove(gn)
+    GameObject.clearPhysicsWorld(self)
       
   def execute(self):
     pass
