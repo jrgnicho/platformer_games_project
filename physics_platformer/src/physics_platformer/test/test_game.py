@@ -5,6 +5,7 @@ from direct.showbase.ShowBase import ShowBase
 from direct.controls.InputState import InputState
 from direct.gui.OnscreenText import OnscreenText
 
+from panda3d.core import loadPrcFileData
 from panda3d.core import AmbientLight
 from panda3d.core import DirectionalLight
 from panda3d.core import LColor
@@ -40,14 +41,17 @@ from physics_platformer.game_object import GameObject
 
 class TestGame(ShowBase):
   
-  __CAM_ZOOM__ =  4
+  __CAM_ZOOM__ =  1
   __CAM_STEP__ = 0.2
   __NUM_BOXES__ = 20
   __BOX_SIDE_LENGTH__ = 0.4
   
   def __init__(self,name ='TestGame'):
     
-    ShowBase.__init__(self)
+    # configure to use group-mask collision filtering mode in the bullet physics world
+    loadPrcFileData('', 'bullet-filter-algorithm groups-mask')
+    
+    ShowBase.__init__(self)   
     
     self.name_ = name
     self.setupRendering()
@@ -109,7 +113,7 @@ class TestGame(ShowBase):
     self.__setupGameObjects__()
     
     self.cam.reparentTo(self.level_)
-    self.cam.setPos(self.level_,0, -TestGame.__CAM_ZOOM__*6, TestGame.__CAM_STEP__*25)
+    self.cam.setPos(self.level_,0, -TestGame.__CAM_ZOOM__*24, TestGame.__CAM_STEP__*25)
     
   def setupResources(self):
     pass  

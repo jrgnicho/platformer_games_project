@@ -11,7 +11,7 @@ from physics_platformer.collision import CollisionMasks
 from physics_platformer.game_actions import CollisionAction
 from physics_platformer.collision import CollisionActionMatrix
 from physics_platformer.game_object import GameObject
-from pip.index import INSECURE_SCHEMES
+import logging
 
 class Level(NodePath):
   
@@ -40,31 +40,50 @@ class Level(NodePath):
     self.__createLevelBounds__()
     self.__createCollisionRules__()
     
-  def __del__(self):
+  def detachNode(self):
     
+    # removing game objects
     for gobj in self.game_object_map_.values():
       gobj.clearPhysicsWorld()
       
+    NodePath.detachNode(self)
+    
+  def __del__(self):  
+    
+    self.detachNode()  
+
+    # removing platforms
     for pltf in self.platforms_:
       pltf.clearPhysicsWorld()
     
     # removing all remaining objects from physics world
-    num_objects = self.physics_world_.getNumRigidBodies()
-    for i in range(0,num_objects):
-      self.physics_world_.remove(self.physics_world_.getRigidBody(i))
+    objs = self.physics_world_.getRigidBodies() 
+    num_objects = len(objs)
+    for obj in objs:          
+      self.physics_world_.remove(obj)
+      logging.debug("Removed rigid body %s"%(obj.getName()))
       
-    num_objects = self.physics_world_.getNumConstraints()
-    for i in range(0,num_objects):
-      self.physics_world_.remove(self.physics_world_.getConstraint(i))
+    objs = self.physics_world_.getConstraints() 
+    num_objects = len(objs)
+    logging.debug("Removing %i constraints from level"%(num_objects))
+    for obj in objs:     
+      self.physics_world_.remove(obj)
     
-    num_objects = self.physics_world_.getNumGhosts()
-    for i in range(0,num_objects):
-      self.physics_world_.remove(self.physics_world_.getGhost(i)) 
+    objs = self.physics_world_.getGhosts() 
+    num_objects = len(objs)
+    logging.debug("Removing %i ghosts bodies from level"%(num_objects))
+    for obj in objs:     
+      self.physics_world_.remove(obj)
+    
+    if not self.isSingleton(): 
+      num_objects = self.getNumChildren()
+      for i in range(0,num_objects):
+        np = self.getChild(i)
+        np.detachNode()
+        
       
-    num_objects = self.getNumChildren()
-    for i in range(0,num_objects):
-      np = self.getChild(i)
-      np.detachNode()
+    self.game_object_map_ = {}
+    self.platforms_ = []
     
   def addPlatform(self,platform):    
     platform.setPhysicsWorld(self.physics_world_)
@@ -101,7 +120,7 @@ class Level(NodePath):
     
     for i in range(0,4):
       
-      bound_box = BulletRigidBodyNode(self.getName() + bound_names[i] + '-bound')
+      bound_box = BulletRigidBodyNode(self.getName() + '-' + bound_names[i] + '-bound')
       bound_box.addShape(BulletBoxShape(half_sizes[i]))
       bound_box.setMass(0)
       bound_box.setIntoCollideMask(CollisionMasks.LEVEL_BOUND)
@@ -143,17 +162,17 @@ class Level(NodePath):
       if (key1 is None) or (key2 is None) :
         return
       
-      obj1 = self.game_object_map_[key1]
-      obj2 = self.game_object_map_[key2]      
+      obj1 = self.game_object_map_[key1] if (key1 is not None) else None
+      obj2 = self.game_object_map_[key2] if (key2 is not None) else None      
       
-      if self.collision_action_matrix_.hasEntry(node0.getIntoCollideMask() , node1.getIntoCollideMask()):
+      if obj1 and self.collision_action_matrix_.hasEntry(node0.getIntoCollideMask() , node1.getIntoCollideMask()):
         action_key = self.collision_action_matrix_.getAction(node0.getIntoCollideMask() , node1.getIntoCollideMask())
         action = CollisionAction(action_key,obj1,obj2,contact_manifold)
                 
         obj1.execute(action)
         logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj1.getName(),obj2.getName()))
         
-      if self.collision_action_matrix_.hasEntry(node1.getIntoCollideMask() , node0.getIntoCollideMask()):
+      if obj2 and self.collision_action_matrix_.hasEntry(node1.getIntoCollideMask() , node0.getIntoCollideMask()):
         action_key = self.collision_action_matrix_.getAction(node1.getIntoCollideMask() , node0.getIntoCollideMask())
         action = CollisionAction(action_key,obj2,obj1,contact_manifold)
         
