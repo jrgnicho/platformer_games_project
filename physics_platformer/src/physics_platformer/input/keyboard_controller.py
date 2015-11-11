@@ -29,6 +29,7 @@ class KeyboardButtons(object):
   KEY_SPACE     =   BitMask32.bit(13 + __BIT_OFFSET__) # bitarray('0001000000000000')
   KEY_SHIFT     =   BitMask32.bit(14 + __BIT_OFFSET__) # bitarray('0010000000000000')
   KEY_ESC       =   BitMask32.bit(15 + __BIT_OFFSET__) # bitarray('0010000000000000')
+  KEY_F1        =   BitMask32.bit(16 + __BIT_OFFSET__) # bitarray('0100000000000000')
 
 class KeyboardController(ControllerInterface):  
   __DEFAULT_BUFFER_TIMEOUT__ = 2 # 2 seconds

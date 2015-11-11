@@ -48,6 +48,9 @@ class Level(NodePath):
       
     NodePath.detachNode(self)
     
+  def getPhysicsWorld(self):
+    return self.physics_world_
+    
   def __del__(self):  
     
     self.detachNode()  

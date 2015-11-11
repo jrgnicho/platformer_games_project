@@ -86,7 +86,8 @@ class TestGame(ShowBase):
   def setupControls(self):
     
     self.input_state_ = InputState()
-    button_map = {'a' : KeyboardButtons.KEY_A , 'q' : KeyboardButtons.KEY_Q,'escape' : KeyboardButtons.KEY_ESC}
+    button_map = {'a' : KeyboardButtons.KEY_A , 'q' : KeyboardButtons.KEY_Q,'escape' : KeyboardButtons.KEY_ESC,
+                  'f1' : KeyboardButtons.KEY_F1}
     self.input_manager_ = KeyboardController(self.input_state_, button_map)
     
     # Creating directional moves
@@ -96,6 +97,7 @@ class TestGame(ShowBase):
     self.input_manager_.add_move(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],False,lambda : self.moveCamRight()))
     self.input_manager_.add_move(Move('ZoomIn',[KeyboardButtons.KEY_A],False,lambda : self.zoomIn()))
     self.input_manager_.add_move(Move('ZoomOut',[KeyboardButtons.KEY_Q],False,lambda : self.zoomOut()))
+    self.input_manager_.add_move(Move('F1',[KeyboardButtons.KEY_F1],False,lambda : self.toggleDebug()))
     self.input_manager_.add_move(Move('EXIT',[KeyboardButtons.KEY_ESC],False,lambda : self.exit()))
     
     
@@ -104,13 +106,23 @@ class TestGame(ShowBase):
                           self.createInstruction(0.06, "ESC: Quit"),
                           self.createInstruction(0.12, "Up/Down: Move Camera Up/Down"),
                           self.createInstruction(0.18, "Left/Right: Move Camera Left / Rigth"),
-                          self.createInstruction(0.24, "q/a: Zoom in / Zoom out")
+                          self.createInstruction(0.24, "q/a: Zoom in / Zoom out"),
+                          self.createInstruction(0.30, "F1: Toggle Debug")
                           ]
   
   def setupScene(self):
     
     self.__setupLevel__()
     self.__setupGameObjects__()
+    
+    # enable debug visuals
+    self.debug_node_ = self.level_.attachNewNode(BulletDebugNode('Debug'))
+    self.debug_node_.show()
+    self.debug_node_.node().showWireframe(True)
+    self.debug_node_.node().showConstraints(True)
+    self.debug_node_.node().showBoundingBoxes(False)
+    self.debug_node_.node().showNormals(True)    
+    self.level_.getPhysicsWorld().setDebugNode(self.debug_node_.node())
     
     self.cam.reparentTo(self.level_)
     self.cam.setPos(self.level_,0, -TestGame.__CAM_ZOOM__*24, TestGame.__CAM_STEP__*25)
@@ -180,6 +192,12 @@ class TestGame(ShowBase):
 
   def zoomOut(self):
     self.cam.setY(self.cam.getY()-TestGame.__CAM_ZOOM__)
+    
+  def toggleDebug(self):
+    if self.debug_node_.isHidden():
+      self.debug_node_.show()
+    else:
+      self.debug_node_.hide()
       
   # __ END OF CAM METHODS __
   
