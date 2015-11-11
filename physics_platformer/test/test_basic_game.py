@@ -41,6 +41,7 @@ class TestBasicGame(TestGame):
         logging.debug("Animation Actor %s was found"%(actor.getName()))       
         self.character_.addAnimationActor(actor.getName(),actor)
     
+    self.character_.setup()
     self.level_.addGameObject(self.character_)      
     self.character_.setPos(Vec3(1,0,self.character_.getSize().getZ()+1))     
     self.character_.pose(ANIMATIONS[4])    

@@ -43,7 +43,7 @@ class TestGame(ShowBase):
   
   __CAM_ZOOM__ =  1
   __CAM_STEP__ = 0.2
-  __NUM_BOXES__ = 20
+  __NUM_BOXES__ = 0
   __BOX_SIDE_LENGTH__ = 0.4
   
   def __init__(self,name ='TestGame'):

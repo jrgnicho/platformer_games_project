@@ -8,13 +8,15 @@ from physics_platformer.collision import *
 
 class Platform(GameObject):
   
-  __PERIMETER_THICKNESS__ = 0.01
+  __PERIMETER_THICKNESS__ = 0.1
   __LEDGE_BOX_SIDE_LENGHT = 0.01
   __DEFAULT_TEXTURE__ = TexturePool.loadTexture(GameObject.DEFAULT_RESOURCES_DIRECTORY +'/models/iron.jpg')
   def __init__(self,name,size):
     GameObject.__init__(self,name,size,0)
     self.setCollideMask(CollisionMasks.LEVEL_OBSTACLE)
     self.visual_nh_.setTexture(Platform.__DEFAULT_TEXTURE__,1) 
+    #self.visual_nh_.hide()
+    #self.hide()
     
     # creating Bullet Ghost boxes around the perimeter 
     width = size.getX()

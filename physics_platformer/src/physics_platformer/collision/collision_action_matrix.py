@@ -32,7 +32,6 @@ class CollisionActionMatrix(object):
       if self.entries_.has_key(col_mask1):
         map = self.entries_[col_mask1]
         if map.has_key(col_mask2):
-          logging.debug("CollisionActionMatrix entry was found")
           return True
     except SystemError:
       logging.error("Key %s not found, but produced look up errors"%(str(col_mask1)))
@@ -45,7 +44,7 @@ class CollisionActionMatrix(object):
     if self.entries_.has_key(col_mask1):
       map = self.entries_[col_mask1]
       if map.has_key(col_mask2):
-        return map[col_mask]
+        return map[col_mask2]
     
     logging.error("CollisionActionMatrix does not have requested collision pair") 
     return None

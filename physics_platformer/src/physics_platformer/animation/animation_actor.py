@@ -37,10 +37,13 @@ class AnimationActor(SpriteAnimator):
     self.node().setPythonTag(SpriteAnimator.__name__,self)
     
   def setPythonTag(self,tag,obj):
-    SpriteAnimator.setPythonTag(self,tag,obj)    
+    SpriteAnimator.setPythonTag(self,tag,obj)   
+    
+    logging.debug("Attempting to set python tag '%s' to value '%s'"%(tag,str(obj))) 
     for np in [self.rigid_body_np_,self.attack_damage_np_,self.attack_hit_np_,self.action_body_np_]:
       if np is not None:
         np.setPythonTag(tag,obj)
+        logging.debug("Set python tag '%s' to value '%s'"%(tag,str(obj)))
     
   def loadAnimation(self,animation):
     """

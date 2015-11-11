@@ -95,8 +95,8 @@ class Level(NodePath):
     
   def addGameObject(self,game_object):    
     self.id_counter_+=1
-    new_id = self.id_counter_
-    game_object.setObjectID(str(new_id))    
+    new_id = 'game-object-' + str(self.id_counter_)
+    game_object.setObjectID(new_id)    
     self.game_object_map_[game_object.getObjectID()] = game_object
     game_object.setPhysicsWorld(self.physics_world_)
     game_object.reparentTo(self)    
@@ -163,23 +163,43 @@ class Level(NodePath):
       
       key1 = node0.getPythonTag(GameObject.ID_PYTHON_TAG)
       key2 = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
-      
+            
       obj1 = self.game_object_map_[key1] if (key1 is not None) else None
       obj2 = self.game_object_map_[key2] if (key2 is not None) else None      
       
-      if (obj1 is not None) and self.collision_action_matrix_.hasEntry(node0.getIntoCollideMask().getLowestOnBit() , node1.getIntoCollideMask().getLowestOnBit()):
+      if (obj1 is not None) and self.collision_action_matrix_.hasEntry(
+                                                                       node0.getIntoCollideMask().getLowestOnBit() , 
+                                                                       node1.getIntoCollideMask().getLowestOnBit()):
+        
         action_key = self.collision_action_matrix_.getAction(node0.getIntoCollideMask().getLowestOnBit() , node1.getIntoCollideMask().getLowestOnBit())
         action = CollisionAction(action_key,obj1,obj2,contact_manifold)
                 
         obj1.execute(action)
-        logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj1.getName(),obj2.getName()))
+        logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj1.getName(),obj2.getName() if (obj2 is not None) else None ))
         
-      if (obj2 is not None) and self.collision_action_matrix_.hasEntry(node1.getIntoCollideMask().getLowestOnBit() , node0.getIntoCollideMask().getLowestOnBit()):
+      if (obj2 is not None) and self.collision_action_matrix_.hasEntry(
+                                                                       node1.getIntoCollideMask().getLowestOnBit() ,
+                                                                       node0.getIntoCollideMask().getLowestOnBit()):
+        
         action_key = self.collision_action_matrix_.getAction(node1.getIntoCollideMask().getLowestOnBit() , node0.getIntoCollideMask().getLowestOnBit())
         action = CollisionAction(action_key,obj2,obj1,contact_manifold)
         
         obj2.execute(action)
-        logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj2.getName(),obj1.getName()))
+        logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj2.getName(),obj1.getName() if (obj1 is not None) else None ))
+        
+    ghost_nodes = self.physics_world_.getGhosts()
+    for gn in ghost_nodes:
+      nodes = gn.getOverlappingNodes()
+      for node in nodes:        
+        key = node.getPythonTag(GameObject.ID_PYTHON_TAG)
+        obj = self.game_object_map_[key] if (key is not None) else None  
+        
+        if (obj is not None) and self.collision_action_matrix_.hasEntry(
+                                                                 node.getIntoCollideMask().getLowestOnBit() ,
+                                                                 gn.getIntoCollideMask().getLowestOnBit()):   
+          
+          action_key = self.collision_action_matrix_.getAction(node.getIntoCollideMask().getLowestOnBit() , gn.getIntoCollideMask().getLowestOnBit())
+          action = CollisionAction(action_key,obj,gn,None)
       
     
   

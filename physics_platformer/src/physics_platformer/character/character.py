@@ -36,25 +36,24 @@ class Character(CharacterObject):
     jump_state = CharacterStates.JumpState(self,self.sm_)
     fall_state = CharacterStates.FallState(self,self.sm_)
     land_state = CharacterStates.LandState(self,self.sm_)
-    
-    self.sm_.addState(standing_state.key)
-    self.sm_.addState(running_state.key)
-    self.sm_.addState(takeoff_state.key)
-    self.sm_.addState(jump_state.key)
-    self.sm_.addState(fall_state.key)
-    self.sm_.addState(land_state.key)
-    
+        
+    self.sm_.addState(fall_state)
+    self.sm_.addState(standing_state)
+    self.sm_.addState(running_state)
+    self.sm_.addState(takeoff_state)
+    self.sm_.addState(jump_state)
+    self.sm_.addState(land_state)    
     
   def __setupTransitionRules__(self):    
     
-    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterAction.MOVE_RIGHT.key,CharacterStateKeys.RUNNING)
-    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterAction.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
-    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterAction.JUMP.key,CharacterStateKeys.TAKEOFF)
+    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_RIGHT.key,CharacterStateKeys.RUNNING)
+    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
+    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CollisionAction.COLLISION_FREE,CharacterStateKeys.FALLING)
     
     self.sm_.addTransition(CharacterStateKeys.RUNNING,CollisionAction.COLLISION_FREE,CharacterStateKeys.FALLING)
-    self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterAction.JUMP.key,CharacterStateKeys.TAKEOFF)
-    self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterAction.MOVE_NONE.key,CharacterStateKeys.STANDING)
+    self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
+    self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.MOVE_NONE.key,CharacterStateKeys.STANDING)
     
     self.sm_.addTransition(CharacterStateKeys.TAKEOFF, StateMachineActions.DONE.key, CharacterStateKeys.JUMPING)
     self.sm_.addTransition(CharacterStateKeys.JUMPING, StateMachineActions.DONE.key, CharacterStateKeys.FALLING)

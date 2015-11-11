@@ -46,9 +46,10 @@ class AnimatableObject(GameObject):
         self.animation_start_cb_ = None
         
     def setObjectID(self,id):
-      GameObject.setObjectID(self,id)      
-      for animator in self.animators_.values():
-        animator.setPythonTag(GameObject.ID_PYTHON_TAG,id)         
+      GameObject.setObjectID(self,id)    
+      for k in self.animators_.keys():
+        animator = self.animators_[k].node().getPythonTag(SpriteAnimator.__name__) 
+        animator.setPythonTag(GameObject.ID_PYTHON_TAG,id)     
         
     def setSpriteAnimations(self,sprite_animator_dict):
         

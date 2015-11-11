@@ -116,7 +116,7 @@ class CharacterStates(object): # Class Namespace
         
       self.addAction(CharacterActions.MOVE_RIGHT.key,self.moveRight)
       self.addAction(CharacterActions.MOVE_LEFT.key,self.moveLeft)
-      self.addAction(GeneralActions.GAME_STEP,self.checkAscendFinished)    
+      self.addAction(GeneralAction.GAME_STEP,self.checkAscendFinished)    
       
     def enter(self):
       vel = self.character_obj_.getLinearVelocity()
