@@ -1,5 +1,5 @@
 from physics_platformer.state_machine import *
-from physics_platformer.game_actions import GeneralActions
+from physics_platformer.game_actions import GeneralAction
 from physics_platformer.game_actions import AnimationActions
 from physics_platformer.game_actions import CharacterActions
 from panda3d.core import LVector3

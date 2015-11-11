@@ -20,6 +20,7 @@ class CollisionActionMatrix(object):
     
     
     col_mask_entry_map[col_mask2] = action_key
+    self.entries_[col_mask1] = col_mask_entry_map
     
   
   def hasEntry(self,col_mask1,col_mask2):    
@@ -27,10 +28,14 @@ class CollisionActionMatrix(object):
     hasEntry(CollisionMask col_mask1, CollisionMask col_mask2)
     Returns True or False.  Checks that the requested entry pair has been added.
     """
-    if self.entries_.has_key(col_mask1):
-      map = self.entries_[col_mask1]
-      if map.has_key(col_mask2):
-        return True
+    try:
+      if self.entries_.has_key(col_mask1):
+        map = self.entries_[col_mask1]
+        if map.has_key(col_mask2):
+          logging.debug("CollisionActionMatrix entry was found")
+          return True
+    except SystemError:
+      logging.error("Key %s not found, but produced look up errors"%(str(col_mask1)))
       
     return False
   
@@ -47,3 +52,10 @@ class CollisionActionMatrix(object):
   
   def clear(self):    
     self.entries_.clear()
+    
+  def __str__(self):
+    stream = 'Collision Action Matrix\n'
+    for k,map in self.entries_.items():
+      stream+= "\t%s : %s\n"%(str(k),str(map))
+      
+    return stream

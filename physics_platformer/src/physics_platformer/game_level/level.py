@@ -136,17 +136,19 @@ class Level(NodePath):
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.LEFT_WALL_SURFACE.getLowestOnBit(),True)
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.RIGHT_WALL_SURFACE.getLowestOnBit(),True)
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.LEVEL_BOUND.getLowestOnBit(),True)
-    
+    self.physics_world_.setGroupCollisionFlag(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),True)    
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.ACTION_BODY.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),True)
     
     # populating collision action matrix
-    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.LANDING_SURFACE,CollisionAction.SURFACE_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.CEILING_SURFACE,CollisionAction.CEILING_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.LEFT_WALL_SURFACE,CollisionAction.LEFT_WALL_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.RIGHT_WALL_SURFACE,CollisionAction.RIGHT_WALL_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.ACTION_BODY,CollisionMasks.LEDGE,CollisionAction.ACTION_BODY_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY,CollisionMasks.LEVEL_BOUND,CollisionAction.COLLIDE_LEVEL_BOUND)
+    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.LANDING_SURFACE.getLowestOnBit(),CollisionAction.SURFACE_COLLISION)
+    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.CEILING_SURFACE.getLowestOnBit(),CollisionAction.CEILING_COLLISION)
+    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.LEFT_WALL_SURFACE.getLowestOnBit(),CollisionAction.LEFT_WALL_COLLISION)
+    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.RIGHT_WALL_SURFACE.getLowestOnBit(),CollisionAction.RIGHT_WALL_COLLISION)
+    self.collision_action_matrix_.addEntry(CollisionMasks.ACTION_BODY.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),CollisionAction.ACTION_BODY_COLLISION)
+    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.LEVEL_BOUND.getLowestOnBit(),CollisionAction.COLLIDE_LEVEL_BOUND)
   
+    logging.debug(str(self.collision_action_matrix_))
+    
   def __processCollisions__(self):
     
     n = self.physics_world_.getNumManifolds()
@@ -159,21 +161,18 @@ class Level(NodePath):
       key1 = node0.getPythonTag(GameObject.ID_PYTHON_TAG)
       key2 = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
       
-      if (key1 is None) or (key2 is None) :
-        return
-      
       obj1 = self.game_object_map_[key1] if (key1 is not None) else None
       obj2 = self.game_object_map_[key2] if (key2 is not None) else None      
       
-      if obj1 and self.collision_action_matrix_.hasEntry(node0.getIntoCollideMask() , node1.getIntoCollideMask()):
-        action_key = self.collision_action_matrix_.getAction(node0.getIntoCollideMask() , node1.getIntoCollideMask())
+      if (obj1 is not None) and self.collision_action_matrix_.hasEntry(node0.getIntoCollideMask().getLowestOnBit() , node1.getIntoCollideMask().getLowestOnBit()):
+        action_key = self.collision_action_matrix_.getAction(node0.getIntoCollideMask().getLowestOnBit() , node1.getIntoCollideMask().getLowestOnBit())
         action = CollisionAction(action_key,obj1,obj2,contact_manifold)
                 
         obj1.execute(action)
         logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj1.getName(),obj2.getName()))
         
-      if obj2 and self.collision_action_matrix_.hasEntry(node1.getIntoCollideMask() , node0.getIntoCollideMask()):
-        action_key = self.collision_action_matrix_.getAction(node1.getIntoCollideMask() , node0.getIntoCollideMask())
+      if (obj2 is not None) and self.collision_action_matrix_.hasEntry(node1.getIntoCollideMask().getLowestOnBit() , node0.getIntoCollideMask().getLowestOnBit()):
+        action_key = self.collision_action_matrix_.getAction(node1.getIntoCollideMask().getLowestOnBit() , node0.getIntoCollideMask().getLowestOnBit())
         action = CollisionAction(action_key,obj2,obj1,contact_manifold)
         
         obj2.execute(action)

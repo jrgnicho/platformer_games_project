@@ -259,13 +259,12 @@ class AnimationActor(SpriteAnimator):
       # creating CardMaker to hold the texture
       cm = CardMaker(name +    str(i))
       cm.setFrame(0,w,-h,0 )  # This configuration places the image's topleft corner at the origin
-      #cm.setFrame(-0.5*w,0.5*w,-h,0)  # This configuration places the image's topleft corner at the origin
+      #cm.setFrame(-0.5*w,0.5*w,-h,0)  
       card = NodePath(cm.generate())            
       card.setTexture(txtr)
       seq.addChild(card.node(),i)
       
       # offseting image
-      #card.setPos(Vec3(txtr.axisx,0,txtr.axisy))
       xoffset = float(txtr.axisx + (-w if is_left else 0))
       yoffset = float(txtr.axisy)
       card.setPos(Vec3(xoffset,0,yoffset))

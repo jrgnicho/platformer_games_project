@@ -36,8 +36,7 @@ class Platform(GameObject):
     
     right_box = BulletGhostNode(name + 'surface-right')    
     right_box.addShape(BulletBoxShape(Vec3(half_thickness,half_depth,half_height)),
-                                     TransformState.makePos(Vec3(half_width-half_thickness,0,0) ) ) 
-                           
+                                     TransformState.makePos(Vec3(half_width-half_thickness,0,0) ) )                            
     right_box.setIntoCollideMask(CollisionMasks.RIGHT_WALL_SURFACE)
     self.ghost_nodes_.append(right_box)
     

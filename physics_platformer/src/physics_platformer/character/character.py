@@ -1,5 +1,5 @@
-from physics_platformer.game_objects import CharacterObject
-from physics_plaformer.character.character_states import CharacterStateKeys
+from physics_platformer.game_object import CharacterObject
+from physics_platformer.character.character_states import CharacterStateKeys
 from physics_platformer.character.character_states import *
 from physics_platformer.state_machine import Action
 from physics_platformer.state_machine import State
@@ -7,13 +7,13 @@ from physics_platformer.state_machine import StateMachine
 from physics_platformer.state_machine import StateEvent
 from physics_platformer.state_machine import StateMachineActions
 from physics_platformer.game_actions import *
-from physics_plaformer.character.character_states import CharacterStateKeys
+from physics_platformer.character.character_states import CharacterStateKeys
 from physics_platformer.character.character_states import CharacterStates
 
 class Character(CharacterObject):
   
   def __init__(self,character_info):
-    CharacterObject.__init__(self.character_info)
+    CharacterObject.__init__(self,character_info)
     
     self.sm_ = StateMachine()    
     
