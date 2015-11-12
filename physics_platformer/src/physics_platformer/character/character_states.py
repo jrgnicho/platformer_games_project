@@ -13,8 +13,8 @@ class CharacterStateKeys(object):
   RUNNING="RUNNING"
   TAKEOFF = "TAKEOFF"
   JUMPING="JUMPING"
-  FALLING="FALLING"
-  LANDING="LANDING"
+  FALLING="FALL"
+  LANDING="LAND"
   DASHING= "DASHING"
   DASH_BREAKING= "DASH_BREAKING"
   MIDAIR_DASHING = "MIDAIR_DASHING"
@@ -38,6 +38,13 @@ class CharacterState(State):
   def getParentStateMachine(self):
     return self.parent_state_machine_
   
+  def done(self):
+    '''
+    done()
+      Used by the State when its task(s) is finished
+    '''
+    StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))
+  
   
 class CharacterStates(object): # Class Namespace
   
@@ -48,8 +55,10 @@ class CharacterStates(object): # Class Namespace
       CharacterState.__init__(self, CharacterStateKeys.STANDING, character_obj, parent_state_machine)
       
     def enter(self):
+      
+      logging.debug("%s state entered"%(self.getKey()))
       self.character_obj_.loop(self.animation_key_)    
-      self.character_obj_.setLinearVelocity(LVector3(0,0,0))
+      self.character_obj_.node().setLinearVelocity(LVector3(0,0,0))
       
     def exit(self):
       self.character_obj_.stop()
@@ -67,6 +76,8 @@ class CharacterStates(object): # Class Namespace
       self.addAction(CharacterActions.MOVE_LEFT.key,self.turnLeft)  
       
     def enter(self):
+      
+      logging.debug("%s state entered"%(self.getKey()))
       self.character_obj_.loop(self.animation_key_)   
       
     def exit(self):
@@ -79,7 +90,7 @@ class CharacterStates(object): # Class Namespace
         
       self.forward_speed_ = abs(self.forward_speed_)
       self.forward_direction_.setX(self.forward_speed_)
-      self.character_obj_.setLinearVelocity(self.forward_direction_)
+      self.character_obj_.node().setLinearVelocity(self.forward_direction_)
       
     def turnLeft(self):
       if self.character_obj_.isFacingRight():
@@ -87,7 +98,7 @@ class CharacterStates(object): # Class Namespace
         
       self.forward_speed_ = -abs(self.forward_speed_)
       self.forward_direction_.setX(self.forward_speed_)
-      self.character_obj_.setLinearVelocity(self.forward_direction_)
+      self.character_obj_.node().setLinearVelocity(self.forward_direction_)
 
       
   class TakeoffState(CharacterState):
@@ -96,15 +107,14 @@ class CharacterStates(object): # Class Namespace
       CharacterState.__init__(self, CharacterStateKeys.TAKEOFF, character_obj, parent_state_machine)
       
     def enter(self):
+      
+      logging.debug("%s state entered"%(self.getKey()))
       self.character_obj_.setAnimationEndCallback(self.done)
       self.character_obj_.play(self.animation_key_)
-      
-    def done(self):
-      StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))
-    
+          
     def exit(self):
       speed_up = self.character_obj_.character_info_.jump_force
-      self.character_obj_.setLinearVelocity(LVector3(0,0,speed_up))
+      self.character_obj_.node().setLinearVelocity(LVector3(0,0,speed_up))
       self.character_obj_.stop()
       self.character_obj_.setAnimationEndCallback(None)
         
@@ -119,7 +129,9 @@ class CharacterStates(object): # Class Namespace
       self.addAction(GeneralAction.GAME_STEP,self.checkAscendFinished)    
       
     def enter(self):
-      vel = self.character_obj_.getLinearVelocity()
+      
+      logging.debug("%s state entered"%(self.getKey()))
+      vel = self.character_obj_.node().getLinearVelocity()
       
       if abs(vel.getX()) > self.forward_speed_:
         self.forward_speed_ = abs(vel.getX())
@@ -127,35 +139,35 @@ class CharacterStates(object): # Class Namespace
         self.forward_speed_ = self.character_obj_.character_info_.jump_forward
         
       vel.setZ(self.character_obj_.character_info_.jump_force)
-      self.character_obj_.setLinearVelocity(vel)
+      self.character_obj_.node().setLinearVelocity(vel)
       
       self.character_obj_.loop(self.animation_key_)
       
     def exit(self):
-      vel = self.character_obj_.getLinearVelocity()
+      vel = self.character_obj_.node().getLinearVelocity()
       vel.setZ(0)
-      self.character_obj_.setLinearVelocity(vel)
+      self.character_obj_.node().setLinearVelocity(vel)
       self.character_obj_.stop()    
         
     def moveRight(self):   
       if not self.character_obj_.isFacingRight():
         self.character_obj_.faceRight(True)
         
-      vel = self.character_obj_.getLinearVelocity()
+      vel = self.character_obj_.node().getLinearVelocity()
       vel.setX(self.forward_speed_)    
-      self.character_obj_.setLinearVelocity(vel)
+      self.character_obj_.node().setLinearVelocity(vel)
       
     def moveLeft(self):
       if self.character_obj_.isFacingRight():
         self.character_obj_.faceRight(False)
         
-      vel = self.character_obj_.getLinearVelocity()
+      vel = self.character_obj_.node().getLinearVelocity()
       vel.setX(-self.forward_speed_)    
-      self.character_obj_.setLinearVelocity(vel)
+      self.character_obj_.node().setLinearVelocity(vel)
       
     def checkAscendFinished(self):
       
-      vel = self.character_obj_.getLinearVelocity()
+      vel = self.character_obj_.node().getLinearVelocity()
       if vel.getZ() < 0.01:
         StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))
         
@@ -168,6 +180,8 @@ class CharacterStates(object): # Class Namespace
       self.addAction(CharacterActions.MOVE_LEFT.key,self.moveLeft)
       
     def enter(self):
+      
+      logging.debug("%s state entered"%(self.getKey()))
       self.character_obj_.loop(self.animation_key_)
       
     def exit(self):
@@ -179,7 +193,7 @@ class CharacterStates(object): # Class Namespace
         
       vel = self.character_obj_.getLinearVelocity()
       vel.setX(self.forward_speed_)    
-      self.character_obj_.setLinearVelocity(vel)
+      self.character_obj_.node().setLinearVelocity(vel)
       
     def moveLeft(self):
       if self.character_obj_.isFacingRight():
@@ -187,7 +201,7 @@ class CharacterStates(object): # Class Namespace
         
       vel = self.character_obj_.getLinearVelocity()
       vel.setX(-self.forward_speed_)    
-      self.character_obj_.setLinearVelocity(vel)
+      self.character_obj_.node().setLinearVelocity(vel)
       
   class LandState(CharacterState):
     
@@ -195,16 +209,19 @@ class CharacterStates(object): # Class Namespace
       CharacterState.__init__(self, CharacterStateKeys.LANDING, character_obj, parent_state_machine)
       
     def enter(self):
+      
+      logging.debug("%s state entered"%(self.getKey()))
       self.character_obj_.setAnimationEndCallback(self.done)
-      vel = self.character_obj_.getLinearVelocity()
+      vel = self.character_obj_.node().getLinearVelocity()
       vel.setZ(0)
-      self.character_obj_.setLinearVelocity(vel)
-      self.character_obj_.setLinearFactor(LVector3(1,0,0)) # prevent movement in z
-      self.character_obj_.play(self.animation_key_)
+      self.character_obj_.node().setLinearVelocity(vel)
+      self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # prevent movement in z
+      self.character_obj_.play(self.animation_key_)    
+
       
     def exit(self):
       
-      self.character_obj_.setLinearFactor(LVector3(1,0,1)) # re-enable movement in z
+      self.character_obj_.node().setLinearFactor(LVector3(1,0,1)) # re-enable movement in z
       self.character_obj_.stop()
       self.character_obj_.setAnimationEndCallback(None)
       

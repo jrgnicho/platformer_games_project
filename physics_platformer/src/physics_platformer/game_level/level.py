@@ -154,12 +154,12 @@ class Level(NodePath):
     
   def __processCollisions__(self):
     
-    n = self.physics_world_.getNumManifolds()
-    for i in range(0,n):
-      contact_manifold = self.physics_world_.getManifold(i)
+    contact_manifolds = self.physics_world_.getManifolds()
+    for cm in contact_manifolds:
+      #cm = self.physics_world_.getManifold(i)
       
-      node0 = contact_manifold.getNode0()
-      node1 = contact_manifold.getNode1()
+      node0 = cm.getNode0()
+      node1 = cm.getNode1()
       
       key1 = node0.getPythonTag(GameObject.ID_PYTHON_TAG)
       key2 = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
@@ -172,20 +172,20 @@ class Level(NodePath):
                                                                        node1.getIntoCollideMask().getLowestOnBit()):
         
         action_key = self.collision_action_matrix_.getAction(node0.getIntoCollideMask().getLowestOnBit() , node1.getIntoCollideMask().getLowestOnBit())
-        action = CollisionAction(action_key,obj1,obj2,contact_manifold)
+        action = CollisionAction(action_key,obj1,obj2,cm)
                 
         obj1.execute(action)
-        logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj1.getName(),obj2.getName() if (obj2 is not None) else None ))
+        #logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj1.getName(),obj2.getName() if (obj2 is not None) else None ))
         
       if (obj2 is not None) and self.collision_action_matrix_.hasEntry(
                                                                        node1.getIntoCollideMask().getLowestOnBit() ,
                                                                        node0.getIntoCollideMask().getLowestOnBit()):
         
         action_key = self.collision_action_matrix_.getAction(node1.getIntoCollideMask().getLowestOnBit() , node0.getIntoCollideMask().getLowestOnBit())
-        action = CollisionAction(action_key,obj2,obj1,contact_manifold)
+        action = CollisionAction(action_key,obj2,obj1,cm)
         
         obj2.execute(action)
-        logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj2.getName(),obj1.getName() if (obj1 is not None) else None ))
+        #logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj2.getName(),obj1.getName() if (obj1 is not None) else None ))
         
     ghost_nodes = self.physics_world_.getGhosts()
     for gn in ghost_nodes:

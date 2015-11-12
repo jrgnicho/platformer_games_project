@@ -60,7 +60,7 @@ class GameObject(NodePath):
         self.node().setMass(mass)
         self.node().setLinearFactor((1,0,1))   
         self.node().setAngularFactor((0,1,0))   
-        self.setCollideMask(CollisionMasks.ALL)
+        self.setCollideMask(CollisionMasks.RIGID_BODY)
         
         # set visual
         if setup_visual:     
@@ -114,7 +114,7 @@ class GameObject(NodePath):
         return self
       
     def execute(self,action):
-      logging.warn("execute(Action action) method has not been implemented")
+      pass
     
         
         

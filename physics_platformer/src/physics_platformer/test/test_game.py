@@ -32,6 +32,7 @@ from panda3d.bullet import BulletSphereShape
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletDebugNode
 
+from physics_platformer.state_machine import StateMachine
 from physics_platformer.game_level import Level
 from physics_platformer.game_level import Platform
 from physics_platformer.input import Move
@@ -43,7 +44,7 @@ class TestGame(ShowBase):
   
   __CAM_ZOOM__ =  1
   __CAM_STEP__ = 0.2
-  __NUM_BOXES__ = 0
+  __NUM_BOXES__ = 20
   __BOX_SIDE_LENGTH__ = 0.4
   
   def __init__(self,name ='TestGame'):
@@ -117,12 +118,12 @@ class TestGame(ShowBase):
     
     # enable debug visuals
     self.debug_node_ = self.level_.attachNewNode(BulletDebugNode('Debug'))
-    self.debug_node_.show()
     self.debug_node_.node().showWireframe(True)
     self.debug_node_.node().showConstraints(True)
     self.debug_node_.node().showBoundingBoxes(False)
     self.debug_node_.node().showNormals(True)    
-    self.level_.getPhysicsWorld().setDebugNode(self.debug_node_.node())
+    self.level_.getPhysicsWorld().setDebugNode(self.debug_node_.node())    
+    self.debug_node_.hide()
     
     self.cam.reparentTo(self.level_)
     self.cam.setPos(self.level_,0, -TestGame.__CAM_ZOOM__*24, TestGame.__CAM_STEP__*25)
@@ -139,6 +140,7 @@ class TestGame(ShowBase):
     self.clock_.tick()
     dt = self.clock_.getDt()
     self.level_.update(dt)
+    StateMachine.processEvents() 
     self.input_manager_.update(dt)
     
     return task.cont

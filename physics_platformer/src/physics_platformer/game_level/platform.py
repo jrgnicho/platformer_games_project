@@ -8,7 +8,7 @@ from physics_platformer.collision import *
 
 class Platform(GameObject):
   
-  __PERIMETER_THICKNESS__ = 0.1
+  __PERIMETER_THICKNESS__ = 0.25
   __LEDGE_BOX_SIDE_LENGHT = 0.01
   __DEFAULT_TEXTURE__ = TexturePool.loadTexture(GameObject.DEFAULT_RESOURCES_DIRECTORY +'/models/iron.jpg')
   def __init__(self,name,size):
@@ -28,29 +28,30 @@ class Platform(GameObject):
     half_height = 0.5*height
     half_depth = 0.5*depth
     half_thickness = 0.5*Platform.__PERIMETER_THICKNESS__
+    padding = half_thickness
     self.ghost_nodes_ = []
     
     left_box = BulletGhostNode(name + 'surface-left')    
     left_box.addShape(BulletBoxShape(Vec3(half_thickness,half_depth,half_height)),
-                                     TransformState.makePos(Vec3(-half_width+half_thickness,0,0)))
+                                     TransformState.makePos(Vec3(-half_width+padding,0,0)))
     left_box.setIntoCollideMask(CollisionMasks.LEFT_WALL_SURFACE)
     self.ghost_nodes_.append(left_box)
     
     right_box = BulletGhostNode(name + 'surface-right')    
     right_box.addShape(BulletBoxShape(Vec3(half_thickness,half_depth,half_height)),
-                                     TransformState.makePos(Vec3(half_width-half_thickness,0,0) ) )                            
+                                     TransformState.makePos(Vec3(half_width-padding,0,0) ) )                            
     right_box.setIntoCollideMask(CollisionMasks.RIGHT_WALL_SURFACE)
     self.ghost_nodes_.append(right_box)
     
     top_box = BulletGhostNode(name + 'surface-top')    
     top_box.addShape(BulletBoxShape(Vec3(half_width,half_depth,half_thickness)),
-                                     TransformState.makePos(Vec3(0,0,half_height- half_thickness) ) )
+                                     TransformState.makePos(Vec3(0,0,half_height- padding) ) )
     top_box.setIntoCollideMask(CollisionMasks.LANDING_SURFACE)
     self.ghost_nodes_.append(top_box)
     
     bottom_box = BulletGhostNode(name + 'surface-bottom')    
     bottom_box.addShape(BulletBoxShape(Vec3(half_width,half_depth,half_thickness)),
-                                     TransformState.makePos(Vec3(0,0,-half_height + half_thickness)))
+                                     TransformState.makePos(Vec3(0,0,-half_height + padding)))
     bottom_box.setIntoCollideMask(CollisionMasks.CEILING_SURFACE)
     self.ghost_nodes_.append(bottom_box)
     
