@@ -43,7 +43,7 @@ class TestBasicGame(TestGame):
     
     self.character_.setup()
     self.level_.addGameObject(self.character_)      
-    self.character_.setPos(Vec3(1.5,0,self.character_.getSize().getZ()+10))     
+    self.character_.setPos(Vec3(5,0,self.character_.getSize().getZ()+10))     
     self.character_.pose(ANIMATIONS[4])    
         
   

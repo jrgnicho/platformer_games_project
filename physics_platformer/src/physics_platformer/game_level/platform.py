@@ -74,6 +74,11 @@ class Platform(GameObject):
     for gn in self.ghost_nodes_:
       self.attachNewNode(gn)
       
+  def setObjectID(self,id):
+    GameObject.setObjectID(self,id)
+    for gh in self.ghost_nodes_:
+      gh.setPythonTag(GameObject.ID_PYTHON_TAG,str(id))
+      
   def setPhysicsWorld(self,physics_world): 
     GameObject.setPhysicsWorld(self,physics_world)
     
