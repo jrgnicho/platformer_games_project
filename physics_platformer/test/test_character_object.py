@@ -35,7 +35,7 @@ PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
 ANIMATIONS = ['RUNNING', 'SLASH0','STANDING','TAKEOFF','ASCEND','FALL','LAND','CATCH_LEDGE',
               'HANG_LEDGE', 'CLIMB_LEDGE', 'DASH', 'AVOID_FALL', 'STAND_ON_LEDGE', 'AIR_DASH']
 
-class TestCharacterObject(TestApplication):
+class TestCharacterBase(TestApplication):
     
     def __init__(self):        
         
@@ -83,7 +83,7 @@ class TestCharacterObject(TestApplication):
       
       info = self.character_loader_.getCharacterInfo()
       logging.info(str(info))
-      self.character_ = CharacterObject(info)
+      self.character_ = CharacterBase(info)
       animation_actors = self.character_loader_.getAnimationActors()
       
       anim_counter = 0
@@ -98,7 +98,7 @@ class TestCharacterObject(TestApplication):
           #logging.warn("Animation Actor %s not found in list"%(actor.getName()))
           
       if len(self.animation_names_) == 0 :
-        logging.error("Failed to add animation actors into CharacterObject")
+        logging.error("Failed to add animation actors into CharacterBase")
         sys.exit()
         
     def setupPhysics(self):
@@ -185,5 +185,5 @@ if __name__ == '__main__':
         
     
     logging.basicConfig(format='%(levelname)s: %(message)s',level=log_level)    
-    application = TestCharacterObject()
+    application = TestCharacterBase()
     application.run()

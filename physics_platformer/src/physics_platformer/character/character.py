@@ -1,4 +1,4 @@
-from physics_platformer.game_object import CharacterObject
+from physics_platformer.game_object import CharacterBase
 from physics_platformer.character.character_states import CharacterStateKeys
 from physics_platformer.character.character_states import *
 from physics_platformer.state_machine import Action
@@ -10,10 +10,10 @@ from physics_platformer.game_actions import *
 from physics_platformer.character.character_states import CharacterStateKeys
 from physics_platformer.character.character_states import CharacterStates
 
-class Character(CharacterObject):
+class Character(CharacterBase):
   
   def __init__(self,character_info):
-    CharacterObject.__init__(self,character_info)
+    CharacterBase.__init__(self,character_info)
     
     self.sm_ = StateMachine()    
     
@@ -23,6 +23,36 @@ class Character(CharacterObject):
     self.__setupTransitionRules__()
     
     return True
+  
+  def clampBottom(self,z):
+    '''
+    Character.clampDown(double )
+      Sets the bottom z value of the character
+    '''
+    
+    # setting vertical speed to zero
+    vel = self.node().getLinearVelocity()
+    vel.setZ(0)
+    self.node().setLinearVelocity(vel)
+    
+    # clamping to platform surface    
+    bbox = self.getAnimatorActor().getRigidBodyBoundingBox()  
+    self.setZ(z - bbox.bottom) 
+  
+  def clampTop(self,z):
+    '''
+    Character.clampDown(double )
+      Sets the Top z value of the character
+    '''
+    
+    # setting vertical speed to zero
+    vel = self.node().getLinearVelocity()
+    vel.setZ(0)
+    self.node().setLinearVelocity(vel)
+    
+    # clamping to platform surface    
+    bbox = self.getAnimatorActor().getRigidBodyBoundingBox()  
+    self.setZ(z - bbox.top) 
     
   def execute(self,action):
     self.sm_.execute(action)

@@ -28,7 +28,7 @@ class CharacterState(State):
   
   def __init__(self,key, character_obj, parent_state_machine, animation_key = None):
     """
-    CharacterState(string key,CharacterObject character_obj, StateMachine parent_state_machine)
+    CharacterState(string key,CharacterBase character_obj, StateMachine parent_state_machine)
     """
     
     State.__init__(self,key)
@@ -225,20 +225,8 @@ class CharacterStates(object): # Class Namespace
         return
       
       platform  = action.game_obj2
-      actor  = self.character_obj_.getAnimatorActor()
-      bbox = actor.getRigidBodyBoundingBox()  
-      
-      # setting vertical speed to zero
-      vel = self.character_obj_.node().getLinearVelocity()
-      vel.setZ(0)
-      self.character_obj_.node().setLinearVelocity(vel)
-      self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # prevent movement in z
-      
-      # clamping to platform surface
-      self.character_obj_.setZ(platform.getMax().getZ() - bbox.bottom) 
-      pos_z = self.character_obj_.getZ()
-      
-      #self.character_obj_.setZ(platform.getMax().getZ()+bbox.bottom)
+      self.character_obj_.clampBottom(platform.getMax().getZ())      
+      self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
       self.clamped_ = True
       
     def exit(self):

@@ -15,7 +15,7 @@ from docutils import TransformSpec
 import logging
 
 
-class CharacterObject(AnimatableObject):
+class CharacterBase(AnimatableObject):
   
   def  __init__(self,info):
     
