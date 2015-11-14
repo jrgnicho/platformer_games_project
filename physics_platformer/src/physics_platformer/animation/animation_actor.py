@@ -4,7 +4,7 @@ from physics_platformer.sprite import SpriteAnimator
 from physics_platformer.animation import AnimationInfo
 from physics_platformer.collision import *
 from physics_platformer.geometry2d import Box2D
-from panda3d.core import NodePath
+from panda3d.core import NodePath, BoundingVolume
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletGhostNode
 from panda3d.bullet import BulletBoxShape
@@ -14,6 +14,7 @@ from panda3d.core import SequenceNode
 from panda3d.core import Texture
 from panda3d.core import Vec3
 from panda3d.core import CardMaker
+from panda3d.core import BoundingBox
 import logging
 from panda3d.bullet import BulletRigidBodyNode
 
@@ -33,6 +34,8 @@ class AnimationActor(SpriteAnimator):
     self.attack_damage_np_ = None # NodePath to a bullet ghost node containing collision boxes that are active during the duration of the animation
     self.attack_hit_np_ = None # NodePath to a bullet ghost node containing hit boxes that are active during the duration of the animation
     self.parent_physics_world_ = None
+    self.rigid_body_bbox_ = None
+    
    
     self.node().setPythonTag(SpriteAnimator.__name__,self)
     
@@ -120,8 +123,11 @@ class AnimationActor(SpriteAnimator):
     
   def getRigidBody(self):
     return (None if (self.rigid_body_np_ is None) else self.rigid_body_np_)
+  
+  def getRigidBodyBoundingBox(self):
+    return self.rigid_body_bbox_
     
-  def getCollisionGhostBody(self):
+  def getDamageGhostBody(self):
     """
     Returns ghost body used to determing in an opponent's attack reached the player
     """
@@ -224,7 +230,11 @@ class AnimationActor(SpriteAnimator):
     # completing rigid body setup
     rigid_body.setMass(self.mass_)
     rigid_body.setLinearFactor((1,0,1))   
-    rigid_body.setAngularFactor((0,0,0))   
+    rigid_body.setAngularFactor((0,0,0)) 
+    rigid_body.setBoundsType(BoundingVolume.BT_box)
+    
+    # creating bounding box    
+    self.rigid_body_bbox_ = Box2D.createBoundingBox(collision_boxes)
     
   
   def __createBulletGhostNodeFromBoxes__(self,boxes,scale ):

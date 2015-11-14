@@ -26,6 +26,22 @@ class Box2D(object):
     self.scalex_ = scale[0]
     self.scaley_ = scale[1]
     self.__update__()
+    
+  @property
+  def top(self):
+    return self.top_
+  
+  @property
+  def bottom(self):
+    return self.bottom_
+  
+  @property
+  def left(self):
+    return self.left_
+  
+  @property
+  def right(self):
+    return self.right_
   
   @property 
   def center(self):

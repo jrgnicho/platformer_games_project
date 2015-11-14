@@ -2,6 +2,7 @@ from physics_platformer.state_machine import *
 from physics_platformer.game_actions import GeneralAction
 from physics_platformer.game_actions import AnimationActions
 from physics_platformer.game_actions import CharacterActions
+from physics_platformer.game_actions import CollisionAction
 from panda3d.core import LVector3
 
 class CharacterStateKeys(object):
@@ -13,8 +14,8 @@ class CharacterStateKeys(object):
   RUNNING="RUNNING"
   TAKEOFF = "TAKEOFF"
   JUMPING="JUMPING"
-  FALLING="FALL"
-  LANDING="LAND"
+  FALLING="FALLING"
+  LANDING="LANDING"
   DASHING= "DASHING"
   DASH_BREAKING= "DASH_BREAKING"
   MIDAIR_DASHING = "MIDAIR_DASHING"
@@ -50,9 +51,9 @@ class CharacterStates(object): # Class Namespace
   
   class StandingState(CharacterState):
     
-    def __init__(self,character_obj, parent_state_machine):
+    def __init__(self,character_obj, parent_state_machine,animation_key = None):
       
-      CharacterState.__init__(self, CharacterStateKeys.STANDING, character_obj, parent_state_machine)
+      CharacterState.__init__(self, CharacterStateKeys.STANDING, character_obj, parent_state_machine, animation_key)
       
     def enter(self):
       
@@ -66,8 +67,8 @@ class CharacterStates(object): # Class Namespace
     
   class RunningState(CharacterState):
     
-    def __init__(self,character_obj,parent_state_machine):
-      CharacterState.__init__(self, CharacterStateKeys.RUNNING, character_obj, parent_state_machine)
+    def __init__(self,character_obj,parent_state_machine, animation_key = None):
+      CharacterState.__init__(self, CharacterStateKeys.RUNNING, character_obj, parent_state_machine, animation_key)
       self.forward_speed_ = self.character_obj_.character_info_.run_speed
       self.forward_direction_ = LVector3(self.forward_speed_,0,0)
       
@@ -103,8 +104,8 @@ class CharacterStates(object): # Class Namespace
       
   class TakeoffState(CharacterState):
     
-    def __init__(self,character_obj,parent_state_machine):
-      CharacterState.__init__(self, CharacterStateKeys.TAKEOFF, character_obj, parent_state_machine)
+    def __init__(self,character_obj,parent_state_machine, animation_key = None):
+      CharacterState.__init__(self, CharacterStateKeys.TAKEOFF, character_obj, parent_state_machine, animation_key)
       
     def enter(self):
       
@@ -120,8 +121,8 @@ class CharacterStates(object): # Class Namespace
         
   class JumpState(CharacterState):
     
-    def __init__(self,character_obj,parent_state_machine):
-      CharacterState.__init__(self, CharacterStateKeys.JUMPING, character_obj, parent_state_machine)
+    def __init__(self,character_obj,parent_state_machine, animation_key = None):
+      CharacterState.__init__(self, CharacterStateKeys.JUMPING, character_obj, parent_state_machine, animation_key)
       self.forward_speed_ = self.character_obj_.character_info_.jump_forward
         
       self.addAction(CharacterActions.MOVE_RIGHT.key,self.moveRight)
@@ -173,8 +174,8 @@ class CharacterStates(object): # Class Namespace
         
   class FallState(CharacterState):
     
-    def __init__(self,character_obj,parent_state_machine):
-      CharacterState.__init__(self, CharacterStateKeys.FALLING, character_obj, parent_state_machine)
+    def __init__(self,character_obj,parent_state_machine, animation_key = None):
+      CharacterState.__init__(self, CharacterStateKeys.FALLING, character_obj, parent_state_machine, animation_key)
       
       self.addAction(CharacterActions.MOVE_RIGHT.key,self.moveRight)
       self.addAction(CharacterActions.MOVE_LEFT.key,self.moveLeft)
@@ -205,19 +206,40 @@ class CharacterStates(object): # Class Namespace
       
   class LandState(CharacterState):
     
-    def __init__(self,character_obj,parent_state_machine):
-      CharacterState.__init__(self, CharacterStateKeys.LANDING, character_obj, parent_state_machine)
+    def __init__(self,character_obj,parent_state_machine, animation_key = None):
+      CharacterState.__init__(self, CharacterStateKeys.LANDING, character_obj, parent_state_machine, animation_key)
+      self.clamped_ = False
+      
+      self.addAction(CollisionAction.SURFACE_COLLISION,self.clampToSurface)
       
     def enter(self):
       
       logging.debug("%s state entered"%(self.getKey()))
       self.character_obj_.setAnimationEndCallback(self.done)
+      self.character_obj_.play(self.animation_key_)  
+      self.clamped_ = False  
+      
+    def clampToSurface(self,action):
+      
+      if self.clamped_:
+        return
+      
+      platform  = action.game_obj2
+      actor  = self.character_obj_.getAnimatorActor()
+      bbox = actor.getRigidBodyBoundingBox()  
+      
+      # setting vertical speed to zero
       vel = self.character_obj_.node().getLinearVelocity()
       vel.setZ(0)
       self.character_obj_.node().setLinearVelocity(vel)
       self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # prevent movement in z
-      self.character_obj_.play(self.animation_key_)    
-
+      
+      # clamping to platform surface
+      self.character_obj_.setZ(platform.getMax().getZ() - bbox.bottom) 
+      pos_z = self.character_obj_.getZ()
+      
+      #self.character_obj_.setZ(platform.getMax().getZ()+bbox.bottom)
+      self.clamped_ = True
       
     def exit(self):
       

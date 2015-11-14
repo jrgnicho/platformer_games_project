@@ -35,7 +35,7 @@ class Level(NodePath):
     self.game_object_map_ = {}  # game objects in the world
     self.id_counter_ = 0
     self.collision_action_matrix_ = CollisionActionMatrix()
-    self.platforms_ = []
+    self.platforms_ = {}
     
     self.__createLevelBounds__()
     self.__createCollisionRules__()
@@ -44,6 +44,9 @@ class Level(NodePath):
     
     # removing game objects
     for gobj in self.game_object_map_.values():
+      if self.platforms_.has_key(gobj.getObjectID()):
+        continue
+      
       gobj.clearPhysicsWorld()
       
     NodePath.detachNode(self)
@@ -56,7 +59,7 @@ class Level(NodePath):
     self.detachNode()  
 
     # removing platforms
-    for pltf in self.platforms_:
+    for pltf in self.platforms_.values():
       pltf.clearPhysicsWorld()
     
     # removing all remaining objects from physics world
@@ -86,12 +89,15 @@ class Level(NodePath):
         
       
     self.game_object_map_ = {}
-    self.platforms_ = []
+    self.platforms_ = {}
     
   def addPlatform(self,platform):    
     platform.setPhysicsWorld(self.physics_world_)
     platform.reparentTo(self)
-    self.platforms_.append(platform)
+    new_id = 'platform-'+str(len(self.platforms_))
+    platform.setObjectID(new_id)
+    self.platforms_[platform.getObjectID()] = platform
+    self.game_object_map_[platform.getObjectID()] = platform
     
   def addGameObject(self,game_object):    
     self.id_counter_+=1
@@ -164,8 +170,8 @@ class Level(NodePath):
       key1 = node0.getPythonTag(GameObject.ID_PYTHON_TAG)
       key2 = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
             
-      obj1 = self.game_object_map_[key1] if (key1 is not None) else None
-      obj2 = self.game_object_map_[key2] if (key2 is not None) else None      
+      obj1 = self.game_object_map_[key1] if (key1 is not None and self.game_object_map_.has_key(key1)) else None
+      obj2 = self.game_object_map_[key2] if (key2 is not None and self.game_object_map_.has_key(key2)) else None      
       
       if (obj1 is not None) and self.collision_action_matrix_.hasEntry(
                                                                        node0.getIntoCollideMask().getLowestOnBit() , 
@@ -186,20 +192,7 @@ class Level(NodePath):
         
         obj2.execute(action)
         #logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj2.getName(),obj1.getName() if (obj1 is not None) else None ))
-        
-    ghost_nodes = self.physics_world_.getGhosts()
-    for gn in ghost_nodes:
-      nodes = gn.getOverlappingNodes()
-      for node in nodes:        
-        key = node.getPythonTag(GameObject.ID_PYTHON_TAG)
-        obj = self.game_object_map_[key] if (key is not None) else None  
-        
-        if (obj is not None) and self.collision_action_matrix_.hasEntry(
-                                                                 node.getIntoCollideMask().getLowestOnBit() ,
-                                                                 gn.getIntoCollideMask().getLowestOnBit()):   
-          
-          action_key = self.collision_action_matrix_.getAction(node.getIntoCollideMask().getLowestOnBit() , gn.getIntoCollideMask().getLowestOnBit())
-          action = CollisionAction(action_key,obj,gn,None)
+
       
     
   

@@ -86,6 +86,16 @@ class TestGame(ShowBase):
     
   def setupControls(self):
     
+       # Input (Events)
+    self.accept('escape', self.exit)
+    self.accept('r', self.doReset)
+    self.accept('f1', self.toggleDebug)
+    self.accept('f2', self.toggleTexture)
+    self.accept('f3', self.toggleWireframe)
+    self.accept('f5', self.doScreenshot)
+    #self.accept('q',self.zoomIn)
+    #self.accept('a',self.zoomOut)
+    
     self.input_state_ = InputState()
     button_map = {'a' : KeyboardButtons.KEY_A , 'q' : KeyboardButtons.KEY_Q,'escape' : KeyboardButtons.KEY_ESC,
                   'f1' : KeyboardButtons.KEY_F1}
@@ -98,8 +108,6 @@ class TestGame(ShowBase):
     self.input_manager_.add_move(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],False,lambda : self.moveCamRight()))
     self.input_manager_.add_move(Move('ZoomIn',[KeyboardButtons.KEY_A],False,lambda : self.zoomIn()))
     self.input_manager_.add_move(Move('ZoomOut',[KeyboardButtons.KEY_Q],False,lambda : self.zoomOut()))
-    self.input_manager_.add_move(Move('F1',[KeyboardButtons.KEY_F1],False,lambda : self.toggleDebug()))
-    self.input_manager_.add_move(Move('EXIT',[KeyboardButtons.KEY_ESC],False,lambda : self.exit()))
     
     
     self.title = self.createTitle("Panda3D: " + self.name_)
@@ -108,7 +116,10 @@ class TestGame(ShowBase):
                           self.createInstruction(0.12, "Up/Down: Move Camera Up/Down"),
                           self.createInstruction(0.18, "Left/Right: Move Camera Left / Rigth"),
                           self.createInstruction(0.24, "q/a: Zoom in / Zoom out"),
-                          self.createInstruction(0.30, "F1: Toggle Debug")
+                          self.createInstruction(0.30, "F1: Toggle Debug"),
+                          self.createInstruction(0.36, "F2: Toggle Texture"),
+                          self.createInstruction(0.42, "F3: Toggle Wireframe"),
+                          self.createInstruction(0.48, "F5: Screenshot")
                           ]
   
   def setupScene(self):
@@ -200,6 +211,13 @@ class TestGame(ShowBase):
       self.debug_node_.show()
     else:
       self.debug_node_.hide()
+      
+  def doReset(self):
+    logging.warn("Reset Not implemented")
+    pass
+  
+  def doScreenshot(self):
+    self.screenshot('Pand3d')
       
   # __ END OF CAM METHODS __
   

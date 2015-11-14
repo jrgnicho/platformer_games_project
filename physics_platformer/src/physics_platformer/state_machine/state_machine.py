@@ -134,77 +134,54 @@ class StateMachine(object):
         
     def execute(self,action,action_cb_args=()):
         
+        active_state_obj = self.states_dict_[self.active_state_key_]
         action_key = action.key
         if self.transitions_dict_.has_key(self.active_state_key_):            
             transition_dict = self.transitions_dict_[self.active_state_key_]
             
             # check if valid transition
-            if transition_dict.has_key(action_key):               
-
+            if transition_dict.has_key(action_key):    
+              
+              # go through each rule defined for this action and return true on the first one that validates
+              action_list = transition_dict[action_key]  
+              
+              for action_tuple in action_list:
+                  
+                  state_key = action_tuple[0]
+                  condition_cb = action_tuple[1]
+              
+                  # examine condition
+                  if condition_cb():
+                      next_state_obj = self.states_dict_[state_key]                       
+                      
+                      logging.debug("Transition from state [%s] : through action [%s] : to state [%s]"%(active_state_obj.getKey(),
+                                                  action_key,
+                                                  next_state_obj.getKey()))  
+                      
+                      # exiting active state
+                      active_state_obj.exit()
+                      
+                      # entering new state                        
+                      next_state_obj.enter()
+                      
+                      # setting next state as active
+                      self.active_state_key_ = state_key
+                      
+                      
+                      break
                 
-                # execute action on active state
-                active_state_obj = self.states_dict_[self.active_state_key_]               
-                if active_state_obj.hasAction(action_key):
-                    active_state_obj.execute(action,action_cb_args)
                 
-                #endif
+            # execute action on active state
+            active_state_obj = self.states_dict_[self.active_state_key_]
+            if (active_state_obj.hasAction(action_key) and 
+                active_state_obj.execute(action,action_cb_args)):
                 
-                # go through each rule defined for this action and return true on the first one that validates
-                action_list = transition_dict[action_key]  
-                
-                for action_tuple in action_list:
-                    
-                    state_key = action_tuple[0]
-                    condition_cb = action_tuple[1]
-                
-                    # examine condition
-                    if condition_cb():
-                        next_state_obj = self.states_dict_[state_key]                       
-                        
-                        
-                        # exiting active state
-                        active_state_obj.exit()
-                        
-                        # entering new state                        
-                        next_state_obj.enter()
-                        
-                        # setting next state as active
-                        self.active_state_key_ = state_key
-                        
-                        logging.debug("Transition from state [%s] : through action [%s] : to state [%s]"%(active_state_obj.getKey(),
-                                                                          action_key,
-                                                                          self.active_state_key_))
-                        
-                        return True
-                        
-                        # execting action on newly entered state
-#                         if next_state_obj.execute(action_key,action_cb_args):
-#                             return True                        
-#                         else:                             
-#                             return False                 
-                    
-                    
-                    else: # condition evaluation failed
-                        
-                        continue
-                               
-                
+                # executed supported action under current state
+                return True
             else:
-                
-                # no transition for this action, check if current state supports action
-                active_state_obj = self.states_dict_[self.active_state_key_]
-                if (active_state_obj.hasAction(action_key) and 
-                    active_state_obj.execute(action,action_cb_args)):
-                    
-                    # executed supported action under current state
-                    return True
-                else:
-                
-                    #print "Transition for the %s action at the state %s not supported"%(action_key,self.active_state_key_)
-                    return False
-                #endif
-                
-            #endif
+            
+                #print "Transition for the %s action at the state %s not supported"%(action_key,self.active_state_key_)
+                return False
             
         else:
             logging.warning( "Transitions from the state %s have not been defined"%(self.active_state_key_))
