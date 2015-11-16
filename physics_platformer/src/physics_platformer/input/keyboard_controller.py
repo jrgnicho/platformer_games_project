@@ -4,32 +4,34 @@ import logging
 
 class KeyboardButtons(object):
   
-  __BIT_OFFSET__ = 0
+  __BIT_OFFSET__ = 1
   
   # directions
-  NONE            =   BitMask32()  # bitarray('0000000000000000')
-  DPAD_UP         =   BitMask32.bit(1 + __BIT_OFFSET__)  # bitarray('0000000000000001')
-  DPAD_DOWN       =   BitMask32.bit(2 + __BIT_OFFSET__)  # bitarray('0000000000000010') 
-  DPAD_LEFT       =   BitMask32.bit(3 + __BIT_OFFSET__)  # bitarray('0000000000000100')
-  DPAD_RIGHT      =   BitMask32.bit(4 + __BIT_OFFSET__)  # bitarray('0000000000001000')    
+  NONE            =   BitMask32(0)          # bitarray('0000000000000000')
+  DPAD_NONE       =   BitMask32.bit(__BIT_OFFSET__)      # bitarray('00000000000000000000000000000001')
+  DPAD_UP         =   BitMask32.bit(1 + __BIT_OFFSET__)  # bitarray('00000000000000000000000000000001')
+  DPAD_DOWN       =   BitMask32.bit(2 + __BIT_OFFSET__)  # bitarray('00000000000000000000000000000010') 
+  DPAD_LEFT       =   BitMask32.bit(3 + __BIT_OFFSET__)  # bitarray('00000000000000000000000000000100')
+  DPAD_RIGHT      =   BitMask32.bit(4 + __BIT_OFFSET__)  # bitarray('00000000000000000000000000001000')    
   DPAD_UPRIGHT    =   DPAD_UP | DPAD_RIGHT
   DPAD_UPLEFT     =   DPAD_UP | DPAD_LEFT
   DPAD_DOWNRIGHT  =   DPAD_DOWN | DPAD_RIGHT
   DPAD_DOWNLEFT   =   DPAD_DOWN | DPAD_LEFT
   
   # buttons
-  KEY_A         =   BitMask32.bit(5 + __BIT_OFFSET__)  # bitarray('0000000000010000')
-  KEY_Q         =   BitMask32.bit(6 + __BIT_OFFSET__)  # bitarray('0000000000100000')
-  KEY_S         =   BitMask32.bit(7 + __BIT_OFFSET__)  # bitarray('0000000001000000')
-  KEY_W         =   BitMask32.bit(8 + __BIT_OFFSET__)  # bitarray('0000000010000000')
-  KEY_D         =   BitMask32.bit(9 + __BIT_OFFSET__)  # bitarray('0000000100000000')
-  KEY_E         =   BitMask32.bit(10 + __BIT_OFFSET__) # bitarray('0000001000000000')
-  KEY_X         =   BitMask32.bit(11 + __BIT_OFFSET__) # bitarray('0000010000000000')
-  KEY_C         =   BitMask32.bit(12 + __BIT_OFFSET__) # bitarray('0000100000000000')
-  KEY_SPACE     =   BitMask32.bit(13 + __BIT_OFFSET__) # bitarray('0001000000000000')
-  KEY_SHIFT     =   BitMask32.bit(14 + __BIT_OFFSET__) # bitarray('0010000000000000')
-  KEY_ESC       =   BitMask32.bit(15 + __BIT_OFFSET__) # bitarray('0010000000000000')
-  KEY_F1        =   BitMask32.bit(16 + __BIT_OFFSET__) # bitarray('0100000000000000')
+  KEY_A         =   BitMask32.bit(5 + __BIT_OFFSET__)  # bitarray('00000000000000000000000000010000')
+  KEY_Q         =   BitMask32.bit(6 + __BIT_OFFSET__)  # bitarray('00000000000000000000000000100000')
+  KEY_S         =   BitMask32.bit(7 + __BIT_OFFSET__)  # bitarray('00000000000000000000000001000000')
+  KEY_W         =   BitMask32.bit(8 + __BIT_OFFSET__)  # bitarray('00000000000000000000000010000000')
+  KEY_D         =   BitMask32.bit(9 + __BIT_OFFSET__)  # bitarray('00000000000000000000000100000000')
+  KEY_E         =   BitMask32.bit(10 + __BIT_OFFSET__) # bitarray('00000000000000000000001000000000')
+  KEY_X         =   BitMask32.bit(11 + __BIT_OFFSET__) # bitarray('00000000000000000000010000000000')
+  KEY_C         =   BitMask32.bit(12 + __BIT_OFFSET__) # bitarray('00000000000000000000100000000000')
+  KEY_Z         =   BitMask32.bit(13 + __BIT_OFFSET__) # bitarray('00000000000000000001000000000000')
+  KEY_SPACE     =   BitMask32.bit(14 + __BIT_OFFSET__) # bitarray('00000000000000000010000000000000')
+  KEY_SHIFT     =   BitMask32.bit(15 + __BIT_OFFSET__) # bitarray('00000000000000000100000000000000')
+  KEY_ESC       =   BitMask32.bit(16 + __BIT_OFFSET__) # bitarray('00000000000000001000000000000000')
+  KEY_F1        =   BitMask32.bit(17 + __BIT_OFFSET__) # bitarray('00000000000000010000000000000000')
 
 class KeyboardController(ControllerInterface):  
   __DEFAULT_BUFFER_TIMEOUT__ = 2 # 2 seconds
@@ -73,6 +75,9 @@ class KeyboardController(ControllerInterface):
 
     if self.input_state_.isSet('down'): 
       direction_pressed = direction_pressed | KeyboardButtons.DPAD_DOWN
+      
+    if direction_pressed == KeyboardButtons.NONE:
+      direction_pressed = KeyboardButtons.DPAD_NONE
     
     keys_pressed = KeyboardButtons.NONE  
     for key in self.key_button_map_.keys():
@@ -81,8 +86,7 @@ class KeyboardController(ControllerInterface):
         #logging.info("Added key %s"%(key))
         
     # merge direction into keys pressed
-    if direction_pressed != KeyboardButtons.NONE:
-      keys_pressed = keys_pressed | direction_pressed      
+    keys_pressed = keys_pressed | direction_pressed     
       
     # Saving buttons pressed into buffer      
     #logging.info("Keys pressed bitmask: %s"%(str(keys_pressed)))  

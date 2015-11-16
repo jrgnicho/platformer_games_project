@@ -10,6 +10,9 @@ from physics_platformer.game_actions import *
 from physics_platformer.state_machine import StateMachineActions
 from physics_platformer.character.character_states import CharacterStates
 from physics_platformer.character import Character
+from physics_platformer.input import Move
+from physics_platformer.input import KeyboardButtons
+from physics_platformer.input import KeyboardController
 
 RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/characters/Hiei/'
 PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
@@ -64,9 +67,9 @@ class Hiei(Character):
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_RIGHT.key,CharacterStateKeys.RUNNING)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
-    self.sm_.addTransition(CharacterStateKeys.STANDING,CollisionAction.COLLISION_FREE,CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.FALL.key,CharacterStateKeys.FALLING)
     
-    self.sm_.addTransition(CharacterStateKeys.RUNNING,CollisionAction.COLLISION_FREE,CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.FALL.key,CharacterStateKeys.FALLING)
     self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
     self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.MOVE_NONE.key,CharacterStateKeys.STANDING)
     
@@ -85,6 +88,14 @@ class TestBasicGame(TestGame):
   def setupScene(self):
     TestGame.setupScene(self)
     self.setupCharacter()
+    
+  def setupControls(self):
+    
+    TestGame.setupControls(self)
+    
+       # Input (Events)
+    self.accept('f6', self.toggleCameraController)
+    self.instructions_.append(self.createInstruction(0.54, "F6: Toggle Camera Controls"))
     
   def setupCharacter(self):
     
@@ -106,7 +117,39 @@ class TestBasicGame(TestGame):
     self.level_.addGameObject(self.character_)      
     self.character_.setPos(Vec3(5,0,self.character_.getSize().getZ()+8))     
     self.character_.pose(ANIMATIONS[4])    
-        
+    
+    # create character keyboard controller
+    button_map = {'a' : KeyboardButtons.KEY_A , 's' : KeyboardButtons.KEY_S,'d' : KeyboardButtons.KEY_D}
+    self.character_input_manager_ = KeyboardController(self.input_state_, button_map)
+    
+    # Creating moves
+    self.character_input_manager_.add_move(Move('HALT',[KeyboardButtons.DPAD_NONE],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)))
+    self.character_input_manager_.add_move(Move('UP',[KeyboardButtons.DPAD_UP],True, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
+    self.character_input_manager_.add_move(Move('DOWN',[KeyboardButtons.DPAD_DOWN],True,  lambda : self.character_.execute(CharacterActions.MOVE_DOWN)))
+    self.character_input_manager_.add_move(Move('LEFT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_LEFT)))
+    self.character_input_manager_.add_move(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_RIGHT)))
+    self.character_input_manager_.add_move(Move('JUMP',[KeyboardButtons.KEY_S],True, lambda : self.character_.execute(CharacterActions.JUMP)))
+    #self.character_input_manager_.add_move(Move('DASH',[KeyboardButtons.KEY_Q],False, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
+    
+    # setting camera relative to player
+    self.camera_input_manager_ = self.input_manager_
+    self.follow_player_ = True
+    self.toggleCameraController()
+    
+  def toggleCameraController(self):
+    
+    if self.follow_player_:
+      self.input_manager_ = self.character_input_manager_      
+      self.cam.reparentTo(self.character_)
+      self.cam.setPos(self.character_,0, -TestGame.__CAM_ZOOM__*24, 0)
+    else:
+      self.input_manager_ = self.camera_input_manager_
+      pos = self.cam.getPos(self.level_)
+      self.cam.reparentTo(self.level_)
+      self.cam.setPos(pos)
+      
+    self.follow_player_ = not self.follow_player_
+    
   
 
 if __name__ == "__main__":

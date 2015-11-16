@@ -57,6 +57,9 @@ class Character(CharacterBase):
   def execute(self,action):
     self.sm_.execute(action)
     
+  def update(self,dt):
+    self.sm_.execute(GeneralActions.GameStep(dt))
+    
   def __setupDefaultStates__(self):
     
     # creating default states

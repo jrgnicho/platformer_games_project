@@ -23,8 +23,8 @@ class CNSLoader(object):
   class VelocityTokens(object):
     __WALK__ = 'walk\.fwd\s+=\s+(\d+)'
     __RUN__= 'run\.fwd\s+=\s+(\d+)'
-    __JUMP_UP__ = '^jump\.neu\s+=\s+\d+,([-+]?\d)'
-    __JUMP_FORWARD__ = '^jump\.fwd\s+=\s+(\d+)'
+    __JUMP_UP__ = '^jump\.neu\s+=\s+\d+,([-+]?\d+\.?\d*)'
+    __JUMP_FORWARD__ = '^jump\.fwd\s+=\s+(\d+\.?\d*)'
     
   class MovementTokens(object):    
     __AIR_JUMPS__ = 'airjump.num\s+=\s+(\d+)'

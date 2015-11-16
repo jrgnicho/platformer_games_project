@@ -111,6 +111,8 @@ class AnimationActor(SpriteAnimator):
     
     if self.rigid_body_np_ is not None:
       self.rigid_body_np_.detachNode()
+      self.rigid_body_np_.node().clearForces()
+      self.rigid_body_np_.node().setLinearVelocity(Vec3(0,0,0))
     
     if self.parent_physics_world_ is not None:
       for np in [self.rigid_body_np_,self.attack_damage_np_,self.attack_hit_np_,self.action_body_np_]:

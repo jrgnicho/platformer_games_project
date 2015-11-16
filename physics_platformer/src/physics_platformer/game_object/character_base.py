@@ -81,15 +81,17 @@ class CharacterBase(AnimatableObject):
     
     # deactivating current animator
     face_right = True
+    vel = self.node().getLinearVelocity()
     if self.animator_np_ != None :
         
+        vel = self.animator_.getRigidBody().node().getLinearVelocity() + vel # saving velocity
         face_right = self.animator_.isFacingRight()
-        self.animator_.deactivate()
-            
+        self.animator_.deactivate()   
     self.animator_np_ = self.animators_[animation_name]   
     self.animator_ = self.animator_np_.node().getPythonTag(SpriteAnimator.__name__)  
     self.animator_.activate(self.physics_world_,self.getParent())  
-    self.__setupConstraints__(self.animator_.getRigidBody())     
+    self.__setupConstraints__(self.animator_.getRigidBody())    
+    self.node().setLinearVelocity(vel) 
     
     self.selected_animation_name_ = animation_name     
     self.faceRight(face_right)

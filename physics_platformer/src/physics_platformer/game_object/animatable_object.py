@@ -186,13 +186,13 @@ class AnimatableObject(GameObject):
     def play(self,animation_name):
         
         if self.pose(animation_name):            
-            self.stop()
+            self.stop()            
             self.animator_.play()
             self.__startFrameMonitor__()
             
-    def loop(self,animation_name):
+    def loop(self,animation_name):        
         
-        if self.pose(animation_name):            
+        if self.pose(animation_name):      
             self.stop()
             self.animator_.loop()
             self.__startFrameMonitor__()
@@ -215,7 +215,7 @@ class AnimatableObject(GameObject):
         
     def __startFrameMonitor__(self):       
         
-        # no callbacks the exit
+        # no callbacks then exit
         if (self.animation_start_cb_ is None) and (self.animation_end_cb_ is None):
             return
         
@@ -224,34 +224,43 @@ class AnimatableObject(GameObject):
         
         # invoking start callback
         if self.animation_start_cb_ is not None:
+            ##logging.debug("Animation start callback invoked")
             self.animation_start_cb_()
         
         
-        if self.animator_.getPlayMode() == SpriteAnimator.PlayMode.PLAYING :
-            finterv = Func(lambda n = (self.getNumFrames()-1) : self.__monitorEndInPlayMode__(n))
-            self.frame_monitor_seq_.append(finterv)
+        if self.animator_.getPlayMode() == SpriteAnimator.PlayMode.PLAYING : 
+          ##logging.debug("animation play end monitor started")           
+          finterv = Func(lambda n = (self.getNumFrames()-1) : self.__monitorEndInPlayMode__(n))
+          self.frame_monitor_seq_.append(finterv)
             
-        if self.animator_.getPlayMode() == SpriteAnimator.PlayMode.LOOPING :     
-            self.triggered_callbacks_ = True
-            finterv = Func(self.__monitorInLoopMode__)
-            self.frame_monitor_seq_.append(finterv)
+        if self.animator_.getPlayMode() == SpriteAnimator.PlayMode.LOOPING :
+          ##logging.debug("animation loop monitor started")   
+          self.triggered_callbacks_ = True
+          finterv = Func(self.__monitorInLoopMode__)
+          self.frame_monitor_seq_.append(finterv)
             
         self.frame_monitor_seq_.loop()
         
-    def __stopFrameMonitor__(self):        
-        self.frame_monitor_seq_.finish()       
+    def __stopFrameMonitor__(self):
+      
+        if self.frame_monitor_seq_ is not None:        
+          self.frame_monitor_seq_.finish()  
+          self.frame_monitor_seq_ = None     
         
             
     def __monitorEndInPlayMode__(self,last_frame):
         
+        ##logging.debug("Checking end of animation play")
         if (not self.animator_.isPlaying()) and (self.getFrame() == last_frame):
             
+            ##logging.debug("Play should stop")
             self.animation_end_cb_()
-            self.frame_monitor_seq_.finish() 
+            self.__stopFrameMonitor__() 
             
             
     def __monitorInLoopMode__(self):
-                    
+        
+        ##logging.debug("Looping animation " + self.selected_animation_name_)            
         if self.getFrame() == 0:
             
             if self.triggered_callbacks_:

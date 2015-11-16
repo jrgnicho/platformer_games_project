@@ -109,6 +109,10 @@ class Level(NodePath):
   
   def update(self,dt):
     self.physics_world_.doPhysics(dt, Level.__PHYSICS_SIM_SUBSTEPS__, Level.__PHYSICS_SIM_STEPSIZE__)
+    
+    for obj in self.game_object_map_.values():
+      obj.update(dt)
+    
     self.__processCollisions__()    
     
   def __createLevelBounds__(self): 

@@ -105,7 +105,7 @@ class SpriteAnimator(NodePath):
             seq.addChild(card.node(),i)
          
         seq.setFrameRate(frame_rate)           
-        logging.debug("Sequence Node %s contains %i imagese of size %s and card size of %s"%(name,seq.getNumFrames(),str((w,h)),str((cw,ch))) )    
+        logging.debug("Sequence Node %s contains %i images of size %s and card size of %s"%(name,seq.getNumFrames(),str((w,h)),str((cw,ch))) )    
         return seq 
     
     def isFacingRight(self):
@@ -113,20 +113,17 @@ class SpriteAnimator(NodePath):
     
     def faceRight(self,face_right):
 
-        
-        if face_right: 
-            
-            self.seq_left_.stop()
+        frame = self.getFrame()
+        if face_right:             
             self.node().stashChild(self.seq_left_)            
             self.node().unstashChild(self.seq_right_) 
     
         else:
-            self.seq_right_.stop()
             self.node().stashChild(self.seq_right_)
             self.node().unstashChild(self.seq_left_)  
     
         self.facing_right_ = face_right  
-        self.setPlayMode(self.play_mode_)  
+        self.setPlayMode(self.play_mode_,frame)  
         
     def getSelectedNode(self):
         """
@@ -134,33 +131,42 @@ class SpriteAnimator(NodePath):
         """
         return self.seq_right_ if self.facing_right_ else self.seq_left_
     
-    def play(self):        
-        self.getSelectedNode().play()
+    def play(self,start_frame = 0):   
         self.play_mode_ = SpriteAnimator.PlayMode.PLAYING
         
-    def loop(self,restart = True):        
-        self.getSelectedNode().loop(restart)
-        self.play_mode_ = SpriteAnimator.PlayMode.LOOPING
+        if self.getSelectedNode().isPlaying():
+          return
+        
+        self.getSelectedNode().play(start_frame,self.getNumFrames()-1)
+        
+    def loop(self,start_frame = 0):    
+        self.play_mode_ = SpriteAnimator.PlayMode.LOOPING  
+        
+        if self.getSelectedNode().isPlaying():
+          return  
+        
+        self.getSelectedNode().loop(True,start_frame, self.getNumFrames() - 1)
         
     def stop(self):
-        self.getSelectedNode().stop()
+        self.seq_right_.stop()
+        self.seq_left_.stop()
         self.play_mode_ = SpriteAnimator.PlayMode.STOPPED
         
     def pose(self,frame):
         self.getSelectedNode().pose(frame)
         
-    def setPlayMode(self,mode):
+    def setPlayMode(self,mode,frame):
         
         if SpriteAnimator.PlayMode.ALLOWED_MODES.count(mode) > 0:
             
-            if SpriteAnimator.PlayMode.STOPPED:
+            if mode == SpriteAnimator.PlayMode.STOPPED:
                 self.stop()
                 
-            if SpriteAnimator.PlayMode.PLAYING:
-                self.play()
+            if mode == SpriteAnimator.PlayMode.PLAYING:
+                self.play(frame)
                 
-            if SpriteAnimator.PlayMode.LOOPING:
-                self.loop()
+            if mode == SpriteAnimator.PlayMode.LOOPING:
+                self.loop(frame)
             
         else:
             return False
