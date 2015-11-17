@@ -89,9 +89,7 @@ class CharacterStates(object): # Class Namespace
       logging.debug("%s state entered"%(self.getKey()))
       self.character_obj_.loop(self.animation_key_)   
       
-    def exit(self):
-      
-      logging.debug("Running speed at exit %f"%(self.character_obj_.node().getLinearVelocity().getX()))
+    def exit(self):      
       self.character_obj_.stop()
       
     def checkFall(self,action):
@@ -136,14 +134,11 @@ class CharacterStates(object): # Class Namespace
       vel = self.character_obj_.node().getLinearVelocity()
       
       # storing x speed  
-      if abs(vel.getX()) > self.forward_speed_:
+      if abs(vel.getX()) - self.character_obj_.character_info_.jump_forward > 0:
         self.forward_speed_ = abs(vel.getX())
       else:
         self.forward_speed_ = self.character_obj_.character_info_.jump_forward  
-        
-      logging.debug("Takeoff using forward speed of " + str(self.forward_speed_))       
-      
-      
+          
       vel.setZ(self.character_obj_.character_info_.jump_force)
       self.character_obj_.setAnimationEndCallback(self.done)
       self.character_obj_.play(self.animation_key_)
@@ -183,12 +178,10 @@ class CharacterStates(object): # Class Namespace
       
       logging.debug("%s state entered"%(self.getKey()))
       vel = self.character_obj_.node().getLinearVelocity()      
-      if abs(vel.getX()) > self.forward_speed_:
+      if abs(vel.getX()) > self.character_obj_.character_info_.jump_forward:
         self.forward_speed_ = abs(vel.getX())
       else:
         self.forward_speed_ = self.character_obj_.character_info_.jump_forward   
-      
-      logging.debug("Jump using forward speed of " + str(self.forward_speed_))     
       
       self.character_obj_.loop(self.animation_key_)
       
@@ -234,7 +227,7 @@ class CharacterStates(object): # Class Namespace
       logging.debug("%s state entered"%(self.getKey()))
       
       vel = self.character_obj_.node().getLinearVelocity()      
-      if abs(vel.getX()) > self.forward_speed_:
+      if abs(vel.getX()) > self.character_obj_.character_info_.jump_forward:
         self.forward_speed_ = abs(vel.getX())
       else:
         self.forward_speed_ = self.character_obj_.character_info_.jump_forward  

@@ -81,7 +81,7 @@ class CharacterBase(AnimatableObject):
     
     # cleaning up constraints
     self.__cleanupConstraints__()
-    
+        
     # deactivating current animator
     face_right = True
     if self.animator_np_ != None :
