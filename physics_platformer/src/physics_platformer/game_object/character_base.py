@@ -17,6 +17,8 @@ import logging
 
 class CharacterBase(AnimatableObject):
   
+  ANIMATOR_MASS_RATIO = 0.1 # The animator mass will be 10% the mass of the rigid body
+  
   def  __init__(self,info):
     
     self.character_info_ = info
@@ -39,6 +41,7 @@ class CharacterBase(AnimatableObject):
     self.node().setMass(self.character_info_.mass)
     self.node().setLinearFactor((1,0,1))   
     self.node().setAngularFactor((0,0,0)) 
+    self.node().setDeactivationEnabled(False,True)
     self.setCollideMask(CollisionMasks.NO_COLLISION)
     
     self.animation_root_np_.setPos(Vec3(0,0,0))
@@ -81,17 +84,14 @@ class CharacterBase(AnimatableObject):
     
     # deactivating current animator
     face_right = True
-    vel = self.node().getLinearVelocity()
     if self.animator_np_ != None :
         
-        vel = self.animator_.getRigidBody().node().getLinearVelocity() + vel # saving velocity
         face_right = self.animator_.isFacingRight()
         self.animator_.deactivate()   
     self.animator_np_ = self.animators_[animation_name]   
     self.animator_ = self.animator_np_.node().getPythonTag(SpriteAnimator.__name__)  
     self.animator_.activate(self.physics_world_,self.getParent())  
     self.__setupConstraints__(self.animator_.getRigidBody())    
-    self.node().setLinearVelocity(vel) 
     
     self.selected_animation_name_ = animation_name     
     self.faceRight(face_right)

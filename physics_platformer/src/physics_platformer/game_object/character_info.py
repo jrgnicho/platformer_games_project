@@ -6,7 +6,7 @@ class CharacterInfo(object):
     self.width = 0.4
     self.height = 0.6
     self.name = 'Ramapithecus'
-    self.mass = 1
+    self.mass = 2.0
     self.scale = Vec3(1,1,1)
     self.life = 100
     self.power = 100

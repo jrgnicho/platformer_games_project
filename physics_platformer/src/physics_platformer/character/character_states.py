@@ -66,6 +66,7 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.stop()
       
     def checkFall(self,action):
+      
       vel = self.character_obj_.node().getLinearVelocity()
       if vel.getZ() < 0:
         StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.FALL))
@@ -89,6 +90,8 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.loop(self.animation_key_)   
       
     def exit(self):
+      
+      logging.debug("Running speed at exit %f"%(self.character_obj_.node().getLinearVelocity().getX()))
       self.character_obj_.stop()
       
     def checkFall(self,action):
@@ -131,7 +134,6 @@ class CharacterStates(object): # Class Namespace
             
       # setting z+ speed
       vel = self.character_obj_.node().getLinearVelocity()
-      vel.setZ(self.character_obj_.character_info_.jump_force)
       
       # storing x speed  
       if abs(vel.getX()) > self.forward_speed_:
@@ -139,10 +141,13 @@ class CharacterStates(object): # Class Namespace
       else:
         self.forward_speed_ = self.character_obj_.character_info_.jump_forward  
         
-      self.character_obj_.node().setLinearVelocity(vel)
+      logging.debug("Takeoff using forward speed of " + str(self.forward_speed_))       
       
+      
+      vel.setZ(self.character_obj_.character_info_.jump_force)
       self.character_obj_.setAnimationEndCallback(self.done)
       self.character_obj_.play(self.animation_key_)
+      self.character_obj_.node().setLinearVelocity(vel)
       
     def moveRight(self,action):   
       if not self.character_obj_.isFacingRight():
@@ -181,7 +186,9 @@ class CharacterStates(object): # Class Namespace
       if abs(vel.getX()) > self.forward_speed_:
         self.forward_speed_ = abs(vel.getX())
       else:
-        self.forward_speed_ = self.character_obj_.character_info_.jump_forward        
+        self.forward_speed_ = self.character_obj_.character_info_.jump_forward   
+      
+      logging.debug("Jump using forward speed of " + str(self.forward_speed_))     
       
       self.character_obj_.loop(self.animation_key_)
       

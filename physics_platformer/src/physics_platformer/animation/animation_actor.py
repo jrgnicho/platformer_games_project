@@ -22,7 +22,7 @@ from panda3d.bullet import BulletRigidBodyNode
 class AnimationActor(SpriteAnimator):
   
   DEFAULT_WIDTH = 0.001
-  DEFAULT_MASS = 1
+  DEFAULT_MASS = 1.0
   
   def __init__(self,name,mass = DEFAULT_MASS):
     SpriteAnimator.__init__(self,name)
@@ -202,6 +202,7 @@ class AnimationActor(SpriteAnimator):
     self.rigid_body_np_ = NodePath(BulletRigidBodyNode('RigidBody'))
     rigid_body = self.rigid_body_np_.node()
     rigid_body.setIntoCollideMask(CollisionMasks.RIGID_BODY)
+    rigid_body.setDeactivationEnabled(False,True)
     
     # collection all boxes
     collision_boxes = []

@@ -134,18 +134,20 @@ class SpriteAnimator(NodePath):
     def play(self,start_frame = 0):   
         self.play_mode_ = SpriteAnimator.PlayMode.PLAYING
         
-        if self.getSelectedNode().isPlaying():
+        if self.seq_right_.isPlaying() and self.seq_left_.isPlaying() :
           return
         
-        self.getSelectedNode().play(start_frame,self.getNumFrames()-1)
+        self.seq_right_.play(start_frame,self.getNumFrames()-1)
+        self.seq_left_.play(start_frame,self.getNumFrames()-1)
         
     def loop(self,start_frame = 0):    
         self.play_mode_ = SpriteAnimator.PlayMode.LOOPING  
         
-        if self.getSelectedNode().isPlaying():
-          return  
+        if self.seq_right_.isPlaying() and self.seq_left_.isPlaying() :
+          return 
         
-        self.getSelectedNode().loop(True,start_frame, self.getNumFrames() - 1)
+        self.seq_right_.loop(True,start_frame, self.getNumFrames() - 1)
+        self.seq_left_.loop(True,start_frame, self.getNumFrames() - 1)
         
     def stop(self):
         self.seq_right_.stop()
