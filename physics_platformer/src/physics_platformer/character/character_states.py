@@ -4,6 +4,7 @@ from physics_platformer.game_actions import AnimationActions
 from physics_platformer.game_actions import CharacterActions
 from physics_platformer.game_actions import CollisionAction
 from panda3d.core import LVector3
+from panda3d.core import Vec3
 
 class CharacterStateKeys(object):
   
@@ -48,29 +49,46 @@ class CharacterState(State):
   
   
 class CharacterStates(object): # Class Namespace
+  FALL_SPEED_THRESHOLD = 0.1
   
-  class StandingState(CharacterState):
+  class StandingState(CharacterState):    
+    
     
     def __init__(self,character_obj, parent_state_machine,animation_key = None):
       
       CharacterState.__init__(self, CharacterStateKeys.STANDING, character_obj, parent_state_machine, animation_key)
+      self.clamped_ = False
+      
       self.addAction(GeneralActions.GAME_STEP,self.checkFall)
+      self.addAction(CollisionAction.SURFACE_COLLISION,self.clampToSurface)
       
     def enter(self):
       
       logging.debug("%s state entered"%(self.getKey()))
       self.character_obj_.loop(self.animation_key_)    
+      self.character_obj_.node().clearForces()
       self.character_obj_.node().setLinearVelocity(LVector3(0,0,0))
+      self.clamped_ = False
       
     def exit(self):
       self.character_obj_.stop()
       
+    def clampToSurface(self,action):
+      
+      if self.clamped_:
+        return
+      
+      self.character_obj_.node().clearForces()     
+      platform  = action.game_obj2
+      self.character_obj_.clampBottom(platform.getMax().getZ())
+      self.clamped_ = True
+      
     def checkFall(self,action):
       
       vel = self.character_obj_.node().getLinearVelocity()
-      if vel.getZ() < 0:
-        StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.FALL))
-    
+      if vel.getZ() < -CharacterStates.FALL_SPEED_THRESHOLD:
+        logging.debug("Falling with speed of " + str(vel.getZ()))
+        StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.FALL))    
     
   class RunningState(CharacterState):
     
@@ -91,11 +109,14 @@ class CharacterStates(object): # Class Namespace
       
     def exit(self):      
       self.character_obj_.stop()
+
       
     def checkFall(self,action):
+              
       vel = self.character_obj_.node().getLinearVelocity()
-      if vel.getZ() < 0:
-        StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.FALL))      
+      if vel.getZ() < -CharacterStates.FALL_SPEED_THRESHOLD:
+        logging.debug("Falling with speed of " + str(vel.getZ()))
+        StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.FALL))       
       
     def turnRight(self,action):   
       if not self.character_obj_.isFacingRight():
@@ -142,7 +163,7 @@ class CharacterStates(object): # Class Namespace
       vel.setZ(self.character_obj_.character_info_.jump_force)
       self.character_obj_.setAnimationEndCallback(self.done)
       self.character_obj_.play(self.animation_key_)
-      self.character_obj_.node().setLinearVelocity(vel)
+      self.character_obj_.node().applyCentralImpulse(LVector3(0,0,self.character_obj_.character_info_.jump_force))
       
     def moveRight(self,action):   
       if not self.character_obj_.isFacingRight():
