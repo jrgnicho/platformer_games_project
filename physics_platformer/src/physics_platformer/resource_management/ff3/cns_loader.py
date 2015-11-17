@@ -1,4 +1,4 @@
-from physics_platformer.game_object import CharacterInfo
+from physics_platformer.character import CharacterInfo
 from panda3d.core import Vec3
 import os
 import re

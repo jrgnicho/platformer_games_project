@@ -6,6 +6,7 @@ from physics_platformer.game_object import *
 from physics_platformer.sprite import SpriteLoader
 from physics_platformer.animation import *
 from physics_platformer.resource_management.ff3 import CharacterLoader
+from physics_platformer.character.character_base import CharacterBase
 import rospkg
 from direct.interval.LerpInterval import LerpFunc
 from direct.interval.FunctionInterval import Func

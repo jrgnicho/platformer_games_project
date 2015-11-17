@@ -8,8 +8,8 @@ from physics_platformer.resource_management.ff3 import CharacterLoader
 from physics_platformer.character.character_states import CharacterStateKeys
 from physics_platformer.game_actions import *
 from physics_platformer.state_machine import StateMachineActions
+from physics_platformer.character.character_base import CharacterBase
 from physics_platformer.character.character_states import CharacterStates
-from physics_platformer.character import Character
 from physics_platformer.input import Move
 from physics_platformer.input import KeyboardButtons
 from physics_platformer.input import KeyboardController
@@ -18,11 +18,11 @@ RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/chara
 PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
 ANIMATIONS = ['RUNNING','STANDING','TAKEOFF','ASCEND','FALL','LAND']
 
-class Hiei(Character):
+class Hiei(CharacterBase):
   
   def __init__(self,character_loader):
     self.character_loader_ = character_loader
-    Character.__init__(self,character_loader.getCharacterInfo())
+    CharacterBase.__init__(self,character_loader.getCharacterInfo())
     
   def setup(self):
     if(not self.loadResources()):
