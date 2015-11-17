@@ -202,7 +202,7 @@ class AnimationActor(SpriteAnimator):
     self.rigid_body_np_ = NodePath(BulletRigidBodyNode('RigidBody'))
     rigid_body = self.rigid_body_np_.node()
     rigid_body.setIntoCollideMask(CollisionMasks.RIGID_BODY)
-    rigid_body.setDeactivationEnabled(False)
+    rigid_body.setDeactivationEnabled(False,True)
     
     # collection all boxes
     collision_boxes = []

@@ -51,7 +51,7 @@ class CharacterBase(AnimatableObject):
     self.node().setMass(self.character_info_.mass)
     self.node().setLinearFactor((1,0,1))   
     self.node().setAngularFactor((0,0,0)) 
-    self.node().setDeactivationEnabled(False)
+    self.node().setDeactivationEnabled(False,True)
     self.setCollideMask(CollisionMasks.NO_COLLISION)    
     
     # state machine
