@@ -33,6 +33,7 @@ class Level(NodePath):
     self.size_ = size   
     self.bound_boxes_ = [] # node paths to rigid bodies 
     self.game_object_map_ = {}  # game objects in the world
+    self.free_falling_objects_ = {}  # dynamic dictionary for notifying free falling
     self.id_counter_ = 0
     self.collision_action_matrix_ = CollisionActionMatrix()
     self.platforms_ = {}
@@ -105,7 +106,8 @@ class Level(NodePath):
     game_object.setObjectID(new_id)    
     self.game_object_map_[game_object.getObjectID()] = game_object
     game_object.setPhysicsWorld(self.physics_world_)
-    game_object.reparentTo(self)    
+    game_object.reparentTo(self)   
+    self.free_falling_objects_[new_id] = True 
   
   def update(self,dt):
     self.physics_world_.doPhysics(dt, Level.__PHYSICS_SIM_SUBSTEPS__, Level.__PHYSICS_SIM_STEPSIZE__)
@@ -164,12 +166,17 @@ class Level(NodePath):
     
   def __processCollisions__(self):
     
+    # reset free falling dictionary
+    self.free_falling_objects_ = dict.fromkeys(self.free_falling_objects_,True)
+    
+    # processing contacts
     contact_manifolds = self.physics_world_.getManifolds()
     for cm in contact_manifolds:
-      #cm = self.physics_world_.getManifold(i)
       
       node0 = cm.getNode0()
       node1 = cm.getNode1()
+      col_mask1 = node0.getIntoCollideMask()
+      col_mask2 = node1.getIntoCollideMask()
       
       key1 = node0.getPythonTag(GameObject.ID_PYTHON_TAG)
       key2 = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
@@ -178,24 +185,41 @@ class Level(NodePath):
       obj2 = self.game_object_map_[key2] if (key2 is not None and self.game_object_map_.has_key(key2)) else None      
       
       if (obj1 is not None) and self.collision_action_matrix_.hasEntry(
-                                                                       node0.getIntoCollideMask().getLowestOnBit() , 
-                                                                       node1.getIntoCollideMask().getLowestOnBit()):
+                                                                       col_mask1.getLowestOnBit() , 
+                                                                       col_mask2.getLowestOnBit()):
         
-        action_key = self.collision_action_matrix_.getAction(node0.getIntoCollideMask().getLowestOnBit() , node1.getIntoCollideMask().getLowestOnBit())
+        action_key = self.collision_action_matrix_.getAction(col_mask1.getLowestOnBit() , col_mask2.getLowestOnBit())
         action = CollisionAction(action_key,obj1,obj2,cm)
                 
         obj1.execute(action)
-        #logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj1.getName(),obj2.getName() if (obj2 is not None) else None ))
+                
+        # check for free falling
+        if self.free_falling_objects_.has_key(key1) and col_mask2 == CollisionMasks.LANDING_SURFACE:
+          self.free_falling_objects_[key1] = False
         
       if (obj2 is not None) and self.collision_action_matrix_.hasEntry(
-                                                                       node1.getIntoCollideMask().getLowestOnBit() ,
-                                                                       node0.getIntoCollideMask().getLowestOnBit()):
+                                                                       col_mask2.getLowestOnBit() ,
+                                                                       col_mask1.getLowestOnBit()):
         
-        action_key = self.collision_action_matrix_.getAction(node1.getIntoCollideMask().getLowestOnBit() , node0.getIntoCollideMask().getLowestOnBit())
+        action_key = self.collision_action_matrix_.getAction(col_mask2.getLowestOnBit() , col_mask1.getLowestOnBit())
         action = CollisionAction(action_key,obj2,obj1,cm)
         
         obj2.execute(action)
-        #logging.debug("Found collision action %s between '%s' and '%s'"%( action_key ,obj2.getName(),obj1.getName() if (obj1 is not None) else None ))
+        
+        # check for free falling
+        if self.free_falling_objects_.has_key(key2) and col_mask1 == CollisionMasks.LANDING_SURFACE:
+          self.free_falling_objects_[key2] = False
+    
+    
+    # objects in free fall      
+    for id,free_fall in self.free_falling_objects_.items():      
+      if free_fall:
+        obj = self.game_object_map_[id]
+        action = CollisionAction(CollisionAction.FREE_FALL,obj,None,None)
+        obj.execute(action)
+        
+      
+      
 
       
     

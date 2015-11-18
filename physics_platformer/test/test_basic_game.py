@@ -47,6 +47,7 @@ class Hiei(CharacterBase):
     return anim_counter > 0
   
   def setupStates(self):
+    
     # creating default states
     standing_state = CharacterStates.StandingState(self, self.sm_,ANIMATIONS[1])
     running_state = CharacterStates.RunningState(self,self.sm_,ANIMATIONS[0])
@@ -67,11 +68,11 @@ class Hiei(CharacterBase):
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_RIGHT.key,CharacterStateKeys.RUNNING)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
-    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.FALL.key,CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.STANDING,CollisionAction.FREE_FALL,CharacterStateKeys.FALLING)
     
-    self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.FALL.key,CharacterStateKeys.FALLING)
     self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
     self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.MOVE_NONE.key,CharacterStateKeys.STANDING)
+    self.sm_.addTransition(CharacterStateKeys.RUNNING,CollisionAction.FREE_FALL,CharacterStateKeys.FALLING)
     
     self.sm_.addTransition(CharacterStateKeys.TAKEOFF, StateMachineActions.DONE.key, CharacterStateKeys.JUMPING)
     self.sm_.addTransition(CharacterStateKeys.JUMPING, StateMachineActions.DONE.key, CharacterStateKeys.FALLING)

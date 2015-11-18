@@ -55,7 +55,7 @@ class CharacterBase(AnimatableObject):
     self.setCollideMask(CollisionMasks.NO_COLLISION)    
     
     # state machine
-    self.sm_ = StateMachine()   
+    self.sm_ = StateMachine()     
     
   def setup(self):    
 
@@ -100,6 +100,22 @@ class CharacterBase(AnimatableObject):
   def update(self,dt):
     #self.node().setActive(True)
     self.sm_.execute(GeneralActions.GameStep(dt))
+    
+  # =========== Rigid Body Methods =========== #
+  def setLinearVelocity(self,vel):
+    self.node().setLinearVelocity(vel)   
+    
+  def getLinearVelocity(self):
+    return self.node().getLinearVelocity() 
+    
+  def clearForces(self):
+    self.node().clearForces()    
+    attached_rb = self.animator_.getRigidBody()
+    if attached_rb is not None:
+      attached_rb.node().clearForces()
+      
+  def applyCentralImpulse(self,impls):
+    self.node().applyCentralImpulse(impls)
     
   def __setupDefaultStates__(self):
     
