@@ -66,6 +66,14 @@ class Box2D(object):
     self.__update__()
     
   @property
+  def width(self):
+    return self.w_ * self.scalex_
+  
+  @property
+  def height(self):
+    return self.h_ *self.scaley_
+    
+  @property
   def scale(self):
     return (self.scalex_,self.scaley_)
   

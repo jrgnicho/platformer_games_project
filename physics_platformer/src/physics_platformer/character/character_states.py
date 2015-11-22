@@ -49,7 +49,6 @@ class CharacterState(State):
   
   
 class CharacterStates(object): # Class Namespace
-  FALL_SPEED_THRESHOLD = 0.1
   
   class StandingState(CharacterState):    
     

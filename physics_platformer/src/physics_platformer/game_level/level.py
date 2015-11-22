@@ -146,19 +146,19 @@ class Level(NodePath):
       
   def __createCollisionRules__(self):
     
-    self.physics_world_.setGroupCollisionFlag(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.LANDING_SURFACE.getLowestOnBit(),True)
-    self.physics_world_.setGroupCollisionFlag(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.CEILING_SURFACE.getLowestOnBit(),True)
-    self.physics_world_.setGroupCollisionFlag(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.LEFT_WALL_SURFACE.getLowestOnBit(),True)
-    self.physics_world_.setGroupCollisionFlag(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.RIGHT_WALL_SURFACE.getLowestOnBit(),True)
+    self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_BOTTOM.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),True)
+    self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_TOP.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),True)
+    self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_LEFT.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),True)
+    self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_RIGHT.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),True)
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.LEVEL_BOUND.getLowestOnBit(),True)
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),True)    
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.ACTION_BODY.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),True)
     
     # populating collision action matrix
-    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.LANDING_SURFACE.getLowestOnBit(),CollisionAction.SURFACE_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.CEILING_SURFACE.getLowestOnBit(),CollisionAction.CEILING_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.LEFT_WALL_SURFACE.getLowestOnBit(),CollisionAction.LEFT_WALL_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.RIGHT_WALL_SURFACE.getLowestOnBit(),CollisionAction.RIGHT_WALL_COLLISION)
+    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_BOTTOM.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),CollisionAction.SURFACE_COLLISION)
+    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_TOP.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),CollisionAction.CEILING_COLLISION)
+    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_LEFT.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),CollisionAction.LEFT_WALL_COLLISION)
+    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_RIGHT.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),CollisionAction.RIGHT_WALL_COLLISION)
     self.collision_action_matrix_.addEntry(CollisionMasks.ACTION_BODY.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),CollisionAction.ACTION_BODY_COLLISION)
     self.collision_action_matrix_.addEntry(CollisionMasks.RIGID_BODY.getLowestOnBit(),CollisionMasks.LEVEL_BOUND.getLowestOnBit(),CollisionAction.COLLIDE_LEVEL_BOUND)
   
@@ -189,12 +189,11 @@ class Level(NodePath):
                                                                        col_mask2.getLowestOnBit()):
         
         action_key = self.collision_action_matrix_.getAction(col_mask1.getLowestOnBit() , col_mask2.getLowestOnBit())
-        action = CollisionAction(action_key,obj1,obj2,cm)
-                
+        action = CollisionAction(action_key,obj1,obj2,cm)            
         obj1.execute(action)
                 
         # check for free falling
-        if self.free_falling_objects_.has_key(key1) and col_mask2 == CollisionMasks.LANDING_SURFACE:
+        if self.free_falling_objects_.has_key(key1) and col_mask1 == CollisionMasks.GAME_OBJECT_BOTTOM:
           self.free_falling_objects_[key1] = False
         
       if (obj2 is not None) and self.collision_action_matrix_.hasEntry(
@@ -203,11 +202,10 @@ class Level(NodePath):
         
         action_key = self.collision_action_matrix_.getAction(col_mask2.getLowestOnBit() , col_mask1.getLowestOnBit())
         action = CollisionAction(action_key,obj2,obj1,cm)
-        
         obj2.execute(action)
         
         # check for free falling
-        if self.free_falling_objects_.has_key(key2) and col_mask1 == CollisionMasks.LANDING_SURFACE:
+        if self.free_falling_objects_.has_key(key2) and col_mask2 == CollisionMasks.GAME_OBJECT_BOTTOM:
           self.free_falling_objects_[key2] = False
     
     

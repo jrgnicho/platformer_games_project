@@ -6,6 +6,9 @@ from panda3d.bullet import BulletGenericConstraint
 from panda3d.bullet import BulletWorld
 from docutils import TransformSpec
 from panda3d.core import Vec3
+from panda3d.core import LPoint3
+from panda3d.core import BoundingVolume
+from panda3d.core import BoundingBox
 
 from physics_platformer.collision import CollisionMasks
 from physics_platformer.sprite import SpriteAnimator
@@ -54,6 +57,12 @@ class CharacterBase(AnimatableObject):
     self.node().setDeactivationEnabled(False,True)
     self.setCollideMask(CollisionMasks.NO_COLLISION)    
     
+    #  setting bounding volume
+    min = LPoint3(-0.5*size.getX(),-0.5*size.getY(),0)
+    max = LPoint3(0.5*size.getX(),0.5*size.getY(),size.getZ())
+    self.node().setBoundsType(BoundingVolume.BT_box)    
+    self.node().setBounds(BoundingBox(min,max))
+    
     # state machine
     self.sm_ = StateMachine()     
     
@@ -63,6 +72,18 @@ class CharacterBase(AnimatableObject):
     self.__setupTransitionRules__()
     
     return True
+  
+  def getTop(self):
+    return self.getAnimatorActor().getRigidBodyBoundingBox().top + self.getZ()
+    
+  def getBottom(self):
+    return  self.getAnimatorActor().getRigidBodyBoundingBox().bottom + self.getZ()
+    
+  def getFront(self):
+    return (1.0 if self.isFacingRight() else -1.0)*self.getAnimatorActor().getRigidBodyBoundingBox().right + self.getX()
+    
+  def getBack(self):
+    return (1.0 if self.isFacingRight() else -1.0)*self.getAnimatorActor().getRigidBodyBoundingBox().left + self.getX()
   
   def clampBottom(self,z):
     '''
