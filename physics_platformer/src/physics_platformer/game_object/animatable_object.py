@@ -250,10 +250,8 @@ class AnimatableObject(GameObject):
             
     def __monitorEndInPlayMode__(self,last_frame):
         
-        ##logging.debug("Checking end of animation play")
         if (not self.animator_.isPlaying()) and (self.getFrame() == last_frame):
             
-            ##logging.debug("Play should stop")
             self.animation_end_cb_()
             self.__stopFrameMonitor__() 
             

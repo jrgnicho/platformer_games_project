@@ -16,6 +16,7 @@ from physics_platformer.animation import AnimationActor
 from physics_platformer.character import CharacterInfo
 from physics_platformer.game_object import AnimationSpriteAlignment
 from physics_platformer.game_object import AnimatableObject
+from physics_platformer.character.character_status import *
 from physics_platformer.character.character_states import *
 from physics_platformer.state_machine import Action
 from physics_platformer.state_machine import State
@@ -63,6 +64,9 @@ class CharacterBase(AnimatableObject):
     self.node().setBoundsType(BoundingVolume.BT_box)    
     self.node().setBounds(BoundingBox(min,max))
     
+    # character status
+    self.status_ = CharacterStatus()
+    
     # state machine
     self.sm_ = StateMachine()     
     
@@ -73,17 +77,46 @@ class CharacterBase(AnimatableObject):
     
     return True
   
+  def getStatus(self):
+    return self.status_
+  
   def getTop(self):
     return self.getAnimatorActor().getRigidBodyBoundingBox().top + self.getZ()
     
   def getBottom(self):
     return  self.getAnimatorActor().getRigidBodyBoundingBox().bottom + self.getZ()
+  
+  def getLeft(self):
+    return self.getBack() if self.isFacingRight() else self.getFront()
+  
+  def getRight(self):
+    return self.getFront() if self.isFacingRight() else self.getBack()
     
   def getFront(self):
     return (1.0 if self.isFacingRight() else -1.0)*self.getAnimatorActor().getRigidBodyBoundingBox().right + self.getX()
     
   def getBack(self):
     return (1.0 if self.isFacingRight() else -1.0)*self.getAnimatorActor().getRigidBodyBoundingBox().left + self.getX()
+  
+  def clampLeft(self,x):
+    
+    vel = self.node().getLinearVelocity()
+    vel.setX(0)
+    self.node().setLinearVelocity(vel)
+    
+    local_offset = self.getBack() if self.isFacingRight() else self.getFront()
+    local_offset = self.getX() - local_offset
+    self.setX(x + local_offset)
+    
+  def clampRight(self,x):
+    
+    vel = self.node().getLinearVelocity()
+    vel.setX(0)
+    self.node().setLinearVelocity(vel)
+    
+    local_offset = self.getFront() if self.isFacingRight() else self.getBack()
+    local_offset = self.getX() - local_offset
+    self.setX(x + local_offset)    
   
   def clampBottom(self,z):
     '''

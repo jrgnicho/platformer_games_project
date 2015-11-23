@@ -40,15 +40,15 @@ class AnimationActor(SpriteAnimator):
     self.rigid_body_bbox_ = None
     self.bbox_top_np_ = None  # Node path to the top box ghost node
     self.bbox_bottom_np_ = None # Node path to the bottom box ghost node
-    self.bbox_left_np_ = None # Node path to the left box ghost node
-    self.bbox_right_np_ = None # Node path to the right box ghost node    
+    self.bbox_back_np_ = None # Node path to the rear box ghost node
+    self.bbox_front_np_ = None # Node path to the front box ghost node    
    
     self.node().setPythonTag(SpriteAnimator.__name__,self)
     
   def setPythonTag(self,tag,obj):
     SpriteAnimator.setPythonTag(self,tag,obj)       
     for np in [self.rigid_body_np_,self.damage_box_np_,self.hit_box_np_,self.action_body_np_,
-               self.bbox_top_np_, self.bbox_right_np_, self.bbox_bottom_np_,self.bbox_left_np_]:
+               self.bbox_top_np_, self.bbox_front_np_, self.bbox_bottom_np_,self.bbox_back_np_]:
       if np is not None:
         np.setPythonTag(tag,obj)
     
@@ -99,13 +99,27 @@ class AnimationActor(SpriteAnimator):
     self.setScale(Vec3(scale[0],1,scale[1]))
           
     return True
+  
+  def faceRight(self,face_right = True):
+      SpriteAnimator.faceRight(self,face_right)
+      
+      if (self.bbox_back_np_ is None) or (self.bbox_front_np_ is None):
+        return
+      
+      if face_right:
+        self.bbox_back_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_LEFT)
+        self.bbox_front_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_RIGHT)
+      else:
+        self.bbox_back_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_RIGHT)
+        self.bbox_front_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_LEFT)
+        
     
   def activate(self,physics_world,parent_np):    
     
     self.parent_physics_world_ = physics_world
     if self.rigid_body_np_ is not None:
       self.rigid_body_np_.reparentTo(parent_np)  
-      for np in [self.bbox_top_np_, self.bbox_right_np_, self.bbox_bottom_np_,self.bbox_left_np_]:
+      for np in [self.bbox_top_np_, self.bbox_front_np_, self.bbox_bottom_np_,self.bbox_back_np_]:
         self.parent_physics_world_.attach(np.node())
     
     for np in [self.rigid_body_np_,self.damage_box_np_,self.hit_box_np_,self.action_body_np_]:
@@ -122,7 +136,7 @@ class AnimationActor(SpriteAnimator):
       self.rigid_body_np_.detachNode()
       self.rigid_body_np_.node().clearForces()
       self.rigid_body_np_.node().setLinearVelocity(Vec3(0,0,0))
-      for np in [self.bbox_top_np_, self.bbox_right_np_, self.bbox_bottom_np_,self.bbox_left_np_]:
+      for np in [self.bbox_top_np_, self.bbox_front_np_, self.bbox_bottom_np_,self.bbox_back_np_]:
         self.parent_physics_world_.remove(np.node())
     
     if self.parent_physics_world_ is not None:
@@ -259,13 +273,13 @@ class AnimationActor(SpriteAnimator):
     scale = (1,1)
     self.bbox_top_np_ = self.rigid_body_np_.attachNewNode(self.__createBulletGhostNodeFromBoxes__([top], scale))
     self.bbox_bottom_np_ = self.rigid_body_np_.attachNewNode(self.__createBulletGhostNodeFromBoxes__([bottom], scale))
-    self.bbox_left_np_ = self.rigid_body_np_.attachNewNode(self.__createBulletGhostNodeFromBoxes__([left], scale))
-    self.bbox_right_np_ = self.rigid_body_np_.attachNewNode(self.__createBulletGhostNodeFromBoxes__([right], scale))    
+    self.bbox_back_np_ = self.rigid_body_np_.attachNewNode(self.__createBulletGhostNodeFromBoxes__([left], scale))
+    self.bbox_front_np_ = self.rigid_body_np_.attachNewNode(self.__createBulletGhostNodeFromBoxes__([right], scale))    
     
     self.bbox_top_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_TOP)
     self.bbox_bottom_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_BOTTOM)
-    self.bbox_left_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_LEFT)
-    self.bbox_right_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_RIGHT)
+    self.bbox_back_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_LEFT)
+    self.bbox_front_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_RIGHT)
     
   
   def __createBulletGhostNodeFromBoxes__(self,boxes,scale ):
