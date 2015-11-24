@@ -108,7 +108,7 @@ class AerialBaseState(CharacterState):
 
     self.forward_speed_ = self.character_obj_.character_info_.jump_forward
     if d == -float("inf"):
-      # logging.debug("No contact points were found")
+      logging.warn("No contact points were found")
       return 
     
     self.character_obj_.clampLeft( d + AerialBaseState.MIN_WALL_DISTANCE)
@@ -126,7 +126,7 @@ class AerialBaseState(CharacterState):
     
     self.forward_speed_ = self.character_obj_.character_info_.jump_forward  
     if d == float("inf"):
-      # logging.debug("No contact points were found")
+      logging.warn("No contact points were found")
       return 
       
     self.character_obj_.clampRight( d - AerialBaseState.MIN_WALL_DISTANCE)
@@ -138,34 +138,23 @@ class CharacterStates(object): # Class Namespace
     
     def __init__(self,character_obj, parent_state_machine,animation_key = None):
       
-      CharacterState.__init__(self, CharacterStateKeys.STANDING, character_obj, parent_state_machine, animation_key)
-      self.clamped_ = False
-      
-      self.addAction(CollisionAction.SURFACE_COLLISION,self.clampToSurface)
+      CharacterState.__init__(self, CharacterStateKeys.STANDING, character_obj, parent_state_machine, animation_key)      
       
     def enter(self):
       
       logging.debug("%s state entered"%(self.getKey()))
       self.character_obj_.loop(self.animation_key_)    
-      self.character_obj_.clearForces()
+      platform  = self.character_obj_.getStatus().platform
+      self.character_obj_.clampBottom(platform.getMax().getZ())      
+      self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
       self.character_obj_.setLinearVelocity(LVector3(0,0,0))
-      self.clamped_ = False
+      self.character_obj_.clearForces()      
+      self.character_obj_.setRigidBodyActive(False, True)
       
     def exit(self):
       self.character_obj_.stop()
-      
-    def clampToSurface(self,action):
-      
-      if self.clamped_:
-        return
-      
-      self.character_obj_.clearForces()     
-      platform  = action.game_obj2
-      self.character_obj_.clampBottom(platform.getMax().getZ())      
-      self.character_obj_.setLinearVelocity(LVector3(0,0,0))
-      self.character_obj_.clearForces()
-      self.clamped_ = True
-      
+      self.character_obj_.node().setLinearFactor(LVector3(1,0,1))
+      self.character_obj_.setRigidBodyActive(True, True)      
     
   class RunningState(CharacterState):
     
@@ -250,6 +239,7 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.setLinearVelocity(vel)
           
     def exit(self):
+      self.character_obj_.enableFriction(False)
       self.character_obj_.stop()
       self.character_obj_.setAnimationEndCallback(None)
         
@@ -296,37 +286,21 @@ class CharacterStates(object): # Class Namespace
       CharacterState.__init__(self, CharacterStateKeys.LANDING, character_obj, parent_state_machine, animation_key)
       self.clamped_ = False
       
-      #self.addAction(CollisionAction.SURFACE_COLLISION,self.clampToSurface)
       
     def enter(self):
       
       logging.debug("%s state entered"%(self.getKey()))
       self.character_obj_.setAnimationEndCallback(self.done)
       self.character_obj_.play(self.animation_key_)  
-      self.clamped_ = False  
       self.clampToPlatform(self.character_obj_.getStatus().platform)
+      self.character_obj_.enableFriction(True)
       
     def clampToPlatform(self,platform):
       
-      if self.clamped_:
-        return
-      
       self.character_obj_.clampBottom(platform.getMax().getZ())      
       self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
-      self.clamped_ = True
       
-    def clampToSurface(self,action):
-      
-      if self.clamped_:
-        return
-      
-      platform  = action.game_obj2
-      self.character_obj_.clampBottom(platform.getMax().getZ())      
-      self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
-      self.clamped_ = True
-      
-    def exit(self):
-      
+    def exit(self):      
       self.character_obj_.node().setLinearFactor(LVector3(1,0,1)) # re-enable movement in z
       self.character_obj_.stop()
       self.character_obj_.setAnimationEndCallback(None)

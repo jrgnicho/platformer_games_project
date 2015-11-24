@@ -18,8 +18,12 @@ from panda3d.core import BoundingBox
 import logging
 from panda3d.bullet import BulletRigidBodyNode
 
-
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(level=logging.INFO)
 class AnimationActor(SpriteAnimator):
+  
+  LOGGER = logging.getLogger(__name__)
+  LOGGER.setLevel(level=logging.INFO)
   
   DEFAULT_WIDTH = 0.001
   DEFAULT_MASS = 1.0
@@ -57,12 +61,12 @@ class AnimationActor(SpriteAnimator):
     Loads the animation data from a AnimationInfo object
     """    
     if type(animation) is not AnimationInfo:
-      logging.error("Object pass is not an instance of the AnimationInfo class")
+      AnimationActor.LOGGER.error("Object pass is not an instance of the AnimationInfo class")
       return False
     
     # load sprites
     if not self.loadAnimationSprites(animation.sprites_right, animation.sprites_left, animation.framerate):
-      logging.error('Failed to load sprites from AnimationInfo object')
+      AnimationActor.LOGGER.error('Failed to load sprites from AnimationInfo object')
       return False
     
     # scale    
@@ -184,11 +188,11 @@ class AnimationActor(SpriteAnimator):
     """
     
     if (len(sprites_right) == 0) or (len(sprites_left) == 0):
-      logging.error("ERROR: Found empty image list")
+      AnimationActor.LOGGER.error("ERROR: Found empty image list")
       return False
     
     if len(sprites_right) != len(sprites_left):
-      logging.error("Unequal number of images for the left and right side")
+      AnimationActor.LOGGER.error("Unequal number of images for the left and right side")
       return False
     
     # storing individual sprite size
@@ -227,14 +231,14 @@ class AnimationActor(SpriteAnimator):
     self.rigid_body_np_ = NodePath(BulletRigidBodyNode('RigidBody'))
     rigid_body = self.rigid_body_np_.node()
     rigid_body.setIntoCollideMask(CollisionMasks.RIGID_BODY)
-    rigid_body.setDeactivationEnabled(False,True)
+    rigid_body.setFriction(0)
     
     # collection all boxes
     collision_boxes = []
     if len(self.animation_action_.rigid_body_boxes) > 0:      
       # use existing collision boxes 
       collision_boxes = self.animation_action_.rigid_body_boxes
-      logging.info("Using existing rigid body boxes: %s "%( ';'.join(str(x) for x in collision_boxes ) ))
+      AnimationActor.LOGGER.info("Using existing rigid body boxes: %s "%( ';'.join(str(x) for x in collision_boxes ) ))
     else:      
       # compute bounding box of all collision boxes from every sprite 
       boxes = []
@@ -324,7 +328,7 @@ class AnimationActor(SpriteAnimator):
       yoffset = float(txtr.axisy)
       card.setPos(Vec3(xoffset,0,yoffset))
       
-      logging.debug("Animation %s Sprite [%i] image size %s and offset %s."%( name,i, str((w,h)), str((txtr.axisx,txtr.axisy)) ) ) 
+      AnimationActor.LOGGER.debug("Animation %s Sprite [%i] image size %s and offset %s."%( name,i, str((w,h)), str((txtr.axisx,txtr.axisy)) ) ) 
      
     seq.setFrameRate(framerate)            
     return seq     

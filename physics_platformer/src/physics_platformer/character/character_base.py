@@ -55,7 +55,6 @@ class CharacterBase(AnimatableObject):
     self.node().setMass(self.character_info_.mass)
     self.node().setLinearFactor((1,0,1))   
     self.node().setAngularFactor((0,0,0)) 
-    self.node().setDeactivationEnabled(False,True)
     self.setCollideMask(CollisionMasks.NO_COLLISION)    
     
     #  setting bounding volume
@@ -76,6 +75,22 @@ class CharacterBase(AnimatableObject):
     self.__setupTransitionRules__()
     
     return True
+  
+  def setRigidBodyActive(self,active,force):
+    self.node().setActive(active,force)
+    if self.getAnimatorActor().getRigidBody() is not None:
+      self.getAnimatorActor().getRigidBody().node().setActive(active,force)
+  
+  def enableFriction(self,enable,friction = None):
+    
+    if self.getAnimatorActor().getRigidBody() is None:
+      return
+    
+    friction = self.character_info_.friction if friction is  None else friction
+    if enable:
+      self.getAnimatorActor().getRigidBody().node().setFriction(friction)
+    else:
+      self.getAnimatorActor().getRigidBody().node().setFriction(0)
   
   def getStatus(self):
     return self.status_
@@ -279,6 +294,9 @@ class CharacterBase(AnimatableObject):
     
     self.left_constraint_.setEnabled(False)
     self.right_constraint_.setEnabled(False)
+    for axis in range(0,6):
+      self.left_constraint_.setParam(BulletGenericConstraint.CP_cfm,0,axis)
+      self.right_constraint_.setParam(BulletGenericConstraint.CP_cfm,0,axis)
     
   def __cleanupConstraints__(self):
     
