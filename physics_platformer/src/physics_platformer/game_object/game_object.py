@@ -12,6 +12,9 @@ from panda3d.core import TransformState
 from panda3d.core import BitMask32
 from panda3d.core import NodePath
 from panda3d.core import PandaNode
+from panda3d.core import LPoint3
+from panda3d.core import BoundingVolume
+from panda3d.core import BoundingBox
 
 from panda3d.bullet import BulletPlaneShape
 from panda3d.bullet import BulletBoxShape
@@ -62,6 +65,12 @@ class GameObject(NodePath):
         self.node().setAngularFactor((0,1,0))   
         self.setCollideMask(CollisionMasks.RIGID_BODY)
         
+        #  setting bounding volume
+        min_point = LPoint3(-0.5*size.getX(),-0.5*size.getY(),-0.5*size.getZ())
+        max_point = LPoint3(0.5*size.getX(),0.5*size.getY(),0.5*size.getZ())
+        self.node().setBoundsType(BoundingVolume.BT_box)    
+        self.node().setBounds(BoundingBox(min_point ,max_point ))
+        
         # set visual
         if setup_visual:     
                    
@@ -105,7 +114,34 @@ class GameObject(NodePath):
             
        
     def getSize(self):
-        return self.size_
+      '''
+      Return Vec3 with the size of the objects
+      '''
+      return self.size_
+    
+    def getTop(self):      
+      return (self.getZ() + self.getSize().getZ()*0.5)
+    
+    def getBottom(self):
+      return (self.getZ() - self.getSize().getZ()*0.5)
+    
+    def getLeft(self):
+      return (self.getX() - self.getSize().getX()*0.5)
+    
+    def getRight(self):
+      return (self.getX() + self.getSize().getX()*0.5)    
+            
+    def getMax(self):
+      '''
+      LPoint3 Max in local coordinates
+      '''
+      return self.node().getInternalBounds().getMax() + self.getPos()
+    
+    def getMin(self):
+      '''
+      LPoint3 Min in local coordinates
+      '''
+      return self.node().getInternalBounds().getMin() + self.getPos()
             
     def update(self,dt):
         pass

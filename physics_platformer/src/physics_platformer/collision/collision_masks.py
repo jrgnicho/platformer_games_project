@@ -11,9 +11,9 @@ class CollisionMasks(object):
   ACTION_BODY = BitMask32.bit(5)
   POWERUP = BitMask32.bit(6)
   LEDGE = BitMask32.bit(7)
-  LANDING_SURFACE = BitMask32.bit(8)
-  LEFT_WALL_SURFACE = BitMask32.bit(9)
-  RIGHT_WALL_SURFACE = BitMask32.bit(10)
-  CEILING_SURFACE = BitMask32.bit(11)
+  GAME_OBJECT_BOTTOM = BitMask32.bit(8)
+  GAME_OBJECT_LEFT = BitMask32.bit(9)
+  GAME_OBJECT_RIGHT = BitMask32.bit(10)
+  GAME_OBJECT_TOP = BitMask32.bit(11)
   LEVEL_BOUND = BitMask32.bit(12)
   

@@ -8,8 +8,8 @@ from physics_platformer.resource_management.ff3 import CharacterLoader
 from physics_platformer.character.character_states import CharacterStateKeys
 from physics_platformer.game_actions import *
 from physics_platformer.state_machine import StateMachineActions
+from physics_platformer.character.character_base import CharacterBase
 from physics_platformer.character.character_states import CharacterStates
-from physics_platformer.character import Character
 from physics_platformer.input import Move
 from physics_platformer.input import KeyboardButtons
 from physics_platformer.input import KeyboardController
@@ -18,11 +18,11 @@ RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/chara
 PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
 ANIMATIONS = ['RUNNING','STANDING','TAKEOFF','ASCEND','FALL','LAND']
 
-class Hiei(Character):
+class Hiei(CharacterBase):
   
   def __init__(self,character_loader):
     self.character_loader_ = character_loader
-    Character.__init__(self,character_loader.getCharacterInfo())
+    CharacterBase.__init__(self,character_loader.getCharacterInfo())
     
   def setup(self):
     if(not self.loadResources()):
@@ -47,6 +47,7 @@ class Hiei(Character):
     return anim_counter > 0
   
   def setupStates(self):
+    
     # creating default states
     standing_state = CharacterStates.StandingState(self, self.sm_,ANIMATIONS[1])
     running_state = CharacterStates.RunningState(self,self.sm_,ANIMATIONS[0])
@@ -63,15 +64,16 @@ class Hiei(Character):
     self.sm_.addState(land_state)    
        
     
-    self.sm_.addTransition(CharacterStateKeys.FALLING, CollisionAction.SURFACE_COLLISION, CharacterStateKeys.LANDING)
+    #self.sm_.addTransition(CharacterStateKeys.FALLING, CollisionAction.SURFACE_COLLISION, CharacterStateKeys.LANDING)
+    self.sm_.addTransition(CharacterStateKeys.FALLING, StateMachineActions.DONE.key, CharacterStateKeys.LANDING)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_RIGHT.key,CharacterStateKeys.RUNNING)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
-    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.FALL.key,CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.STANDING,CollisionAction.FREE_FALL,CharacterStateKeys.FALLING)
     
-    self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.FALL.key,CharacterStateKeys.FALLING)
     self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
     self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.MOVE_NONE.key,CharacterStateKeys.STANDING)
+    self.sm_.addTransition(CharacterStateKeys.RUNNING,CollisionAction.FREE_FALL,CharacterStateKeys.FALLING)
     
     self.sm_.addTransition(CharacterStateKeys.TAKEOFF, StateMachineActions.DONE.key, CharacterStateKeys.JUMPING)
     self.sm_.addTransition(CharacterStateKeys.JUMPING, StateMachineActions.DONE.key, CharacterStateKeys.FALLING)

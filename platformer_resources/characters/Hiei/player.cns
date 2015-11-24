@@ -30,7 +30,7 @@ ground.back = 15		;Player width (back, ground)
 ground.front = 16		;Player width (front, ground)
 air.back = 12		;Player width (back, air)
 air.front = 12		;Player width (front, air)
-height = 1.0			;Height of player (for opponent to jump over)
+height = 1.0		;Height of player (for opponent to jump over)
 attack.dist = 160		;Default attack distance
 proj.attack.dist = 90	;Default attack distance for projectiles
 proj.doscale = 0		;Set to 1 to scale projectiles too   
@@ -44,7 +44,7 @@ walk.fwd  = 2.4		;Walk forward
 walk.back = -2.2		;Walk backward
 run.fwd  = 4.6, 0		;Run forward (x, y)
 run.back = -4.5,-3.8	;Hop backward (x, y)
-jump.neu = 0,8.0		;Neutral jumping velocity (x, y)
+jump.neu = 0,20.0		;Neutral jumping velocity (x, y)
 jump.back = -2.55		;Jump back Speed (x, y)
 jump.fwd = 2.0		;Jump forward Speed (x, y)
 runjump.back = -2.55,-8.1;Running jump speeds (opt)
@@ -57,7 +57,7 @@ airjump.fwd = 2.5		;.
 airjump.num = 1		;Number of air jumps allowed (opt)
 airjump.height = 35	;Minimum distance from ground before you can air jump (opt)
 yaccel = .44		;Vertical acceleration
-stand.friction = .85	;Friction coefficient when standing
+stand.friction = .35	;Friction coefficient when standing
 crouch.friction = .82	;Friction coefficient when crouching
 
 ;---------------------------------------------------------------------------

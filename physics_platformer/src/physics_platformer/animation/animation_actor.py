@@ -18,11 +18,16 @@ from panda3d.core import BoundingBox
 import logging
 from panda3d.bullet import BulletRigidBodyNode
 
-
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(level=logging.INFO)
 class AnimationActor(SpriteAnimator):
+  
+  LOGGER = logging.getLogger(__name__)
+  LOGGER.setLevel(level=logging.INFO)
   
   DEFAULT_WIDTH = 0.001
   DEFAULT_MASS = 1.0
+  BOUND_PADDING = 0.1
   
   def __init__(self,name,mass = DEFAULT_MASS):
     SpriteAnimator.__init__(self,name)
@@ -31,17 +36,23 @@ class AnimationActor(SpriteAnimator):
     self.animation_action_ = None
     self.rigid_body_np_ = None # NodePath to a bullet rigid body that contains the collision boxes that are used to handle interactions with the environment    
     self.action_body_np_ = None # NodePath to a bullet ghost node containing boxes that will be used to trigger a specific player action upon coming into contact with the environment
-    self.attack_damage_np_ = None # NodePath to a bullet ghost node containing collision boxes that are active during the duration of the animation
-    self.attack_hit_np_ = None # NodePath to a bullet ghost node containing hit boxes that are active during the duration of the animation
+    self.damage_box_np_ = None # NodePath to a bullet ghost node containing collision boxes that are active during the duration of the animation
+    self.hit_box_np_ = None # NodePath to a bullet ghost node containing hit boxes that are active during the duration of the animation
     self.parent_physics_world_ = None
-    self.rigid_body_bbox_ = None
     
+    # bounds    
+    self.rigid_body_bbox_ = None
+    self.bbox_top_np_ = None  # Node path to the top box ghost node
+    self.bbox_bottom_np_ = None # Node path to the bottom box ghost node
+    self.bbox_back_np_ = None # Node path to the rear box ghost node
+    self.bbox_front_np_ = None # Node path to the front box ghost node    
    
     self.node().setPythonTag(SpriteAnimator.__name__,self)
     
   def setPythonTag(self,tag,obj):
     SpriteAnimator.setPythonTag(self,tag,obj)       
-    for np in [self.rigid_body_np_,self.attack_damage_np_,self.attack_hit_np_,self.action_body_np_]:
+    for np in [self.rigid_body_np_,self.damage_box_np_,self.hit_box_np_,self.action_body_np_,
+               self.bbox_top_np_, self.bbox_front_np_, self.bbox_bottom_np_,self.bbox_back_np_]:
       if np is not None:
         np.setPythonTag(tag,obj)
     
@@ -50,12 +61,12 @@ class AnimationActor(SpriteAnimator):
     Loads the animation data from a AnimationInfo object
     """    
     if type(animation) is not AnimationInfo:
-      logging.error("Object pass is not an instance of the AnimationInfo class")
+      AnimationActor.LOGGER.error("Object pass is not an instance of the AnimationInfo class")
       return False
     
     # load sprites
     if not self.loadAnimationSprites(animation.sprites_right, animation.sprites_left, animation.framerate):
-      logging.error('Failed to load sprites from AnimationInfo object')
+      AnimationActor.LOGGER.error('Failed to load sprites from AnimationInfo object')
       return False
     
     # scale    
@@ -81,25 +92,41 @@ class AnimationActor(SpriteAnimator):
       
     if len(col_boxes) > 0:  
       col_boxes = [Box2D.createBoundingBox(col_boxes)]            
-      self.attack_damage_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(col_boxes,scale) )
-      self.attack_damage_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_DAMAGE)
+      self.damage_box_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(col_boxes,scale) )
+      self.damage_box_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_DAMAGE)
       
     if len(hit_boxes) > 0:
       hit_boxes = [Box2D.createBoundingBox(hit_boxes)]
-      self.attack_hit_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(hit_boxes,scale))
-      self.attack_hit_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_HIT)
+      self.hit_box_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(hit_boxes,scale))
+      self.hit_box_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_HIT)
       
     self.setScale(Vec3(scale[0],1,scale[1]))
           
     return True
+  
+  def faceRight(self,face_right = True):
+      SpriteAnimator.faceRight(self,face_right)
+      
+      if (self.bbox_back_np_ is None) or (self.bbox_front_np_ is None):
+        return
+      
+      if face_right:
+        self.bbox_back_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_LEFT)
+        self.bbox_front_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_RIGHT)
+      else:
+        self.bbox_back_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_RIGHT)
+        self.bbox_front_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_LEFT)
+        
     
-  def activate(self,physics_world,parent_np):
-    
-    if self.rigid_body_np_ is not None:
-      self.rigid_body_np_.reparentTo(parent_np)    
+  def activate(self,physics_world,parent_np):    
     
     self.parent_physics_world_ = physics_world
-    for np in [self.rigid_body_np_,self.attack_damage_np_,self.attack_hit_np_,self.action_body_np_]:
+    if self.rigid_body_np_ is not None:
+      self.rigid_body_np_.reparentTo(parent_np)  
+      for np in [self.bbox_top_np_, self.bbox_front_np_, self.bbox_bottom_np_,self.bbox_back_np_]:
+        self.parent_physics_world_.attach(np.node())
+    
+    for np in [self.rigid_body_np_,self.damage_box_np_,self.hit_box_np_,self.action_body_np_]:
       if np is not None:
         self.parent_physics_world_.attach(np.node())
         
@@ -113,9 +140,11 @@ class AnimationActor(SpriteAnimator):
       self.rigid_body_np_.detachNode()
       self.rigid_body_np_.node().clearForces()
       self.rigid_body_np_.node().setLinearVelocity(Vec3(0,0,0))
+      for np in [self.bbox_top_np_, self.bbox_front_np_, self.bbox_bottom_np_,self.bbox_back_np_]:
+        self.parent_physics_world_.remove(np.node())
     
     if self.parent_physics_world_ is not None:
-      for np in [self.rigid_body_np_,self.attack_damage_np_,self.attack_hit_np_,self.action_body_np_]:
+      for np in [self.rigid_body_np_,self.damage_box_np_,self.hit_box_np_,self.action_body_np_]:
         if np is not None:
           self.parent_physics_world_.remove(np.node())
           
@@ -129,17 +158,17 @@ class AnimationActor(SpriteAnimator):
   def getRigidBodyBoundingBox(self):
     return self.rigid_body_bbox_
     
-  def getDamageGhostBody(self):
+  def getDamageBox(self):
     """
-    Returns ghost body used to determing in an opponent's attack reached the player
+    Returns the node path to a ghost body used to determing in an opponent's attack touched the player
     """
-    return (None if (self.attack_damage_np_ is None) else self.attack_damage_np_)
+    return (None if (self.damage_box_np_ is None) else self.damage_box_np_)
   
-  def getHitGhostBody(self):    
+  def getHitBox(self):    
     """
-    Returns ghost body used to determing in player's attack reached the oponent
+    Returns the node path to a ghost body used to determing in player's attack touched the oponent
     """
-    return (None if self.attack_hit_np_ is None else self.attack_hit_np_)
+    return (None if self.hit_box_np_ is None else self.hit_box_np_)
   
   def getActionGhostBody(self):
     """
@@ -159,11 +188,11 @@ class AnimationActor(SpriteAnimator):
     """
     
     if (len(sprites_right) == 0) or (len(sprites_left) == 0):
-      logging.error("ERROR: Found empty image list")
+      AnimationActor.LOGGER.error("ERROR: Found empty image list")
       return False
     
     if len(sprites_right) != len(sprites_left):
-      logging.error("Unequal number of images for the left and right side")
+      AnimationActor.LOGGER.error("Unequal number of images for the left and right side")
       return False
     
     # storing individual sprite size
@@ -202,14 +231,14 @@ class AnimationActor(SpriteAnimator):
     self.rigid_body_np_ = NodePath(BulletRigidBodyNode('RigidBody'))
     rigid_body = self.rigid_body_np_.node()
     rigid_body.setIntoCollideMask(CollisionMasks.RIGID_BODY)
-    rigid_body.setDeactivationEnabled(False,True)
+    rigid_body.setFriction(0)
     
     # collection all boxes
     collision_boxes = []
     if len(self.animation_action_.rigid_body_boxes) > 0:      
       # use existing collision boxes 
       collision_boxes = self.animation_action_.rigid_body_boxes
-      logging.info("Using existing rigid body boxes: %s "%( ';'.join(str(x) for x in collision_boxes ) ))
+      AnimationActor.LOGGER.info("Using existing rigid body boxes: %s "%( ';'.join(str(x) for x in collision_boxes ) ))
     else:      
       # compute bounding box of all collision boxes from every sprite 
       boxes = []
@@ -238,6 +267,23 @@ class AnimationActor(SpriteAnimator):
     
     # creating bounding box    
     self.rigid_body_bbox_ = Box2D.createBoundingBox(collision_boxes)
+    
+    # creating bounding boxes around rigid body
+    top = Box2D(self.rigid_body_bbox_.width, AnimationActor.BOUND_PADDING ,(0, self.rigid_body_bbox_.height + 0.5*AnimationActor.BOUND_PADDING))
+    bottom = Box2D(self.rigid_body_bbox_.width, AnimationActor.BOUND_PADDING ,(0, -0.5*AnimationActor.BOUND_PADDING))
+    left = Box2D(AnimationActor.BOUND_PADDING, self.rigid_body_bbox_.height,( -0.5*(self.rigid_body_bbox_.width + AnimationActor.BOUND_PADDING), 0.5*self.rigid_body_bbox_.height))
+    right = Box2D(AnimationActor.BOUND_PADDING, self.rigid_body_bbox_.height ,( 0.5*(self.rigid_body_bbox_.width + AnimationActor.BOUND_PADDING), 0.5*self.rigid_body_bbox_.height))
+    
+    scale = (1,1)
+    self.bbox_top_np_ = self.rigid_body_np_.attachNewNode(self.__createBulletGhostNodeFromBoxes__([top], scale))
+    self.bbox_bottom_np_ = self.rigid_body_np_.attachNewNode(self.__createBulletGhostNodeFromBoxes__([bottom], scale))
+    self.bbox_back_np_ = self.rigid_body_np_.attachNewNode(self.__createBulletGhostNodeFromBoxes__([left], scale))
+    self.bbox_front_np_ = self.rigid_body_np_.attachNewNode(self.__createBulletGhostNodeFromBoxes__([right], scale))    
+    
+    self.bbox_top_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_TOP)
+    self.bbox_bottom_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_BOTTOM)
+    self.bbox_back_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_LEFT)
+    self.bbox_front_np_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_RIGHT)
     
   
   def __createBulletGhostNodeFromBoxes__(self,boxes,scale ):
@@ -282,7 +328,7 @@ class AnimationActor(SpriteAnimator):
       yoffset = float(txtr.axisy)
       card.setPos(Vec3(xoffset,0,yoffset))
       
-      logging.debug("Animation %s Sprite [%i] image size %s and offset %s."%( name,i, str((w,h)), str((txtr.axisx,txtr.axisy)) ) ) 
+      AnimationActor.LOGGER.debug("Animation %s Sprite [%i] image size %s and offset %s."%( name,i, str((w,h)), str((txtr.axisx,txtr.axisy)) ) ) 
      
     seq.setFrameRate(framerate)            
     return seq     

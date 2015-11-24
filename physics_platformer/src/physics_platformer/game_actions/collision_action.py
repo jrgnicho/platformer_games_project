@@ -12,6 +12,7 @@ class CollisionAction(Action):
   RIGHT_WALL_COLLISION = 'RIGHT_WALL_COLLISION'
   COLLIDE_LEVEL_BOUND = 'COLLIDE_LEVEL_BOUND'
   COLLISION_FREE = 'COLLISION_FREE'
+  FREE_FALL = 'FREE_FALL'
   
   def __init__(self,key,game_obj1,game_obj2,contact_manifold):
     Action.__init__(self,key)

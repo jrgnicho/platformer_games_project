@@ -7,6 +7,7 @@ class CharacterInfo(object):
     self.height = 0.6
     self.name = 'Ramapithecus'
     self.mass = 2.0
+    self.friction = 0.2
     self.scale = Vec3(1,1,1)
     self.life = 100
     self.power = 100
@@ -24,6 +25,7 @@ class CharacterInfo(object):
     Character Info:
       name:   %s
       mass:   %f
+      friction: %f
       height: %f
       width:  %f
       scale:  (%f, %f)
@@ -38,6 +40,7 @@ class CharacterInfo(object):
       jump_forward:  %f
     """%(self.name,
          self.mass,
+         self.friction,
          self.height,
          self.width,
          self.scale.getX(),self.scale.getZ(),

@@ -1,4 +1,4 @@
-from physics_platformer.game_object import CharacterInfo
+from physics_platformer.character import CharacterInfo
 from panda3d.core import Vec3
 import os
 import re
@@ -28,6 +28,7 @@ class CNSLoader(object):
     
   class MovementTokens(object):    
     __AIR_JUMPS__ = 'airjump.num\s+=\s+(\d+)'
+    __STAND_FRICTION__ = 'stand.friction\s+=\s+(\d*\.?\d+)' # should be less than 1
     
     
   
@@ -162,6 +163,11 @@ class CNSLoader(object):
     m = re.search(CNSLoader.MovementTokens.__AIR_JUMPS__,line)
     if m is not None:
       self.char_info_.air_jumps = int(m.group(1))
+      return True
+    
+    m = re.search(CNSLoader.MovementTokens.__STAND_FRICTION__,line)
+    if m is not None:
+      self.char_info_.friction = float(m.group(1))
       return True
     
     return False
