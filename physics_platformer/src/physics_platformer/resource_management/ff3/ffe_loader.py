@@ -33,6 +33,8 @@ class FFELoader(object):
   def __init__(self):   
     
     self.groups_dict_ = {}    
+    self.logger_ = logging.getLogger(__name__)
+    self.logger_.setLevel( level= logging.INFO)
         
   def hasGroup(self, group_no):
     return self.groups_dict_.has_key(group_no)
@@ -75,7 +77,7 @@ class FFELoader(object):
       
     f = open(filename,'r')
     lines = f.readlines()    
-    logging.debug("File %s contains %i lines"%(filename,len(lines)))
+    self.logger_.debug("File %s contains %i lines"%(filename,len(lines)))
     
     # image group containers
     group_right = None
@@ -119,7 +121,7 @@ class FFELoader(object):
         group_right.addSprite(right_sprt)
         group_left.addSprite(left_sprt)        
                 
-        logging.debug("Image: group = %i, image# = %i, axisx = %i, axisy = %i, file = %s"%(sd.group_no,
+        self.logger_.debug("Image: group = %i, image# = %i, axisx = %i, axisy = %i, file = %s"%(sd.group_no,
                                                                                            sd.image_no,
                                                                                            sd.axisx,
                                                                                            sd.axisy,
