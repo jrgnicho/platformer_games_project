@@ -57,7 +57,7 @@ airjump.fwd = 2.5		;.
 airjump.num = 1		;Number of air jumps allowed (opt)
 airjump.height = 35	;Minimum distance from ground before you can air jump (opt)
 yaccel = .44		;Vertical acceleration
-stand.friction = .85	;Friction coefficient when standing
+stand.friction = .35	;Friction coefficient when standing
 crouch.friction = .82	;Friction coefficient when crouching
 
 ;---------------------------------------------------------------------------

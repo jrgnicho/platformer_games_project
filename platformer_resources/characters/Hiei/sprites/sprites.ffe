@@ -7,44 +7,29 @@ number = 1
 file = 1-1.act
 
 [PaletteDef]
+group = 4
+number = 0
+file = 4-0.act
+
+[PaletteDef]
 group = 2
 number = 0
 file = 2-0.act
 
 [PaletteDef]
-group = 0
+group = 51
 number = 0
-file = 0-0.act
+file = 51-0.act
 
 [PaletteDef]
-group = 0
+group = 51
 number = 1
-file = 0-1.act
+file = 51-1.act
 
 [PaletteDef]
-group = 0
-number = 2
-file = 0-2.act
-
-[PaletteDef]
-group = 0
-number = 3
-file = 0-3.act
-
-[PaletteDef]
-group = 0
-number = 4
-file = 0-4.act
-
-[PaletteDef]
-group = 0
-number = 5
-file = 0-5.act
-
-[PaletteDef]
-group = 0
-number = 6
-file = 0-6.act
+group = 6
+number = 0
+file = 6-0.act
 
 [SpriteDef]
 group = 9000
@@ -161,7 +146,7 @@ xaxis = 18
 yaxis = 42
 flags = 0
 palette = 1,1
-file = 20-0.png
+file = 20-5.png
 
 [SpriteDef]
 group = 20
@@ -1366,7 +1351,7 @@ image = 1
 xaxis = 63
 yaxis = 16
 flags = 0
-palette = 0,1
+palette = 4,0
 file = 4-1.png
 
 [SpriteDef]
@@ -1375,7 +1360,7 @@ image = 2
 xaxis = 35
 yaxis = 50
 flags = 0
-palette = 0,0
+palette = 4,0
 file = 4-2.png
 
 [SpriteDef]
@@ -1474,7 +1459,7 @@ image = 3
 xaxis = 10
 yaxis = 43
 flags = 0
-palette = 0,4
+palette = 2,0
 file = 3-3.png
 
 [SpriteDef]
@@ -1492,7 +1477,7 @@ image = 0
 xaxis = 17
 yaxis = 46
 flags = 0
-palette = 0,4
+palette = 2,0
 file = 51-0.png
 
 [SpriteDef]
@@ -1501,7 +1486,7 @@ image = 1
 xaxis = 25
 yaxis = 42
 flags = 0
-palette = 0,4
+palette = 2,0
 file = 51-1.png
 
 [SpriteDef]
@@ -1510,7 +1495,7 @@ image = 2
 xaxis = 19
 yaxis = 46
 flags = 0
-palette = 0,4
+palette = 2,0
 file = 51-2.png
 
 [SpriteDef]
@@ -1519,7 +1504,7 @@ image = 3
 xaxis = 29
 yaxis = 54
 flags = 0
-palette = 0,5
+palette = 51,0
 file = 51-3.png
 
 [SpriteDef]
@@ -1528,7 +1513,7 @@ image = 4
 xaxis = 23
 yaxis = 51
 flags = 0
-palette = 0,6
+palette = 51,1
 file = 51-4.png
 
 [SpriteDef]
@@ -1537,7 +1522,7 @@ image = 5
 xaxis = 18
 yaxis = 45
 flags = 0
-palette = 0,1
+palette = 4,0
 file = 51-5.png
 
 [SpriteDef]
@@ -1546,7 +1531,7 @@ image = 6
 xaxis = 13
 yaxis = 48
 flags = 0
-palette = 0,4
+palette = 2,0
 file = 51-6.png
 
 [SpriteDef]
@@ -1663,7 +1648,7 @@ image = 1
 xaxis = 8
 yaxis = 49
 flags = 0
-palette = 0,3
+palette = 6,0
 file = 6-1.png
 
 [SpriteDef]
@@ -1727,7 +1712,7 @@ xaxis = 14
 yaxis = 51
 flags = 0
 palette = 2,0
-file = 7-2.png
+file = 7-0.png
 
 [SpriteDef]
 group = 7
