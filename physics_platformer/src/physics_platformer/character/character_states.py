@@ -61,8 +61,6 @@ class AerialBaseState(CharacterState):
     
     self.addAction(CharacterActions.MOVE_RIGHT.key,self.moveRight)
     self.addAction(CharacterActions.MOVE_LEFT.key,self.moveLeft)
-    self.addAction(CollisionAction.LEFT_WALL_COLLISION,self.pushRightFromWall)
-    self.addAction(CollisionAction.RIGHT_WALL_COLLISION,self.pushLeftFromWall)
     
   def enter(self):
     
@@ -94,7 +92,8 @@ class AerialBaseState(CharacterState):
     vel = self.character_obj_.node().getLinearVelocity()
     vel.setX(-self.forward_speed_)    
     self.character_obj_.setLinearVelocity(vel)
-    
+  
+  # TODO:   Remove method below if not used again for improving behavior around platform edges
   def pushRightFromWall(self,action):
     platform  = action.game_obj2      
     if abs(self.character_obj_.getBottom() - platform.getTop()) < AerialBaseState.LANDING_THRESHOLD :
@@ -112,7 +111,8 @@ class AerialBaseState(CharacterState):
       return 
     
     self.character_obj_.clampLeft( d + AerialBaseState.MIN_WALL_DISTANCE)
-  
+    
+  # TODO:   Remove method below if not used again for improving behavior around platform edges
   def pushLeftFromWall(self,action):
     platform  = action.game_obj2      
     if abs(self.character_obj_.getBottom() - platform.getTop()) < AerialBaseState.LANDING_THRESHOLD :
@@ -149,12 +149,12 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
       self.character_obj_.setLinearVelocity(LVector3(0,0,0))
       self.character_obj_.clearForces()      
-      self.character_obj_.setRigidBodyActive(False, True)
+      #self.character_obj_.setRigidBodyActive(False, True)
       
     def exit(self):
       self.character_obj_.stop()
       self.character_obj_.node().setLinearFactor(LVector3(1,0,1))
-      self.character_obj_.setRigidBodyActive(True, True)      
+      #self.character_obj_.setRigidBodyActive(True, True)      
     
   class RunningState(CharacterState):
     

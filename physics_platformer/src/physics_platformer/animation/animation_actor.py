@@ -38,6 +38,7 @@ class AnimationActor(SpriteAnimator):
     self.action_body_np_ = None # NodePath to a bullet ghost node containing boxes that will be used to trigger a specific player action upon coming into contact with the environment
     self.damage_box_np_ = None # NodePath to a bullet ghost node containing collision boxes that are active during the duration of the animation
     self.hit_box_np_ = None # NodePath to a bullet ghost node containing hit boxes that are active during the duration of the animation
+    self.auxiliary_boxes_ = [] # list of Box2d boxes that can be used for a variety of purposes.
     self.parent_physics_world_ = None
     
     # bounds    
@@ -83,7 +84,7 @@ class AnimationActor(SpriteAnimator):
       self.action_body_np_ =  self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(self.animation_action_.action_boxes,scale) )
       self.action_body_np_.node().setIntoCollideMask(CollisionMasks.ACTION_BODY)
 
-    # creating attack collision and hit ghosts bodies for detecting oponent's attacks
+    # creating attack collision and hit ghosts bodies for handling attack boxes
     col_boxes = []    
     hit_boxes = []
     for elmt in self.animation_action_.animation_elements:
@@ -100,6 +101,7 @@ class AnimationActor(SpriteAnimator):
       self.hit_box_np_ = self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(hit_boxes,scale))
       self.hit_box_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_HIT)
       
+    # scaling remaining boxes (animation frames and auxiliary)     
     self.setScale(Vec3(scale[0],1,scale[1]))
           
     return True
@@ -225,12 +227,16 @@ class AnimationActor(SpriteAnimator):
       boxes = sprt_right.hit_boxes + sprt_right.damage_boxes + sprt_left.hit_boxes + sprt_left.damage_boxes
       for box in boxes:
         box.scale = (scale.getX(), scale.getZ())
+        
+    for box in self.animation_action_.auxiliary_boxes:
+      box.scale = (scale.getX(), scale.getZ())
+      self.auxiliary_boxes_.append(box)
      
     
   def __createRigidBody__(self,scale):
     self.rigid_body_np_ = NodePath(BulletRigidBodyNode('RigidBody'))
     rigid_body = self.rigid_body_np_.node()
-    rigid_body.setIntoCollideMask(CollisionMasks.RIGID_BODY)
+    rigid_body.setIntoCollideMask(CollisionMasks.GAME_OBJECT_AABB)
     rigid_body.setFriction(0)
     
     # collection all boxes
@@ -241,6 +247,7 @@ class AnimationActor(SpriteAnimator):
       AnimationActor.LOGGER.info("Using existing rigid body boxes: %s "%( ';'.join(str(x) for x in collision_boxes ) ))
     else:      
       # compute bounding box of all collision boxes from every sprite 
+      AnimationActor.LOGGER.warning("Rigid body boxes not found for this animation, creating AABB from damage boxes in all frames")
       boxes = []
       for elemt in self.animation_action_.animation_elements:
         boxes = boxes + elemt.damage_boxes
@@ -267,12 +274,17 @@ class AnimationActor(SpriteAnimator):
     
     # creating bounding box    
     self.rigid_body_bbox_ = Box2D.createBoundingBox(collision_boxes)
+    aabb = self.rigid_body_bbox_ 
     
     # creating bounding boxes around rigid body
-    top = Box2D(self.rigid_body_bbox_.width, AnimationActor.BOUND_PADDING ,(0, self.rigid_body_bbox_.height + 0.5*AnimationActor.BOUND_PADDING))
-    bottom = Box2D(self.rigid_body_bbox_.width, AnimationActor.BOUND_PADDING ,(0, -0.5*AnimationActor.BOUND_PADDING))
-    left = Box2D(AnimationActor.BOUND_PADDING, self.rigid_body_bbox_.height,( -0.5*(self.rigid_body_bbox_.width + AnimationActor.BOUND_PADDING), 0.5*self.rigid_body_bbox_.height))
-    right = Box2D(AnimationActor.BOUND_PADDING, self.rigid_body_bbox_.height ,( 0.5*(self.rigid_body_bbox_.width + AnimationActor.BOUND_PADDING), 0.5*self.rigid_body_bbox_.height))
+    offsetx = aabb.center[0]
+    offsety = aabb.center[1]
+    top = Box2D(aabb.width, AnimationActor.BOUND_PADDING ,(offsetx, offsety + 0.5*aabb.height + 0.5*AnimationActor.BOUND_PADDING))
+    bottom = Box2D(aabb.width, AnimationActor.BOUND_PADDING ,(offsetx, offsety - 0.5*aabb.height -0.5*AnimationActor.BOUND_PADDING))
+    left = Box2D(AnimationActor.BOUND_PADDING, aabb.height,(offsetx + -0.5*(aabb.width + AnimationActor.BOUND_PADDING) , 
+                                                            offsety ))
+    right = Box2D(AnimationActor.BOUND_PADDING, aabb.height ,(offsetx + 0.5*(aabb.width + AnimationActor.BOUND_PADDING) ,
+                                                            offsety ))
     
     scale = (1,1)
     self.bbox_top_np_ = self.rigid_body_np_.attachNewNode(self.__createBulletGhostNodeFromBoxes__([top], scale))

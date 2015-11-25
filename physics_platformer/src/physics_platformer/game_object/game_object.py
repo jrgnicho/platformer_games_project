@@ -63,7 +63,7 @@ class GameObject(NodePath):
         self.node().setMass(mass)
         self.node().setLinearFactor((1,0,1))   
         self.node().setAngularFactor((0,1,0))   
-        self.setCollideMask(CollisionMasks.RIGID_BODY)
+        self.setCollideMask(CollisionMasks.GAME_OBJECT_AABB)
         
         #  setting bounding volume
         min_point = LPoint3(-0.5*size.getX(),-0.5*size.getY(),-0.5*size.getZ())
