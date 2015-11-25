@@ -5,7 +5,7 @@ class CollisionMasks(object):
   NO_COLLISION = BitMask32.allOff()
   ALL = BitMask32.allOn()
   LEVEL_OBSTACLE = BitMask32.bit(1)
-  RIGID_BODY = BitMask32.bit(2)
+  GAME_OBJECT_AABB = BitMask32.bit(2)
   ATTACK_HIT = BitMask32.bit(3)
   ATTACK_DAMAGE = BitMask32.bit(4)
   ACTION_BODY = BitMask32.bit(5)

@@ -13,8 +13,8 @@ class AnimationElement(object):
   def __init__(self):
     self.group_no = 0
     self.im_no =0
-    self.hit_boxes = []
-    self.damage_boxes = []   
+    self.hit_boxes = [] # boxes to check if the character's attack hits the oponent
+    self.damage_boxes = [] # boxes to check if the incoming attack hits the character
     self.game_ticks = 0 # Number of ticks that this image will be displayed
     
   def __str__(self):
@@ -49,9 +49,10 @@ class AnimationInfo(object):
     self.scalex = 1
     self.scaley = 1
     self.framerate = 0
-    self.rigid_body_boxes = []
-    self.action_boxes = []
-    self.animation_elements =[]
+    self.rigid_body_boxes = [] # boxes used to represent the rigid body that is subjected to the world physics'. It is the first box in the Clsn2Default list.
+    self.auxiliary_boxes = [] # boxes used for especialized actions 
+    self.action_boxes = [] # boxes used for responding to landmarks in the environment
+    self.animation_elements =[] # list of AnimationElement objects, should be the same size as the number of sprites
     self.sprites_left = []
     self.sprites_right = []
     
