@@ -93,7 +93,16 @@ class CharacterBase(AnimatableObject):
       self.getAnimatorActor().getRigidBody().node().setFriction(0)
   
   def getStatus(self):
+    '''
+    Returns a CharacterStatus instance
+    '''
     return self.status_
+  
+  def getInfo(self):
+    '''
+    Returns a CharacterInfo instance
+    '''
+    return self.character_info_
   
   def getTop(self):
     return self.getAnimatorActor().getRigidBodyBoundingBox().top + self.getZ()

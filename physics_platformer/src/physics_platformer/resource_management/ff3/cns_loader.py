@@ -29,6 +29,8 @@ class CNSLoader(object):
   class MovementTokens(object):    
     __AIR_JUMPS__ = 'airjump.num\s+=\s+(\d+)'
     __STAND_FRICTION__ = 'stand.friction\s+=\s+(\d*\.?\d+)' # should be less than 1
+    __EDGE_RECOVERY__ = 'stand.edge.recovery_distance\s+=\s+(\d*\.?\d+)'
+    __EDGE_DROP__ = 'stand.edge.drop_distance\s+=\s+(\d*\.?\d+)'
     
     
   
@@ -169,5 +171,17 @@ class CNSLoader(object):
     if m is not None:
       self.char_info_.friction = float(m.group(1))
       return True
+    
+    m = re.search(CNSLoader.MovementTokens.__EDGE_RECOVERY__,line)
+    if m is not None:
+      self.char_info_.edge_recovery_distance = float(m.group(1))
+      return True
+    
+    m = re.search(CNSLoader.MovementTokens.__EDGE_DROP__,line)
+    if m is not None:
+      self.char_info_.edge_drop_distance = float(m.group(1))
+      return True
+    
+    
     
     return False

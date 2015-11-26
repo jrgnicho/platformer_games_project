@@ -18,6 +18,8 @@ class CharacterInfo(object):
     self.run_speed = 2
     self.jump_force = 1
     self.jump_forward = 1
+    self.edge_recovery_distance = 0.2 # minimum distance from edge for attempting a recovery and avoid falling from edge
+    self.edge_drop_distance = 0.5 # beyond this distance the character drops from the platform
     
   def __str__(self):
     
@@ -38,6 +40,8 @@ class CharacterInfo(object):
       run_speed:  %f
       jump_force:  %f
       jump_forward:  %f
+      edge_recovery_distance: %f
+      edge_drop_distance: %f
     """%(self.name,
          self.mass,
          self.friction,
@@ -52,5 +56,7 @@ class CharacterInfo(object):
          self.walk_speed,
          self.run_speed,
          self.jump_force,
-         self.jump_forward)
+         self.jump_forward,
+         self.edge_recovery_distance,
+         self.edge_drop_distance)
     return s

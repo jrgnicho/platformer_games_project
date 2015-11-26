@@ -5,6 +5,7 @@ from physics_platformer.game_actions import GeneralActions
 from physics_platformer.game_actions import AnimationActions
 from physics_platformer.game_actions import CharacterActions
 from physics_platformer.game_actions import CollisionAction
+from physics_platformer.character import CharacterStatus
 from panda3d.core import LVector3
 from panda3d.core import Vec3
 import logging
@@ -14,7 +15,8 @@ class CharacterStateKeys(object):
   NONE="NONE"
   STANDING="STANDING"
   RETREAT_FROM_LEDGE = "RETREAT_FROM_LEDGE"
-  STANDING_ON_LEDGE="STANDING_ON_LEDGE"
+  STANDING_NEAR_EDGE="STANDING_NEAR_EDGE"
+  STANDING_EDGE_RECOVERY = "STANDING_EDGE_RECOVERY"
   RUNNING="RUNNING"
   TAKEOFF = "TAKEOFF"
   JUMPING="JUMPING"
@@ -133,15 +135,18 @@ class AerialBaseState(CharacterState):
       
   
 class CharacterStates(object): # Class Namespace
+  
+  EDGE_PUSH_DISTANCE = 2*AnimationActor.BOUND_PADDING
     
   class StandingState(CharacterState):        
     
     def __init__(self,character_obj, parent_state_machine,animation_key = None):
       
-      CharacterState.__init__(self, CharacterStateKeys.STANDING, character_obj, parent_state_machine, animation_key)      
+      CharacterState.__init__(self, CharacterStateKeys.STANDING, character_obj, parent_state_machine, animation_key) 
       
-    def enter(self):
+      self.addAction(CollisionAction.ACTION_BODY_COLLISION,self.nearEdgeCallback)     
       
+    def enter(self):      
       logging.debug("%s state entered"%(self.getKey()))
       self.character_obj_.loop(self.animation_key_)    
       platform  = self.character_obj_.getStatus().platform
@@ -154,15 +159,87 @@ class CharacterStates(object): # Class Namespace
     def exit(self):
       self.character_obj_.stop()
       self.character_obj_.node().setLinearFactor(LVector3(1,0,1))
-      #self.character_obj_.setRigidBodyActive(True, True)      
+      #self.character_obj_.setRigidBodyActive(True, True)   
+      
+    def nearEdgeCallback(self,collision_action):
+            
+      platform = self.character_obj_.getStatus().platform
+      recovery_dist = self.character_obj_.getInfo().edge_recovery_distance
+      drop_dist = self.character_obj_.getInfo().edge_drop_distance
+      
+      # check if truly standing near either edge
+      if not (self.character_obj_.getRight() > platform.getRight() or self.character_obj_.getLeft() < platform.getLeft()) :
+        return
+      
+      # determining distance to platform edge
+      near_right_edge = self.character_obj_.getRight() > platform.getRight()       
+      d = (self.character_obj_.getRight() - platform.getRight()) if near_right_edge else (platform.getLeft() - self.character_obj_.getLeft())
+      
+      facing_oposite = near_right_edge == self.character_obj_.isFacingRight()
+      
+      # storing relevant variables
+      self.character_obj_.getStatus().contact_data = CharacterStatus.ContactData(self.character_obj_.getName(),bottom = collision_action.contact_manifold)
+      self.character_obj_.getStatus().platform = platform
+      
+      # recover move request
+      if d > recovery_dist and d < drop_dist:        
+        StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.EDGE_RECOVERY))
+      
+      # fall from the platform  
+      if d >= drop_dist:        
+        logging.debug("Pushing character out of platform")
+        if near_right_edge:
+          self.character_obj_.clampLeft(platform.getRight() + CharacterStates.EDGE_PUSH_DISTANCE)
+        else:
+          self.character_obj_.clampRight(platform.getLeft() - CharacterStates.EDGE_PUSH_DISTANCE)
+      
+  class StandingEdgeRecovery(CharacterState):
+    
+    def __init__(self,character_obj, parent_state_machine,animation_key = None):   
+      CharacterState.__init__(self, CharacterStateKeys.STANDING_EDGE_RECOVERY, character_obj, parent_state_machine, animation_key)  
+      
+    def enter(self):
+      logging.debug("%s state entered"%(self.getKey()))
+      
+      self.character_obj_.setAnimationEndCallback(self.done)
+      self.character_obj_.pose(self.animation_key_)
+      
+      # determining x position
+      xoffset = 0
+      facing_right = self.character_obj_.isFacingRight() 
+      if self.character_obj_.getAnimatorActor().getActionGhostBody() is not None:
+        node = self.character_obj_.getAnimatorActor().getActionGhostBody().node()
+        xoffset = node.getShapePos(0).getX()
+        xoffset = xoffset if facing_right else -xoffset
+      
+      platform  = self.character_obj_.getStatus().platform  
+      last_contact = self.character_obj_.getStatus().contact_data
+      pos_x = platform.getRight() if facing_right else platform.getLeft()
+      pos_x -= xoffset
+      self.character_obj_.setX(pos_x)        
+      self.character_obj_.play(self.animation_key_)
+      
+    def exit(self):
+      self.character_obj_.setAnimationEndCallback(None)
+      self.character_obj_.stop()
+        
+  class StandingNearEdge(CharacterState):
+    def __init__(self,character_obj, parent_state_machine,animation_key = None):   
+      CharacterState.__init__(self, CharacterStateKeys.STANDING_NEAR_EDGE, character_obj, parent_state_machine, animation_key) 
+      
+    def enter(self):
+      logging.debug("%s state entered"%(self.getKey()))              
+      self.character_obj_.loop(self.animation_key_)  
+      
+    def exit(self):
+      self.character_obj_.stop()
     
   class RunningState(CharacterState):
     
     def __init__(self,character_obj,parent_state_machine, animation_key = None):
       CharacterState.__init__(self, CharacterStateKeys.RUNNING, character_obj, parent_state_machine, animation_key)
       self.forward_speed_ = self.character_obj_.character_info_.run_speed
-      self.forward_direction_ = LVector3(self.forward_speed_,0,0)
-      
+      self.forward_direction_ = LVector3(self.forward_speed_,0,0)      
       
       self.addAction(CharacterActions.MOVE_RIGHT.key,self.turnRight)
       self.addAction(CharacterActions.MOVE_LEFT.key,self.turnLeft)  
