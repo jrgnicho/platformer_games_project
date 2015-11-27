@@ -175,23 +175,30 @@ class CharacterStates(object): # Class Namespace
       near_right_edge = self.character_obj_.getRight() > platform.getRight()       
       d = (self.character_obj_.getRight() - platform.getRight()) if near_right_edge else (platform.getLeft() - self.character_obj_.getLeft())
       
-      facing_oposite = near_right_edge == self.character_obj_.isFacingRight()
+      facing_oposite = near_right_edge != self.character_obj_.isFacingRight()
       
       # storing relevant variables
       self.character_obj_.getStatus().contact_data = CharacterStatus.ContactData(self.character_obj_.getName(),bottom = collision_action.contact_manifold)
       self.character_obj_.getStatus().platform = platform
       
-      # recover move request
-      if d > recovery_dist and d < drop_dist:        
-        StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.EDGE_RECOVERY))
-      
-      # fall from the platform  
+      # push from the platform  
       if d >= drop_dist:        
         logging.debug("Pushing character out of platform")
         if near_right_edge:
           self.character_obj_.clampLeft(platform.getRight() + CharacterStates.EDGE_PUSH_DISTANCE)
         else:
           self.character_obj_.clampRight(platform.getLeft() - CharacterStates.EDGE_PUSH_DISTANCE)
+      
+      if facing_oposite:
+        logging.debug("Clamping to platform edge")
+        if near_right_edge:
+          self.character_obj_.clampRight(platform.getRight() - CharacterStates.EDGE_PUSH_DISTANCE)
+        else:
+          self.character_obj_.clampLeft(platform.getLeft() + CharacterStates.EDGE_PUSH_DISTANCE)      
+      else: # recovery move
+        if d > recovery_dist and d < drop_dist:      
+            StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.EDGE_RECOVERY))      
+
       
   class StandingEdgeRecovery(CharacterState):
     
@@ -215,9 +222,9 @@ class CharacterStates(object): # Class Namespace
       platform  = self.character_obj_.getStatus().platform  
       last_contact = self.character_obj_.getStatus().contact_data
       pos_x = platform.getRight() if facing_right else platform.getLeft()
-      pos_x -= xoffset
-      self.character_obj_.setX(pos_x)        
-      self.character_obj_.play(self.animation_key_)
+      pos_x -= xoffset    
+      self.character_obj_.clampOriginX(pos_x)         
+      self.character_obj_.play(self.animation_key_)  
       
     def exit(self):
       self.character_obj_.setAnimationEndCallback(None)
@@ -228,8 +235,23 @@ class CharacterStates(object): # Class Namespace
       CharacterState.__init__(self, CharacterStateKeys.STANDING_NEAR_EDGE, character_obj, parent_state_machine, animation_key) 
       
     def enter(self):
-      logging.debug("%s state entered"%(self.getKey()))              
-      self.character_obj_.loop(self.animation_key_)  
+      logging.debug("%s state entered"%(self.getKey()))      
+      self.character_obj_.pose(self.animation_key_)      
+      
+      # determining x position
+      xoffset = 0
+      facing_right = self.character_obj_.isFacingRight() 
+      if self.character_obj_.getAnimatorActor().getActionGhostBody() is not None:
+        node = self.character_obj_.getAnimatorActor().getActionGhostBody().node()
+        xoffset = node.getShapePos(0).getX()
+        xoffset = xoffset if facing_right else -xoffset
+      
+      platform  = self.character_obj_.getStatus().platform  
+      last_contact = self.character_obj_.getStatus().contact_data
+      pos_x = platform.getRight() if facing_right else platform.getLeft()
+      pos_x -= xoffset
+      self.character_obj_.clampOriginX(pos_x)   
+      self.character_obj_.loop(self.animation_key_)
       
     def exit(self):
       self.character_obj_.stop()
