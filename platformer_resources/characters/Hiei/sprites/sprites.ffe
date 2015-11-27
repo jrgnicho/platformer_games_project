@@ -533,6 +533,14 @@ file = 6-3.png
 
 [SpriteDef]
 group = 6
+image = 6
+xaxis = 17
+yaxis = 49
+flags = 0
+file = 6-6.png
+
+[SpriteDef]
+group = 6
 image = 4
 xaxis = 16
 yaxis = 49

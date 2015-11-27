@@ -126,8 +126,8 @@ class CharacterStates(object): # Class Namespace
     def nearEdgeCallback(self,collision_action):
             
       platform = self.character_obj_.getStatus().platform
-      recovery_dist = self.character_obj_.getInfo().edge_recovery_distance
-      drop_dist = self.character_obj_.getInfo().edge_drop_distance
+      recovery_min = self.character_obj_.getInfo().fall_recovery_min
+      recovery_max = self.character_obj_.getInfo().fall_recovery_max
       
       # check if truly standing near either edge
       if not (self.character_obj_.getRight() > platform.getRight() or self.character_obj_.getLeft() < platform.getLeft()) :
@@ -144,22 +144,15 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.getStatus().platform = platform
       
       # push from the platform  
-      if d >= drop_dist:        
+      if d >= recovery_max:        
         logging.debug("Pushing character out of platform")
         if near_right_edge:
           self.character_obj_.clampLeft(platform.getRight() + CharacterStates.EDGE_PUSH_DISTANCE)
         else:
           self.character_obj_.clampRight(platform.getLeft() - CharacterStates.EDGE_PUSH_DISTANCE)
-      
-      if facing_oposite:
-        logging.debug("Clamping to platform edge")
-        if near_right_edge:
-          self.character_obj_.clampRight(platform.getRight() - CharacterStates.EDGE_PUSH_DISTANCE)
-        else:
-          self.character_obj_.clampLeft(platform.getLeft() + CharacterStates.EDGE_PUSH_DISTANCE)      
-      else: # recovery move
-        if d > recovery_dist and d < drop_dist:      
-            StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.EDGE_RECOVERY))      
+
+      if d > recovery_min and d < recovery_max and not facing_oposite:      
+          StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.EDGE_RECOVERY))      
 
       
   class StandingEdgeRecovery(CharacterState):
@@ -351,12 +344,16 @@ class CharacterStates(object): # Class Namespace
           
           if d > info.land_edge_min and d < info.land_edge_max:
             StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND_EDGE))
-          else:
+          
+          if d < info.land_edge_min:
             # push out of platform
             if self.character_obj_.isFacingRight():
               self.character_obj_.clampRight(platform.getLeft()-CharacterStates.EDGE_PUSH_DISTANCE)
             else:
               self.character_obj_.clampLeft(platform.getRight()+CharacterStates.EDGE_PUSH_DISTANCE)
+          if d > info.land_edge_max:
+            StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))
+            
         else:
           StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))
        
