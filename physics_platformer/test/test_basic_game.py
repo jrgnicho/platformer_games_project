@@ -16,7 +16,7 @@ from physics_platformer.input import KeyboardController
 
 RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/characters/Hiei/'
 PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
-ANIMATIONS = ['RUNNING','STANDING','TAKEOFF','ASCEND','FALL','LAND']
+ANIMATIONS = ['RUNNING','STANDING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE']
 
 class Hiei(CharacterBase):
   
@@ -43,8 +43,10 @@ class Hiei(CharacterBase):
         anim_counter+=1          
         logging.debug("Animation Actor %s was found"%(actor.getName()))       
         self.addAnimationActor(actor.getName(),actor)
+      else:
+        logging.warn("Animation Actor %s was found but will not be loaded"%(actor.getName()))
         
-    return anim_counter > 0
+    return anim_counter == len(ANIMATIONS)
   
   def setupStates(self):
     
@@ -55,21 +57,38 @@ class Hiei(CharacterBase):
     jump_state = CharacterStates.JumpState(self,self.sm_,ANIMATIONS[3])
     fall_state = CharacterStates.FallState(self,self.sm_,ANIMATIONS[4])
     land_state = CharacterStates.LandState(self,self.sm_,ANIMATIONS[5])
+    standing_edge_recovery_state = CharacterStates.StandingEdgeRecovery(self,self.sm_,ANIMATIONS[6])
+    standing_near_edge_state = CharacterStates.StandingNearEdge(self,self.sm_,ANIMATIONS[7])
+    edge_landing_state = CharacterStates.EdgeLandingState(self,self.sm_,ANIMATIONS[8])
         
     self.sm_.addState(fall_state)
     self.sm_.addState(standing_state)
     self.sm_.addState(running_state)
     self.sm_.addState(takeoff_state)
     self.sm_.addState(jump_state)
-    self.sm_.addState(land_state)    
+    self.sm_.addState(land_state)  
+    self.sm_.addState(standing_edge_recovery_state)
+    self.sm_.addState(standing_near_edge_state) 
+    self.sm_.addState(edge_landing_state) 
        
     
-    #self.sm_.addTransition(CharacterStateKeys.FALLING, CollisionAction.SURFACE_COLLISION, CharacterStateKeys.LANDING)
     self.sm_.addTransition(CharacterStateKeys.FALLING, StateMachineActions.DONE.key, CharacterStateKeys.LANDING)
+    self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.LAND_EDGE.key, CharacterStateKeys.EDGE_LANDING)
+    
+    self.sm_.addTransition(CharacterStateKeys.EDGE_LANDING, StateMachineActions.DONE.key, CharacterStateKeys.STANDING)
+    
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_RIGHT.key,CharacterStateKeys.RUNNING)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CollisionAction.FREE_FALL,CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.EDGE_RECOVERY.key,CharacterStateKeys.STANDING_EDGE_RECOVERY)
+    
+    self.sm_.addTransition(CharacterStateKeys.STANDING_EDGE_RECOVERY,StateMachineActions.DONE.key,CharacterStateKeys.STANDING)
+    self.sm_.addTransition(CharacterStateKeys.STANDING_EDGE_RECOVERY,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
+    
+    self.sm_.addTransition(CharacterStateKeys.STANDING_NEAR_EDGE,CharacterActions.MOVE_RIGHT.key,CharacterStateKeys.RUNNING)
+    self.sm_.addTransition(CharacterStateKeys.STANDING_NEAR_EDGE,CharacterActions.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
+    self.sm_.addTransition(CharacterStateKeys.STANDING_NEAR_EDGE,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
     
     self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
     self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.MOVE_NONE.key,CharacterStateKeys.STANDING)

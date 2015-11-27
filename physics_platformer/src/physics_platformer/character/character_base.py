@@ -43,7 +43,7 @@ class CharacterBase(AnimatableObject):
         # constraints
     self.left_constraint_ = None
     self.right_constraint_ = None
-    self.active_constraint_ = None
+    self.selected_constraint_ = None
     
     # rigid body
     shapes = self.node().getShapes()
@@ -93,7 +93,16 @@ class CharacterBase(AnimatableObject):
       self.getAnimatorActor().getRigidBody().node().setFriction(0)
   
   def getStatus(self):
+    '''
+    Returns a CharacterStatus instance
+    '''
     return self.status_
+  
+  def getInfo(self):
+    '''
+    Returns a CharacterInfo instance
+    '''
+    return self.character_info_
   
   def getTop(self):
     return self.getAnimatorActor().getRigidBodyBoundingBox().top + self.getZ()
@@ -121,7 +130,19 @@ class CharacterBase(AnimatableObject):
     
     local_offset = self.getBack() if self.isFacingRight() else self.getFront()
     local_offset = self.getX() - local_offset
+    
+    self.__deactivateConstraint__() # avoids recoil due to rapid position change
     self.setX(x + local_offset)
+    self.__activateConstraint__(self.selected_constraint_)
+    
+  def clampOriginX(self,x):
+    vel = self.node().getLinearVelocity()
+    vel.setX(0)
+    self.node().setLinearVelocity(vel)  
+    
+    self.__deactivateConstraint__() # avoids recoil due to rapid position change     
+    self.setX(x)
+    self.__activateConstraint__(self.selected_constraint_)
     
   def clampRight(self,x):
     
@@ -131,7 +152,10 @@ class CharacterBase(AnimatableObject):
     
     local_offset = self.getFront() if self.isFacingRight() else self.getBack()
     local_offset = self.getX() - local_offset
-    self.setX(x + local_offset)    
+    
+    self.__deactivateConstraint__() # avoids recoil due to rapid position change
+    self.setX(x + local_offset) 
+    self.__activateConstraint__(self.selected_constraint_)   
   
   def clampBottom(self,z):
     '''
@@ -300,22 +324,29 @@ class CharacterBase(AnimatableObject):
     
   def __cleanupConstraints__(self):
     
-    if self.active_constraint_ is not None:
-      self.active_constraint_.setEnabled(False)
-      self.physics_world_.remove(self.active_constraint_)
+    if self.selected_constraint_ is not None:
+      self.selected_constraint_.setEnabled(False)
+      self.physics_world_.remove(self.selected_constraint_)
       
     self.left_constraint_ = None
     self.right_constraint_ = None
-    self.active_constraint_ = None
+    self.selected_constraint_ = None
+    
+  def __deactivateConstraint__(self):
+    
+    if self.selected_constraint_ is not None:
+      self.selected_constraint_.setEnabled(False)
+      self.physics_world_.remove(self.selected_constraint_)
+      
     
   def __activateConstraint__(self,constraint):
     
-      if self.active_constraint_ != constraint:
+      if self.selected_constraint_ != constraint:
         
         # disabling active constraint
-        if self.active_constraint_ is not None:
-          self.active_constraint_.setEnabled(False)
-          self.physics_world_.remove(self.active_constraint_)
+        self.__deactivateConstraint__()
+        
+      if not constraint.isEnabled():
         
         # placing actor rigid body relative to character's rigid body
         actorrb_np = self.animator_.getRigidBody()
@@ -328,9 +359,9 @@ class CharacterBase(AnimatableObject):
           actorrb_np.setH(self,180)
         actorrb_np.node().setStatic(static)
           
-        self.active_constraint_ = constraint
-        self.active_constraint_.setEnabled(True)
-        self.physics_world_.attach(self.active_constraint_)
+        self.selected_constraint_ = constraint
+        self.selected_constraint_.setEnabled(True)
+        self.physics_world_.attach(self.selected_constraint_)
           
         
     

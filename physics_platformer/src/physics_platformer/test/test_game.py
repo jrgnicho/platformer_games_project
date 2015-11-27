@@ -168,7 +168,7 @@ class TestGame(ShowBase):
       ( 4 , 1 , 16, 2, 2),
       (-4 , 1, 10, 4, 1),
       ( 16, 6, 30, 4, 1),
-      ( 0, -1, 30, 4, 1),
+      ( 0, -0.5, 30, 4, 1),
       ]
     for i in range(0,len(platform_details)):
       p = platform_details[i]
