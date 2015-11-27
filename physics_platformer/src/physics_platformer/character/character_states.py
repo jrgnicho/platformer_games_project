@@ -22,6 +22,7 @@ class CharacterStateKeys(object):
   JUMPING="JUMPING"
   FALLING="FALLING"
   LANDING="LANDING"
+  EDGE_LANDING = "EDGE_LANDING"
   DASHING= "DASHING"
   DASH_BREAKING= "DASH_BREAKING"
   MIDAIR_DASHING = "MIDAIR_DASHING"
@@ -93,46 +94,7 @@ class AerialBaseState(CharacterState):
       
     vel = self.character_obj_.node().getLinearVelocity()
     vel.setX(-self.forward_speed_)    
-    self.character_obj_.setLinearVelocity(vel)
-  
-  # TODO:   Remove method below if not used again for improving behavior around platform edges
-  def pushRightFromWall(self,action):
-    platform  = action.game_obj2      
-    if abs(self.character_obj_.getBottom() - platform.getTop()) < AerialBaseState.LANDING_THRESHOLD :
-      return
-          
-    d = -float("inf")
-    use_second = action.contact_manifold.getNode0().getPythonTag(GameObject.ID_PYTHON_TAG) != self.character_obj_.getName()
-    for cp in action.contact_manifold.getManifoldPoints():
-      cx = cp.getPositionWorldOnB().getX() if use_second else cp.getPositionWorldOnA().getX()
-      d = cx if (cx > d) else d        
-
-    self.forward_speed_ = self.character_obj_.character_info_.jump_forward
-    if d == -float("inf"):
-      logging.warn("No contact points were found")
-      return 
-    
-    self.character_obj_.clampLeft( d + AerialBaseState.MIN_WALL_DISTANCE)
-    
-  # TODO:   Remove method below if not used again for improving behavior around platform edges
-  def pushLeftFromWall(self,action):
-    platform  = action.game_obj2      
-    if abs(self.character_obj_.getBottom() - platform.getTop()) < AerialBaseState.LANDING_THRESHOLD :
-      return
-    
-    d = float("inf")
-    use_second = action.contact_manifold.getNode0().getPythonTag(GameObject.ID_PYTHON_TAG) != self.character_obj_.getName()
-    for cp in action.contact_manifold.getManifoldPoints():
-      cx = cp.getPositionWorldOnB().getX() if use_second else cp.getPositionWorldOnA().getX()
-      d = cx if (cx < d) else d 
-    
-    self.forward_speed_ = self.character_obj_.character_info_.jump_forward  
-    if d == float("inf"):
-      logging.warn("No contact points were found")
-      return 
-      
-    self.character_obj_.clampRight( d - AerialBaseState.MIN_WALL_DISTANCE)
-      
+    self.character_obj_.setLinearVelocity(vel)  
   
 class CharacterStates(object): # Class Namespace
   
@@ -369,14 +331,34 @@ class CharacterStates(object): # Class Namespace
       AerialBaseState.__init__(self, CharacterStateKeys.FALLING, character_obj, parent_state_machine, animation_key)
       self.forward_speed_ = self.character_obj_.character_info_.jump_forward
       
-      self.addAction(CollisionAction.SURFACE_COLLISION,self.verifyLanding)
+      self.addAction(CollisionAction.SURFACE_COLLISION,self.surfaceCollisionCallback)
 
-    def verifyLanding(self,action):
+    def surfaceCollisionCallback(self,action):
       
       platform  = action.game_obj2
       if abs(self.character_obj_.getBottom() - platform.getTop()) < AerialBaseState.LANDING_THRESHOLD :
         self.character_obj_.getStatus().platform = platform
-        StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))
+        self.character_obj_.getStatus().contact_data = CharacterStatus.ContactData(action.contact_manifold)
+        
+        near_edge = ( self.character_obj_.getLeft() < platform.getLeft() or self.character_obj_.getRight() > platform.getRight())
+        facing_away = True
+        if near_edge:
+          facing_away = self.character_obj_.getFront() < platform.getLeft() or self.character_obj_.getFront() > platform.getRight()
+        
+        if not facing_away:  
+          info = self.character_obj_.getInfo()
+          d = abs(self.character_obj_.getFront() - platform.getLeft()) if self.character_obj_.isFacingRight() else abs(self.character_obj_.getFront() - platform.getRight())
+          
+          if d > info.land_edge_min and d < info.land_edge_max:
+            StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND_EDGE))
+          else:
+            # push out of platform
+            if self.character_obj_.isFacingRight():
+              self.character_obj_.clampRight(platform.getLeft()-CharacterStates.EDGE_PUSH_DISTANCE)
+            else:
+              self.character_obj_.clampLeft(platform.getRight()+CharacterStates.EDGE_PUSH_DISTANCE)
+        else:
+          StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))
        
       
   class LandState(CharacterState):
@@ -392,6 +374,40 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.setAnimationEndCallback(self.done)
       self.character_obj_.play(self.animation_key_)  
       self.clampToPlatform(self.character_obj_.getStatus().platform)
+      self.character_obj_.enableFriction(True)
+      
+    def clampToPlatform(self,platform):
+      
+      self.character_obj_.clampBottom(platform.getMax().getZ())      
+      self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
+      
+    def exit(self):      
+      self.character_obj_.node().setLinearFactor(LVector3(1,0,1)) # re-enable movement in z
+      self.character_obj_.stop()
+      self.character_obj_.setAnimationEndCallback(None)
+      
+  class EdgeLandingState(CharacterState):
+    
+    def __init__(self,character_obj,parent_state_machine, animation_key = None):
+      CharacterState.__init__(self, CharacterStateKeys.EDGE_LANDING, character_obj, parent_state_machine, animation_key)
+      self.clamped_ = False
+      
+      
+    def enter(self):
+      
+      logging.debug("%s state entered"%(self.getKey()))
+      
+      self.character_obj_.setAnimationEndCallback(self.done)
+      self.character_obj_.play(self.animation_key_)  
+      
+      # placing character  on platform      
+      platform = self.character_obj_.getStatus().platform
+      self.clampToPlatform(platform)      
+      if self.character_obj_.isFacingRight():
+        self.character_obj_.clampLeft(platform.getLeft())
+      else:
+        self.character_obj_.clampRight(platform.getRight())        
+      
       self.character_obj_.enableFriction(True)
       
     def clampToPlatform(self,platform):

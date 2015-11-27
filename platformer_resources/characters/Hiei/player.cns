@@ -44,11 +44,12 @@ walk.fwd  = 2.4		;Walk forward
 walk.back = -2.2		;Walk backward
 run.fwd  = 4.6, 0		;Run forward (x, y)
 run.back = -4.5,-3.8	;Hop backward (x, y)
-jump.neu = 0,20.0		;Neutral jumping velocity (x, y)
+jump.neu = 0,20.2		;Neutral jumping velocity (x, y)
 jump.back = -2.55		;Jump back Speed (x, y)
 jump.fwd = 2.0		;Jump forward Speed (x, y)
-runjump.back = -2.55,-8.1;Running jump speeds (opt)
-runjump.fwd = 4,-8.1	;.
+runjump.back = 0.1,0.8	; {Custom] (land_edge_min, land_edge_max)
+runjump.fwd = 0.3,0.8	;.[Custom] (edge_recovery_distance, edge_drop_distance) Distance range from 
+			;	edge within which a recovery maneuver will be performed to avoid dropping from platform
 airjump.neu = 0,-8.1	;.
 airjump.back = -2.55	;Air jump speeds (opt)
 airjump.fwd = 2.5		;.
@@ -58,8 +59,6 @@ airjump.num = 1		;Number of air jumps allowed (opt)
 airjump.height = 35	;Minimum distance from ground before you can air jump (opt)
 yaccel = .44		;Vertical acceleration
 stand.friction = .35	;Friction coefficient when standing
-stand.edge.recovery_distance = 0.3 ; [Custom] Minimum distance from the edge at which a recovery maneuver will be perform to avoid dropping from platform
-stand.edge.drop_distance = 0.6 ; [Custom] Beyond this distance the character will drop from the platform
 crouch.friction = .82	;Friction coefficient when crouching
 
 ;---------------------------------------------------------------------------

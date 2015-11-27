@@ -25,4 +25,5 @@ class CharacterActions(object):
   HALT = CharacterAction('DASH_HALT')
   FALL = CharacterAction('FALL')
   EDGE_RECOVERY = CharacterAction('EDGE_RECOVERY')
+  LAND_EDGE = CharacterAction('LAND_EDGE')
     

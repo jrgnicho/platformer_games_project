@@ -161,6 +161,9 @@ class CharacterLoader(object):
         
         # saving right sprite
         sprt_right = self.sprite_loader_.getSprite(elemt.group_no,elemt.im_no)
+        if sprt_right is None:
+          logging.error("Sprite group %i and no %i was not found"%(elemt.group_no,elemt.im_no))
+        
         sprt_right.hit_boxes = elemt.hit_boxes
         sprt_right.damage_boxes = elemt.damage_boxes        
         

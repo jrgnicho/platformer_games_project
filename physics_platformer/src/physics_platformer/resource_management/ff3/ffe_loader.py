@@ -5,6 +5,7 @@ from physics_platformer.sprite import Sprite
 from physics_platformer.sprite import SpriteGroup
 import os
 import logging
+import re
 
 """
 Module that provides support for loading multiple files generated from the figther factory software
@@ -13,12 +14,12 @@ Module that provides support for loading multiple files generated from the figth
 class FFELoader(object):
   
   __EXTENSION__ = '.ffe'
-  __SPRITE_HEADER__ = '[SpriteDef]'
-  __GROUP_FIELD__ = 'group = '
-  __IMAGE_FIELD__ = 'image = '
-  __XAXIS_FIELD__ = 'xaxis = '
-  __YAXIS_FIELD__ = 'yaxis = '
-  __FILE_FIELD__ = 'file = '
+  __SPRITE_HEADER__ = '(\[SpriteDef\])'
+  __GROUP_FIELD__ = 'group =\s*(\d+)'
+  __IMAGE_FIELD__ = 'image =\s*(\d+)'
+  __XAXIS_FIELD__ = 'xaxis =\s*(\d+)'
+  __YAXIS_FIELD__ = 'yaxis =\s*(\d+)'
+  __FILE_FIELD__ = 'file =\s*(\d+-\d+\.png)'
   
   class SpriteDetails(object):
     
@@ -84,53 +85,71 @@ class FFELoader(object):
     group_left = None    
     sd = FFELoader.SpriteDetails()
     
-    line_counter = 0    
-    
-    while line_counter < len(lines):
+    line_counter = -1        
+    while line_counter < len(lines)-1:
       
       # finding Sprite header
-      line = lines[line_counter]
-      pos = line.find(FFELoader.__SPRITE_HEADER__) 
-      if pos != -1:
-        
-        line_counter+=1
-        sd.group_no = int(self.__readLine__(lines[line_counter], FFELoader.__GROUP_FIELD__))
-        line_counter+=1
-        sd.image_no = int(self.__readLine__(lines[line_counter], FFELoader.__IMAGE_FIELD__))
-        line_counter+=1
-        sd.axisx = int(self.__readLine__(lines[line_counter], FFELoader.__XAXIS_FIELD__))
-        line_counter+=1
-        sd.axisy = int(self.__readLine__(lines[line_counter], FFELoader.__YAXIS_FIELD__))
-        line_counter+=3
-        sd.im_file = self.__readLine__(lines[line_counter], FFELoader.__FILE_FIELD__)
-        sd.im_file = dirname + '/' + sd.im_file
-
+      max_searches = 8
+      search_count = 0
+      save = False
+      line_counter+=1
+            
+      val = self.__checkMatch__(lines[line_counter], FFELoader.__SPRITE_HEADER__)
+      if val is not None:
+        sd = FFELoader.SpriteDetails()
+        continue
+      
+      val = self.__checkMatch__(lines[line_counter], FFELoader.__GROUP_FIELD__)
+      if val is not None:
+        sd.group_no = int(val)
+        continue
+      
+      val = self.__checkMatch__(lines[line_counter], FFELoader.__IMAGE_FIELD__)
+      if val is not None:
+        sd.image_no = int(val)
+        continue
+      
+      val = self.__checkMatch__(lines[line_counter], FFELoader.__XAXIS_FIELD__)
+      if val is not None:
+        sd.axisx = int(val)
+        continue
+      
+      val = self.__checkMatch__(lines[line_counter], FFELoader.__YAXIS_FIELD__)
+      if val is not None:
+        sd.axisy = int(val)
+        continue
+      
+      val = self.__checkMatch__(lines[line_counter], FFELoader.__FILE_FIELD__)
+      if val is not None:
+        sd.im_file = dirname + '/' + val
+        save = True
+      
+      if save:
         if load_all_groups:
           group_right, group_left = self.__createGroupPair__(sd.group_no)
-          pass
         else:          
           if groups.count(sd.group_no) == 0:
-            continue                     
+            logging.warn("Skipping unrequested group %i"%(sd.group_no))
+            continue                    
           group_right, group_left = self.__createGroupPair__(sd.group_no)
           
         right_sprt, left_sprt = FFELoader.__loadSpritePair__(sd)
         
-        if right_sprt == None:
+        if right_sprt is None or left_sprt is None:
+          logging.error("Sprite %s  was not found"%(sd.im_file))
           return False
         
         group_right.addSprite(right_sprt)
         group_left.addSprite(left_sprt)        
                 
-        self.logger_.debug("Image: group = %i, image# = %i, axisx = %i, axisy = %i, file = %s"%(sd.group_no,
+        self.logger_.debug("Stored Image: group = %i, image# = %i, axisx = %i, axisy = %i, file = %s"%(sd.group_no,
                                                                                            sd.image_no,
                                                                                            sd.axisx,
                                                                                            sd.axisy,
                                                                                            sd.im_file))
-        
-        
-      line_counter+=1
+
     
-    return True    
+    return len(self.groups_dict_ ) > 0   
       
       
   def __readLine__(self,line,field_text):
@@ -140,6 +159,15 @@ class FFELoader(object):
       return line[end:].rstrip().replace('\n','')
     
     return ''
+  
+  def __checkMatch__(self,line,key):
+    match = re.search(key,line)
+    val = None
+    if match is not None:
+      val = match.group(1)
+      
+    return val
+    
   
   def __createGroupPair__(self,group_no):
     

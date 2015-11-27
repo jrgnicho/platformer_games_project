@@ -16,21 +16,22 @@ class CNSLoader(object):
     __ATTACK__ = 'attack\s+=\s+(\d+)'
     
   class SizeTokens(object):
-    __XSCALE__= 'xscale\s+=\s+(\d+\.?\d*)'
-    __YSCALE__= 'yscale\s+=\s+(\d+\.?\d*)'
-    __HEIGHT__ = '^height\s+=\s+(\d+\.?\d*)'
+    __XSCALE__= 'xscale\s+=\s+(\d*\.?\d*)'
+    __YSCALE__= 'yscale\s+=\s+(\d*\.?\d*)'
+    __HEIGHT__ = '^height\s+=\s+(\d*\.?\d*)'
     
   class VelocityTokens(object):
-    __WALK__ = 'walk\.fwd\s+=\s+(\d+)'
-    __RUN__= 'run\.fwd\s+=\s+(\d+)'
+    __WALK__ = 'walk\.fwd\s+=\s+(\d*\.?\d*)'
+    __RUN__= 'run\.fwd\s+=\s+(\d*\.?\d*)'
     __JUMP_UP__ = '^jump\.neu\s+=\s+\d+,([-+]?\d+\.?\d*)'
     __JUMP_FORWARD__ = '^jump\.fwd\s+=\s+(\d+\.?\d*)'
     
   class MovementTokens(object):    
     __AIR_JUMPS__ = 'airjump.num\s+=\s+(\d+)'
     __STAND_FRICTION__ = 'stand.friction\s+=\s+(\d*\.?\d+)' # should be less than 1
-    __EDGE_RECOVERY__ = 'stand.edge.recovery_distance\s+=\s+(\d*\.?\d+)'
-    __EDGE_DROP__ = 'stand.edge.drop_distance\s+=\s+(\d*\.?\d+)'
+    __EDGE_RECOVERY__ = 'runjump\.fwd\s+=\s+(\d*\.?\d*),\d*\.?\d*'
+    __EDGE_DROP__     = 'runjump\.fwd\s+=\s+\d*\.?\d*,(\d*\.?\d*)'
+    __LAND_EDGE__= 'runjump\.back\s+=\s+(\d*\.?\d*),(\d*\.?\d*)'
     
     
   
@@ -182,6 +183,11 @@ class CNSLoader(object):
       self.char_info_.edge_drop_distance = float(m.group(1))
       return True
     
+    m = re.search(CNSLoader.MovementTokens.__LAND_EDGE__,line)
+    if m is not None:
+      self.char_info_.land_edge_min = float(m.group(1))
+      self.char_info_.land_edge_max = float(m.group(2))
+      return True  
     
     
     return False
