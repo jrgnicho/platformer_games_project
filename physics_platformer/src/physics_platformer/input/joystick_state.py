@@ -27,9 +27,9 @@ class JoystickState(object):
         #endfor
                 
     
-    def is_axis_down(self,axis,r):
+    def isAxisDown(self,axis,r):
         """
-        JoystickState::is_axis_down(axis,range)
+        JoystickState::isAxisDown(axis,range)
             Checks if the axis is at a value within the range
             Inputs:
             - axis: Integer corresponding to the axis index in the joystick
@@ -43,7 +43,7 @@ class JoystickState(object):
             return False
         #endif
         
-    def is_button_down(self,button):
+    def isButtonDown(self,button):
         """
         Inputs:
             - button : Button index integer
@@ -57,7 +57,7 @@ class JoystickState(object):
             return False
         #endif
         
-    def is_hat_down(self,hat,pos):
+    def isHatDown(self,hat,pos):
         """
         Inputs:
             - hat: Hat index integer

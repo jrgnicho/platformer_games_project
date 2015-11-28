@@ -34,18 +34,26 @@ class KeyboardButtons(object):
   KEY_F1        =   BitMask32.bit(17 + __BIT_OFFSET__) # bitarray('00000000000000010000000000000000')
 
 class KeyboardController(ControllerInterface):  
-  __DEFAULT_BUFFER_TIMEOUT__ = 2 # 2 seconds
+  DEFAULT_BUFFER_TIMEOUT = 2 # 2 seconds
+  DEFAULT_UPDATE_TIME = 0.1 # seconds  
   __MAX_BUFFER_SIZE__ = 30 
   
-  def __init__(self,input_state,key_button_map, buffer_timeout = __DEFAULT_BUFFER_TIMEOUT__):
+  def __init__(self,input_state,key_button_map, buffer_timeout = DEFAULT_BUFFER_TIMEOUT, update_time = DEFAULT_UPDATE_TIME):
     ControllerInterface.__init__(self)
     self.input_state_ = input_state
     self.key_button_map_ = key_button_map
+    self.one_shot_mode_ = False
     
     # update members
+    self.update_time_ = update_time
     self.buffer_timeout_ = buffer_timeout
-    self.button_buffer_ = []
-    self.time_elapsed_ = 0
+    self.button_release_buffer_ = []
+    self.button_press_buffer_ = []
+    self.buffer_time_elapsed_ = 0
+    self.update_time_elapsed_ = 0
+    
+    # history
+    self.previous_down_buttons_ = KeyboardButtons.NONE
     
     self.input_state_.watchWithModifiers("right","arrow_right")
     self.input_state_.watchWithModifiers('left', 'arrow_left')
@@ -58,10 +66,15 @@ class KeyboardController(ControllerInterface):
   def update(self,dt):
     
     # clear buffer after buffer timeout has elapsed
-    self.time_elapsed_ = self.time_elapsed_ + dt
-    if self.time_elapsed_ > self.buffer_timeout_:        
+    self.buffer_time_elapsed_ = self.buffer_time_elapsed_ + dt
+    if self.buffer_time_elapsed_ > self.buffer_timeout_:        
         self.reset()
-        
+    
+    self.update_time_elapsed_+=dt    
+    if self.update_time_elapsed_ > self.update_time_:
+      self.update_time_elapsed_ = 0
+    else:
+      return
     
     direction_pressed = KeyboardButtons.NONE
     if self.input_state_.isSet('right'): 
@@ -79,53 +92,70 @@ class KeyboardController(ControllerInterface):
     if direction_pressed == KeyboardButtons.NONE:
       direction_pressed = KeyboardButtons.DPAD_NONE
     
-    keys_pressed = KeyboardButtons.NONE  
+    keys_down = KeyboardButtons.NONE  
     for key in self.key_button_map_.keys():
       if self.input_state_.isSet(key):
-        keys_pressed = keys_pressed | self.key_button_map_[key]        
+        keys_down = keys_down | self.key_button_map_[key]        
         #logging.info("Added key %s"%(key))
         
-    # merge direction into keys pressed
-    keys_pressed = keys_pressed | direction_pressed     
-      
-    # Saving buttons pressed into buffer      
-    #logging.info("Keys pressed bitmask: %s"%(str(keys_pressed)))  
-    if (len(self.button_buffer_) == 0):            
-        self.button_buffer_.append(keys_pressed)
-    else:
-        if keys_pressed != self.button_buffer_[-1]:
-            self.button_buffer_.append(keys_pressed)
-            
-            
-    # Keeping buffer size to max allowed
-    if len(self.button_buffer_) > KeyboardController.__MAX_BUFFER_SIZE__:
-        del self.button_buffer_[0]      
-      
-    # checking direction matches
-    #self.checkMatches([direction_pressed])
+    # merge direction into keys down
+    keys_down = keys_down | direction_pressed   
     
-    # checking button combinations for matches
-    matched_moves = self.findMatchingMoves(self.button_buffer_)
+    # finding keys_pressed
+    keys_pressed = keys_down & ~self.previous_down_buttons_  if self.one_shot_mode_ else keys_down    
+
+    # finding released buttons
+    keys_released = ~keys_down & self.previous_down_buttons_
+            
+    # Saving buttons pressed into buffer      
+    self.button_press_buffer_ = self.storeIntoBuffer(self.button_press_buffer_, keys_pressed)
+    self.button_release_buffer_ = self.storeIntoBuffer(self.button_release_buffer_, keys_released)
+    
+    # storing last button presses
+    self.previous_down_buttons_ = keys_down
+    
+    # checking button combinations for button press matches
+    matched_moves = self.findMatchingMoves(self.button_press_moves_,self.button_press_buffer_)
     for move in matched_moves:
       move.execute()
       if not move.is_submove:
         self.reset() # clear buffer
         break
       
+    # checking button combinations for button release matches
+    matched_moves = self.findMatchingMoves(self.button_release_moves_,self.button_release_buffer_)
+    for move in matched_moves:
+      move.execute()
+      if not move.is_submove:
+        self.button_release_buffer_ = []
+        break
+      
+  def storeIntoBuffer(self, button_buffer,buttons):
+    
+    # Saving buttons into buffer      
+    if (len(button_buffer) == 0):            
+      button_buffer.append(buttons)
+    else:
+      if buttons != button_buffer[-1]:
+        button_buffer.append(buttons)
+                   
+    # Keeping buffer size to max allowed
+    if len(button_buffer) > KeyboardController.__MAX_BUFFER_SIZE__:
+      del button_buffer[0]   
+    
+    return button_buffer  
       
   def reset(self): 
-    self.time_elapsed_ = 0
-    self.button_buffer_ = [] 
+    self.buffer_time_elapsed_ = 0
+    self.button_press_buffer_ = [] 
     
-  def findMatchingMoves(self,button_sequence):
+  def findMatchingMoves(self,move_list,button_sequence):
     matched_moves = []
-    for move in self.moves_:
-      
+    for move in move_list:      
       if move.match(button_sequence):
         matched_moves.append(move)
         if not move.is_submove:     
-          break
-    
+          break    
     
     return matched_moves
           

@@ -25,10 +25,10 @@ class JoystickController(ControllerInterface):
             self.xrange_ = xrange
             self.yrange_ = yrange
             
-        def get_direction(self,js):
+        def getDirection(self,js):
             
             """
-            JoystickAxes.get_direction(joystick_state)
+            JoystickAxes.getDirection(joystick_state)
                 Gets the current joystick direction
                 Inputs:
                 - joystick_state: Joystick state object
@@ -39,16 +39,16 @@ class JoystickController(ControllerInterface):
             direction = JoystickButtons.NONE
             
             # check x direction
-            if js.is_axis_down(self.x_axis_,(self.xrange_[0],self.xrange_[1])):    
+            if js.isAxisDown(self.x_axis_,(self.xrange_[0],self.xrange_[1])):    
                 direction = direction | JoystickButtons.DPAD_RIGHT
             
-            if js.is_axis_down(self.x_axis_,(-self.xrange_[1],-self.xrange_[0])): 
+            if js.isAxisDown(self.x_axis_,(-self.xrange_[1],-self.xrange_[0])): 
                 direction = direction | JoystickButtons.DPAD_LEFT
                 
-            if js.is_axis_down(self.y_axis_,(self.yrange_[0],self.yrange_[1])): 
+            if js.isAxisDown(self.y_axis_,(self.yrange_[0],self.yrange_[1])): 
                 direction = direction | JoystickButtons.DPAD_DOWN
                 
-            if js.is_axis_down(self.y_axis_,(-self.yrange_[1],-self.yrange_[0])): 
+            if js.isAxisDown(self.y_axis_,(-self.yrange_[1],-self.yrange_[0])): 
                 direction = direction | JoystickButtons.DPAD_UP
                 
             return direction
@@ -112,10 +112,10 @@ class JoystickController(ControllerInterface):
       self.joystick_state_.capture(self.joystick_)
               
       # Combining pressed buttons
-      buttons = self.joystick_axes_.get_direction(self.joystick_state_)                 
+      buttons = self.joystick_axes_.getDirection(self.joystick_state_)                 
       button_count = self.joystick_.get_numbuttons()
       for i in range(0,button_count):
-          if self.joystick_state_.is_button_down(i):
+          if self.joystick_state_.isButtonDown(i):
               
             # Combining button presses
             buttons = buttons | self.button_map_[i]
@@ -149,7 +149,7 @@ class JoystickController(ControllerInterface):
     
     def findMatchingMoves(self,button_sequence):
       matched_moves = []
-      for move in self.moves_:
+      for move in self.button_press_moves_:
         
         if move.match(button_sequence):
           matched_moves.append(move)
