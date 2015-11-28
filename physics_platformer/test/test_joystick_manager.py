@@ -58,29 +58,29 @@ class TestJoystickController(ShowBase):
     self.joystick_manager_ = JoystickController(button_map,joystick, JoystickController.JoystickAxes(),2)
     
     # Creating directional moves
-    self.joystick_manager_.add_move(Move('UP',[JoystickButtons.DPAD_UP],True))
-    self.joystick_manager_.add_move(Move('DOWN',[JoystickButtons.DPAD_DOWN],True))
-    self.joystick_manager_.add_move(Move('LEFT',[JoystickButtons.DPAD_LEFT],True))
-    self.joystick_manager_.add_move(Move('RIGHT',[JoystickButtons.DPAD_RIGHT],True))
-    self.joystick_manager_.add_move(Move('DOWN_RIGHT',[JoystickButtons.DPAD_DOWNRIGHT],True))
-    self.joystick_manager_.add_move(Move('DOWN_LEFT',[JoystickButtons.DPAD_DOWNLEFT],True))
-    self.joystick_manager_.add_move(Move('UP_LEFT',[JoystickButtons.DPAD_UPLEFT],True))
-    self.joystick_manager_.add_move(Move('UP_RIGHT',[JoystickButtons.DPAD_UPRIGHT],True))
+    self.joystick_manager_.addMove(Move('UP',[JoystickButtons.DPAD_UP],True))
+    self.joystick_manager_.addMove(Move('DOWN',[JoystickButtons.DPAD_DOWN],True))
+    self.joystick_manager_.addMove(Move('LEFT',[JoystickButtons.DPAD_LEFT],True))
+    self.joystick_manager_.addMove(Move('RIGHT',[JoystickButtons.DPAD_RIGHT],True))
+    self.joystick_manager_.addMove(Move('DOWN_RIGHT',[JoystickButtons.DPAD_DOWNRIGHT],True))
+    self.joystick_manager_.addMove(Move('DOWN_LEFT',[JoystickButtons.DPAD_DOWNLEFT],True))
+    self.joystick_manager_.addMove(Move('UP_LEFT',[JoystickButtons.DPAD_UPLEFT],True))
+    self.joystick_manager_.addMove(Move('UP_RIGHT',[JoystickButtons.DPAD_UPRIGHT],True))
     
     # Creating action moves
-    self.joystick_manager_.add_move(Move('JUMP',[JoystickButtons.BUTTON_B],True))
-    self.joystick_manager_.add_move(Move('DASH',[JoystickButtons.BUTTON_A],True))
-    self.joystick_manager_.add_move(Move('LIGHT ATTACK',[JoystickButtons.BUTTON_Y],True))
-    self.joystick_manager_.add_move(Move('FUERTE ATTACK',[JoystickButtons.BUTTON_X],True))
+    self.joystick_manager_.addMove(Move('JUMP',[JoystickButtons.BUTTON_B],True))
+    self.joystick_manager_.addMove(Move('DASH',[JoystickButtons.BUTTON_A],True))
+    self.joystick_manager_.addMove(Move('LIGHT ATTACK',[JoystickButtons.BUTTON_Y],True))
+    self.joystick_manager_.addMove(Move('FUERTE ATTACK',[JoystickButtons.BUTTON_X],True))
     
     # Creating special moves
-    self.joystick_manager_.add_move(Move('RIGHT ABUKE PRO',[JoystickButtons.DPAD_DOWN,
+    self.joystick_manager_.addMove(Move('RIGHT ABUKE PRO',[JoystickButtons.DPAD_DOWN,
                                                  JoystickButtons.DPAD_DOWNRIGHT,
                                                  JoystickButtons.DPAD_RIGHT,
                                                  JoystickButtons.DPAD_RIGHT | JoystickButtons.BUTTON_Y],False,
                                         lambda : sys.stdout.write("-----> RIGHT ABUKE\n")))
     
-    self.joystick_manager_.add_move(Move('LEFT ABUKE PRO',[JoystickButtons.DPAD_DOWN,
+    self.joystick_manager_.addMove(Move('LEFT ABUKE PRO',[JoystickButtons.DPAD_DOWN,
                                                  JoystickButtons.DPAD_DOWNLEFT,
                                                  JoystickButtons.DPAD_LEFT,
                                                  JoystickButtons.DPAD_LEFT | JoystickButtons.BUTTON_Y],False,

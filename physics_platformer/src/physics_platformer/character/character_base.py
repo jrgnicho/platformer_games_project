@@ -168,9 +168,11 @@ class CharacterBase(AnimatableObject):
     vel.setZ(0)
     self.node().setLinearVelocity(vel)
     
-    # clamping to platform surface    
+    # placing bottom at z value
     bbox = self.getAnimatorActor().getRigidBodyBoundingBox()  
+    self.__deactivateConstraint__() # avoids recoil due to rapid position change
     self.setZ(z - bbox.bottom) 
+    self.__activateConstraint__(self.selected_constraint_)
   
   def clampTop(self,z):
     '''
@@ -183,9 +185,11 @@ class CharacterBase(AnimatableObject):
     vel.setZ(0)
     self.node().setLinearVelocity(vel)
     
-    # clamping to platform surface    
-    bbox = self.getAnimatorActor().getRigidBodyBoundingBox()  
+    # placing top at z value
+    bbox = self.getAnimatorActor().getRigidBodyBoundingBox()     
+    self.__deactivateConstraint__() # avoids recoil due to rapid position change    
     self.setZ(z - bbox.top) 
+    self.__activateConstraint__(self.selected_constraint_)
     
   def execute(self,action):
     self.sm_.execute(action)
@@ -195,8 +199,10 @@ class CharacterBase(AnimatableObject):
     self.sm_.execute(GeneralActions.GameStep(dt))
     
   # =========== Rigid Body Methods =========== #
-  def setLinearVelocity(self,vel):
-    self.node().setLinearVelocity(vel)   
+  def setLinearVelocity(self,vel,apply_all = False):
+    if apply_all and self.getAnimatorActor() is not None:
+      self.getAnimatorActor().getRigidBody().node().setLinearVelocity(Vec3(0,0,0))        
+    self.node().setLinearVelocity(vel) 
     
   def getLinearVelocity(self):
     return self.node().getLinearVelocity() 

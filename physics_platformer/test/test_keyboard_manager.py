@@ -49,34 +49,42 @@ class TestKeyboardController(ShowBase):
     self.input_manager_ = KeyboardController(self.input_state_, button_map)
     
     # Creating directional moves
-    self.input_manager_.add_move(Move('UP',[KeyboardButtons.DPAD_UP],True))
-    self.input_manager_.add_move(Move('DOWN',[KeyboardButtons.DPAD_DOWN],True))
-    self.input_manager_.add_move(Move('LEFT',[KeyboardButtons.DPAD_LEFT],True))
-    self.input_manager_.add_move(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],True))
-    self.input_manager_.add_move(Move('DOWN_RIGHT',[KeyboardButtons.DPAD_DOWNRIGHT],True))
-    self.input_manager_.add_move(Move('DOWN_LEFT',[KeyboardButtons.DPAD_DOWNLEFT],True))
-    self.input_manager_.add_move(Move('UP_LEFT',[KeyboardButtons.DPAD_UPLEFT],True))
-    self.input_manager_.add_move(Move('UP_RIGHT',[KeyboardButtons.DPAD_UPRIGHT],True))
+    self.input_manager_.addMove(Move('UP',[KeyboardButtons.DPAD_UP],True))
+    self.input_manager_.addMove(Move('DOWN',[KeyboardButtons.DPAD_DOWN],True))
+    self.input_manager_.addMove(Move('LEFT',[KeyboardButtons.DPAD_LEFT],True))
+    self.input_manager_.addMove(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],True))
+    self.input_manager_.addMove(Move('DOWN_RIGHT',[KeyboardButtons.DPAD_DOWNRIGHT],True))
+    self.input_manager_.addMove(Move('DOWN_LEFT',[KeyboardButtons.DPAD_DOWNLEFT],True))
+    self.input_manager_.addMove(Move('UP_LEFT',[KeyboardButtons.DPAD_UPLEFT],True))
+    self.input_manager_.addMove(Move('UP_RIGHT',[KeyboardButtons.DPAD_UPRIGHT],True))
     
     # Creating action moves
-    self.input_manager_.add_move(Move('JUMP',[KeyboardButtons.KEY_A],True))
-    self.input_manager_.add_move(Move('DASH',[KeyboardButtons.KEY_S],True))
-    self.input_manager_.add_move(Move('LIGHT ATTACK',[KeyboardButtons.KEY_D],True))
-    self.input_manager_.add_move(Move('FUERTE ATTACK',[KeyboardButtons.KEY_E],True))
+    self.input_manager_.addMove(Move('JUMP',[KeyboardButtons.KEY_A],True))
+    self.input_manager_.addMove(Move('DASH',[KeyboardButtons.KEY_S],True))
+    self.input_manager_.addMove(Move('LIGHT ATTACK',[KeyboardButtons.KEY_D],True))
+    self.input_manager_.addMove(Move('FUERTE ATTACK',[KeyboardButtons.KEY_E],True))
+    
+    # released moves
+    self.input_manager_.addMove(Move('RELEASE_UP',[KeyboardButtons.DPAD_UP],True),False)
+    self.input_manager_.addMove(Move('RELEASE_DOWN',[KeyboardButtons.DPAD_DOWN],True),False)
+    self.input_manager_.addMove(Move('RELEASE_LEFT',[KeyboardButtons.DPAD_LEFT],True),False)
+    self.input_manager_.addMove(Move('RELEASE_RIGHT',[KeyboardButtons.DPAD_RIGHT],True),False)
+    self.input_manager_.addMove(Move('RELEASE FUERTE ATTACK',[KeyboardButtons.KEY_E],True),False)
+    self.input_manager_.addMove(Move('RELEASE LIGHT ATTACK',[KeyboardButtons.KEY_D],True),False)
     
     # exit
-    self.input_manager_.add_move(Move('SPECIAL ATTACK',[KeyboardButtons.KEY_D, KeyboardButtons.KEY_E],False,lambda : self.exitCallback()))
+    self.input_manager_.addMove(Move('SPECIAL ATTACK',[KeyboardButtons.KEY_D, KeyboardButtons.KEY_E],False,lambda : self.exitCallback()))
     
     # Creating special moves
-    self.input_manager_.add_move(Move('EXIT',[KeyboardButtons.KEY_ESC],False,lambda : self.exitCallback()))
+    self.input_manager_.addMove(Move('EXIT',[KeyboardButtons.KEY_ESC],False,lambda : self.exitCallback()))
     
-    self.input_manager_.add_move(Move('RIGHT ABUKE PRO',[KeyboardButtons.DPAD_DOWN,
+    self.input_manager_.addMove(Move('RIGHT ABUKE PRO',[KeyboardButtons.DPAD_DOWN,
                                                  KeyboardButtons.DPAD_DOWNRIGHT,
                                                  KeyboardButtons.DPAD_RIGHT,
                                                  KeyboardButtons.DPAD_RIGHT | KeyboardButtons.KEY_D],False,
                                         lambda : sys.stdout.write("-----> RIGHT ABUKE\n")))
     
-    self.input_manager_.add_move(Move('LEFT ABUKE PRO',[KeyboardButtons.DPAD_DOWN,
+    self.input_manager_.addMove(Move('LEFT ABUKE PRO',[KeyboardButtons.DPAD_DOWN,
                                                  KeyboardButtons.DPAD_DOWNLEFT,
                                                  KeyboardButtons.DPAD_LEFT,
                                                  KeyboardButtons.DPAD_LEFT | KeyboardButtons.KEY_D],False,

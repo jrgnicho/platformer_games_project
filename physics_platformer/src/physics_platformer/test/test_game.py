@@ -102,12 +102,12 @@ class TestGame(ShowBase):
     self.input_manager_ = KeyboardController(self.input_state_, button_map)
     
     # Creating directional moves
-    self.input_manager_.add_move(Move('UP',[KeyboardButtons.DPAD_UP],False,lambda : self.moveCamUp()))
-    self.input_manager_.add_move(Move('DOWN',[KeyboardButtons.DPAD_DOWN],False,lambda : self.moveCamDown()))
-    self.input_manager_.add_move(Move('LEFT',[KeyboardButtons.DPAD_LEFT],False,lambda : self.moveCamLeft()))
-    self.input_manager_.add_move(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],False,lambda : self.moveCamRight()))
-    self.input_manager_.add_move(Move('ZoomIn',[KeyboardButtons.KEY_A],False,lambda : self.zoomIn()))
-    self.input_manager_.add_move(Move('ZoomOut',[KeyboardButtons.KEY_Q],False,lambda : self.zoomOut()))
+    self.input_manager_.addMove(Move('UP',[KeyboardButtons.DPAD_UP],False,lambda : self.moveCamUp()))
+    self.input_manager_.addMove(Move('DOWN',[KeyboardButtons.DPAD_DOWN],False,lambda : self.moveCamDown()))
+    self.input_manager_.addMove(Move('LEFT',[KeyboardButtons.DPAD_LEFT],False,lambda : self.moveCamLeft()))
+    self.input_manager_.addMove(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],False,lambda : self.moveCamRight()))
+    self.input_manager_.addMove(Move('ZoomIn',[KeyboardButtons.KEY_A],False,lambda : self.zoomIn()))
+    self.input_manager_.addMove(Move('ZoomOut',[KeyboardButtons.KEY_Q],False,lambda : self.zoomOut()))
     
     
     self.title = self.createTitle("Panda3D: " + self.name_)
