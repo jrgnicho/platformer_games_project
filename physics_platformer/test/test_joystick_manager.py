@@ -39,8 +39,6 @@ class TestJoystickController(ShowBase):
     
     
   def setupInput(self):
-    
-
         
     # Creating button map
     button_map = {0 : JoystickButtons.BUTTON_X , 3 : JoystickButtons.BUTTON_Y,
@@ -73,18 +71,30 @@ class TestJoystickController(ShowBase):
     self.joystick_manager_.addMove(Move('LIGHT ATTACK',[JoystickButtons.BUTTON_Y],True))
     self.joystick_manager_.addMove(Move('FUERTE ATTACK',[JoystickButtons.BUTTON_X],True))
     
+    # Creating release moves
+    self.joystick_manager_.addMove(Move('UP_RELEASE',[JoystickButtons.DPAD_UP],True),False)
+    self.joystick_manager_.addMove(Move('DOWN_RELEASE',[JoystickButtons.DPAD_DOWN],True),False)
+    self.joystick_manager_.addMove(Move('LEFT_RELEASE',[JoystickButtons.DPAD_LEFT],True),False)
+    self.joystick_manager_.addMove(Move('RIGHT_RELEASE',[JoystickButtons.DPAD_RIGHT],True),False)
+    self.joystick_manager_.addMove(Move('JUMP_RELEASE',[JoystickButtons.BUTTON_B],True),False)
+    self.joystick_manager_.addMove(Move('DASH_RELEASE',[JoystickButtons.BUTTON_A],True),False)
+    self.joystick_manager_.addMove(Move('LIGHT ATTACK_RELEASE',[JoystickButtons.BUTTON_Y],True),False)
+    self.joystick_manager_.addMove(Move('FUERTE ATTACK_RELEASE',[JoystickButtons.BUTTON_X],True),False)
+    
     # Creating special moves
     self.joystick_manager_.addMove(Move('RIGHT ABUKE PRO',[JoystickButtons.DPAD_DOWN,
                                                  JoystickButtons.DPAD_DOWNRIGHT,
                                                  JoystickButtons.DPAD_RIGHT,
+                                                 #JoystickButtons.DPAD_RIGHT | JoystickButtons.BUTTON_Y],False,
                                                  JoystickButtons.DPAD_RIGHT | JoystickButtons.BUTTON_Y],False,
-                                        lambda : sys.stdout.write("-----> RIGHT ABUKE\n")))
+                                        lambda : sys.stdout.write("<-----> RIGHT ABUKE\n")))
     
     self.joystick_manager_.addMove(Move('LEFT ABUKE PRO',[JoystickButtons.DPAD_DOWN,
                                                  JoystickButtons.DPAD_DOWNLEFT,
                                                  JoystickButtons.DPAD_LEFT,
+                                                 #JoystickButtons.DPAD_LEFT | JoystickButtons.BUTTON_Y],False,
                                                  JoystickButtons.DPAD_LEFT | JoystickButtons.BUTTON_Y],False,
-                                        lambda : sys.stdout.write("-----> LEFT ABUKE \n")))
+                                        lambda : sys.stdout.write("<-----> LEFT ABUKE \n")))
     
 # def run(self):
 #     
