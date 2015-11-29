@@ -95,18 +95,7 @@ class AerialBaseState(CharacterState):
     vel = self.character_obj_.node().getLinearVelocity()
     vel.setX(-self.forward_speed_)    
     self.character_obj_.setLinearVelocity(vel)      
-        
-  def ceilingCollisionCallback(self,action): 
-    platform   = action.game_obj2
-    manifold = action.contact_manifold
-    contact_data = CharacterStatus.ContactData(self.character_obj_.getName(), bottom = manifold)
-    pz = contact_data.points_bottom.on_collided[0].getZ()
-    
-    logging.debug("clamping to top")
-    self.character_obj_.clampTop(pz - CharacterStates.EDGE_PUSH_DISTANCE)
-    self.character_obj_.clearForces()
-    StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))
-  
+          
 class CharacterStates(object): # Class Namespace
   
   EDGE_PUSH_DISTANCE = 2*AnimationActor.BOUND_PADDING
@@ -286,6 +275,13 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.setAnimationEndCallback(self.done)
       self.character_obj_.play(self.animation_key_)
       self.character_obj_.applyCentralImpulse(LVector3(0,0,self.character_obj_.character_info_.jump_force))
+      
+    def ceilingCollisionCallback(self, action):
+      vel = self.character_obj_.getLinearVelocity()
+      if vel.getZ() < 0:
+        vel.setZ(0)
+        self.character_obj_.setLinearVelocity(vel)
+        StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))
           
     def exit(self):
       self.character_obj_.enableFriction(False)
@@ -299,7 +295,6 @@ class CharacterStates(object): # Class Namespace
       self.forward_speed_ = self.character_obj_.character_info_.jump_forward
         
       self.addAction(GeneralActions.GAME_STEP,self.checkAscendFinished)    
-      self.addAction(CollisionAction.CEILING_COLLISION,self.ceilingCollisionCallback) 
         
     def exit(self):
       vel = self.character_obj_.getLinearVelocity()

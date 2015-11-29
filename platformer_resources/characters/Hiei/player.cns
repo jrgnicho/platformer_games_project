@@ -47,8 +47,8 @@ run.back = -4.5,-3.8	;Hop backward (x, y)
 jump.neu = 0,20.2		;Neutral jumping velocity (x, y)
 jump.back = -2.55		;Jump back Speed (x, y)
 jump.fwd = 2.0		;Jump forward Speed (x, y)
-runjump.back = 0.1,0.7	; {Custom] (land_edge_min, land_edge_max)
-runjump.fwd = 0.3,0.6	;.[Custom] (edge_recovery_distance, edge_drop_distance) Distance range from 
+runjump.back = 0.2,0.7	; {Custom] (land_edge_min, land_edge_max)
+runjump.fwd = 0.3,0.6	;.[Custom] (edge_recovery_min, edge_recovery_max) Distance range from 
 			;	edge within which a recovery maneuver will be performed to avoid dropping from platform
 airjump.neu = 0,-8.1	;.
 airjump.back = -2.55	;Air jump speeds (opt)
