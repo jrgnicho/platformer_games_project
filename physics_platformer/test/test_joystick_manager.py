@@ -45,14 +45,20 @@ class TestJoystickController(ShowBase):
                   1 : JoystickButtons.BUTTON_A , 2 : JoystickButtons.BUTTON_B,
                   7 : JoystickButtons.TRIGGER_R1 , 5 : JoystickButtons.TRIGGER_R2,
                   6 : JoystickButtons.TRIGGER_L1 , 4 : JoystickButtons.TRIGGER_L2,
-                  9 : JoystickButtons.BUTTON_START , 8 : JoystickButtons.BUTTON_SELECT}
+                  9 : JoystickButtons.BUTTON_START , 8 : JoystickButtons.BUTTON_SELECT,
+                  10: JoystickButtons.TRIGGER_L3   , 11: JoystickButtons.TRIGGER_R3}
     
 
     if pygame.joystick.get_count() <=  0:
       logging.error("No Joysticks were found, exiting")
       sys.exit(-1)
       
-    joystick = pygame.joystick.Joystick(0)
+    joystick = None
+    for j in range(0,pygame.joystick.get_count()):
+      joystick = pygame.joystick.Joystick(j)
+      if joystick.init() and joystick.get_numbuttons() > 0:
+        break;
+      
     self.joystick_manager_ = JoystickController(button_map,joystick, JoystickController.JoystickAxes(),2)
     
     # Creating directional moves
@@ -86,36 +92,16 @@ class TestJoystickController(ShowBase):
                                                  JoystickButtons.DPAD_DOWNRIGHT,
                                                  JoystickButtons.DPAD_RIGHT,
                                                  #JoystickButtons.DPAD_RIGHT | JoystickButtons.BUTTON_Y],False,
-                                                 JoystickButtons.DPAD_RIGHT | JoystickButtons.BUTTON_Y],False,
+                                                 JoystickButtons.BUTTON_Y],False,
                                         lambda : sys.stdout.write("<-----> RIGHT ABUKE\n")))
     
     self.joystick_manager_.addMove(Move('LEFT ABUKE PRO',[JoystickButtons.DPAD_DOWN,
                                                  JoystickButtons.DPAD_DOWNLEFT,
                                                  JoystickButtons.DPAD_LEFT,
                                                  #JoystickButtons.DPAD_LEFT | JoystickButtons.BUTTON_Y],False,
-                                                 JoystickButtons.DPAD_LEFT | JoystickButtons.BUTTON_Y],False,
+                                                 JoystickButtons.BUTTON_Y],False,
                                         lambda : sys.stdout.write("<-----> LEFT ABUKE \n")))
-    
-# def run(self):
-#     
-#     proceed = True
-#     clock = pygame.time.Clock()
-#     
-#     
-#     while proceed:
-#             
-#             self.joystick_manager_.update(clock.get_time())
-#             
-#             pygame.display.flip()
-#             clock.tick(40)
-#                        
-#             
-#             for event in pygame.event.get():
-#                 if event.type == pygame.QUIT:
-#                     proceed = False
-        
-        
-        
+
 if __name__ == '__main__':
   
   log_level = logging.DEBUG

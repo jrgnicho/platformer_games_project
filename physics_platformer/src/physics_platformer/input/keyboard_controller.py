@@ -35,7 +35,7 @@ class KeyboardButtons(object):
 
 class KeyboardController(ControllerInterface):  
   DEFAULT_BUFFER_TIMEOUT = 2 # 2 seconds
-  DEFAULT_UPDATE_TIME = 0.1 # seconds  
+  DEFAULT_UPDATE_TIME = 0.01 # seconds  
   __MAX_BUFFER_SIZE__ = 30 
   
   def __init__(self,input_state,key_button_map, buffer_timeout = DEFAULT_BUFFER_TIMEOUT, update_time = DEFAULT_UPDATE_TIME):

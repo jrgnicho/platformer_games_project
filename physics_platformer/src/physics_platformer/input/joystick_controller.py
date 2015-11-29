@@ -10,7 +10,7 @@ import logging
 class JoystickController(ControllerInterface):
     
   DEFAULT_BUFFER_TIMEOUT = 2 # 2 seconds
-  DEFAULT_UPDATE_TIME = 0.01 # seconds 
+  DEFAULT_UPDATE_TIME = 0.1 # seconds 
   __MAX_BUFFER_SIZE__ = 30   
   
   class JoystickAxes(object):
@@ -116,12 +116,6 @@ class JoystickController(ControllerInterface):
     if self.joystick_ == None:
         logging.error( "ERROR: No joystick found")
         return   
-      
-    self.update_time_elapsed_+=dt    
-    if self.update_time_elapsed_ > self.update_time_:
-      self.update_time_elapsed_ = 0
-    else:
-      return
 
     # Capturing Joystick Buttons
     self.joystick_state_.capture(self.joystick_)
@@ -149,21 +143,28 @@ class JoystickController(ControllerInterface):
     # storing last button presses
     self.previous_down_buttons_ = buttons_down
     
-    # checking button combinations for button press matches
-    matched_moves = self.findMatchingMoves(self.button_press_moves_,self.button_press_buffer_)
-    for move in matched_moves:
-      move.execute()
-      if not move.is_submove:
-        self.reset() # clear buffer
-        break
-      
     # checking button combinations for button release matches
     matched_moves = self.findMatchingMoves(self.button_release_moves_,self.button_release_buffer_)
     for move in matched_moves:
       move.execute()
       if not move.is_submove:
         self.button_release_buffer_ = []
-        break    
+        break  
+    
+    # delaying press move executions
+    self.update_time_elapsed_+=dt    
+    if self.update_time_elapsed_ > self.update_time_:
+      self.update_time_elapsed_ = 0
+    else:
+      return
+    
+    # checking button combinations for button press matches
+    matched_moves = self.findMatchingMoves(self.button_press_moves_,self.button_press_buffer_)
+    for move in matched_moves:
+      move.execute()
+      if not move.is_submove:
+        self.reset() # clear buffer
+        break  
 
   def reset(self): 
     

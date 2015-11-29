@@ -2,6 +2,7 @@
 import sys
 import logging
 import rospkg
+import pygame
 from panda3d.core import Vec3
 from physics_platformer.test import TestGame
 from physics_platformer.resource_management.ff3 import CharacterLoader
@@ -13,6 +14,8 @@ from physics_platformer.character.character_states import CharacterStates
 from physics_platformer.input import Move
 from physics_platformer.input import KeyboardButtons
 from physics_platformer.input import KeyboardController
+from physics_platformer.input import JoystickButtons
+from physics_platformer.input import JoystickController
 
 RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/characters/Hiei/'
 PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
@@ -115,6 +118,10 @@ class TestBasicGame(TestGame):
   def __init__(self,name):
     TestGame.__init__(self,name)
     
+  def update(self,task):
+    pygame.event.get()
+    return TestGame.update(self,task)
+    
   def setupScene(self):
     TestGame.setupScene(self)
     self.setupCharacter()
@@ -149,26 +156,92 @@ class TestBasicGame(TestGame):
     self.character_.pose(ANIMATIONS[4])    
     
     # create character keyboard controller
-    button_map = {'a' : KeyboardButtons.KEY_A , 's' : KeyboardButtons.KEY_S,'d' : KeyboardButtons.KEY_D}
-    self.character_input_manager_ = KeyboardController(self.input_state_, button_map)
+    self.character_input_manager_ = self.setupJoystickController()
+    if self.character_input_manager_ is None:
+      self.character_input_manager_ = self.setupKeyboardController()
+    #self.character_input_manager_ = self.setupKeyboardController()
+      
+#     button_map = {'a' : KeyboardButtons.KEY_A , 's' : KeyboardButtons.KEY_S,'d' : KeyboardButtons.KEY_D}
+#     self.character_input_manager_ = KeyboardController(self.input_state_, button_map)
     
-    # Creating press moves
-    self.character_input_manager_.addMove(Move('UP',[KeyboardButtons.DPAD_UP],True, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
-    self.character_input_manager_.addMove(Move('DOWN',[KeyboardButtons.DPAD_DOWN],True,  lambda : self.character_.execute(CharacterActions.MOVE_DOWN)))
-    self.character_input_manager_.addMove(Move('LEFT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_LEFT)))
-    self.character_input_manager_.addMove(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_RIGHT)))
-    self.character_input_manager_.addMove(Move('JUMP',[KeyboardButtons.KEY_S],True, lambda : self.character_.execute(CharacterActions.JUMP)))
-    #self.character_input_manager_.addMove(Move('DASH',[KeyboardButtons.KEY_Q],False, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
-    
-    # Creating release moves
-    self.character_input_manager_.addMove(Move('HALT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
-    self.character_input_manager_.addMove(Move('HALT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
-    self.character_input_manager_.addMove(Move('JUMP_CANCEL',[KeyboardButtons.KEY_S],True, lambda : self.character_.execute(CharacterActions.JUMP_CANCEL)),False)
+#     # Creating press moves
+#     self.character_input_manager_.addMove(Move('UP',[KeyboardButtons.DPAD_UP],True, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
+#     self.character_input_manager_.addMove(Move('DOWN',[KeyboardButtons.DPAD_DOWN],True,  lambda : self.character_.execute(CharacterActions.MOVE_DOWN)))
+#     self.character_input_manager_.addMove(Move('LEFT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_LEFT)))
+#     self.character_input_manager_.addMove(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_RIGHT)))
+#     self.character_input_manager_.addMove(Move('JUMP',[KeyboardButtons.KEY_S],True, lambda : self.character_.execute(CharacterActions.JUMP)))
+#     #self.character_input_manager_.addMove(Move('DASH',[KeyboardButtons.KEY_Q],False, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
+#     
+#     # Creating release moves
+#     self.character_input_manager_.addMove(Move('HALT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
+#     self.character_input_manager_.addMove(Move('HALT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
+#     self.character_input_manager_.addMove(Move('JUMP_CANCEL',[KeyboardButtons.KEY_S],True, lambda : self.character_.execute(CharacterActions.JUMP_CANCEL)),False)
     
     # setting camera relative to player
     self.camera_input_manager_ = self.input_manager_
     self.follow_player_ = True
     self.toggleCameraController()
+    
+  def setupKeyboardController(self):
+    # create character keyboard controller
+    button_map = {'a' : KeyboardButtons.KEY_A , 's' : KeyboardButtons.KEY_S,'d' : KeyboardButtons.KEY_D}
+    keyboard_manager = KeyboardController(self.input_state_, button_map)
+    
+    # Creating press moves
+    keyboard_manager.addMove(Move('UP',[KeyboardButtons.DPAD_UP],True, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
+    keyboard_manager.addMove(Move('DOWN',[KeyboardButtons.DPAD_DOWN],True,  lambda : self.character_.execute(CharacterActions.MOVE_DOWN)))
+    keyboard_manager.addMove(Move('LEFT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_LEFT)))
+    keyboard_manager.addMove(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_RIGHT)))
+    keyboard_manager.addMove(Move('JUMP',[KeyboardButtons.KEY_S],True, lambda : self.character_.execute(CharacterActions.JUMP)))
+    #keyboard_manager.addMove(Move('DASH',[KeyboardButtons.KEY_Q],False, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
+    
+    # Creating release moves
+    keyboard_manager.addMove(Move('HALT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
+    keyboard_manager.addMove(Move('HALT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
+    keyboard_manager.addMove(Move('JUMP_CANCEL',[KeyboardButtons.KEY_S],True, lambda : self.character_.execute(CharacterActions.JUMP_CANCEL)),False)
+    
+    return keyboard_manager
+  
+  def setupJoystickController(self):
+    
+    pygame.init()
+    pygame.joystick.init()
+    
+    # Creating button map
+    button_map = {0 : JoystickButtons.BUTTON_X , 3 : JoystickButtons.BUTTON_Y,
+                  1 : JoystickButtons.BUTTON_A , 2 : JoystickButtons.BUTTON_B,
+                  7 : JoystickButtons.TRIGGER_R1 , 5 : JoystickButtons.TRIGGER_R2,
+                  6 : JoystickButtons.TRIGGER_L1 , 4 : JoystickButtons.TRIGGER_L2,
+                  9 : JoystickButtons.BUTTON_START , 8 : JoystickButtons.BUTTON_SELECT,
+                  10: JoystickButtons.TRIGGER_L3   , 11: JoystickButtons.TRIGGER_R3}
+    
+
+    if pygame.joystick.get_count() <=  0:
+      logging.error("No Joysticks were found, exiting")
+      return None
+      
+    joystick = None
+    for j in range(0,pygame.joystick.get_count()):
+      joystick = pygame.joystick.Joystick(j)
+      if joystick.init() and joystick.get_numbuttons() > 0:
+        break;
+    
+    joystick_manager = JoystickController(button_map,joystick, JoystickController.JoystickAxes(),2)
+    
+    joystick_manager.addMove(Move('UP',[JoystickButtons.DPAD_UP],True, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
+    joystick_manager.addMove(Move('DOWN',[JoystickButtons.DPAD_DOWN],True,  lambda : self.character_.execute(CharacterActions.MOVE_DOWN)))
+    joystick_manager.addMove(Move('LEFT',[JoystickButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_LEFT)))
+    joystick_manager.addMove(Move('RIGHT',[JoystickButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_RIGHT)))
+    joystick_manager.addMove(Move('JUMP',[JoystickButtons.BUTTON_B],True, lambda : self.character_.execute(CharacterActions.JUMP)))
+    #joystick_manager.addMove(Move('DASH',[JoystickButtons.TRIGGER_R1],False, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
+    
+    # Creating release moves
+    joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
+    joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
+    joystick_manager.addMove(Move('JUMP_CANCEL',[JoystickButtons.BUTTON_B],True, lambda : self.character_.execute(CharacterActions.JUMP_CANCEL)),False)
+    
+
+    return joystick_manager
     
   def toggleCameraController(self):
     

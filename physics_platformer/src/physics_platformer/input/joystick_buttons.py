@@ -26,5 +26,7 @@ class JoystickButtons(object):
   TRIGGER_L2      =   BitMask32.bit(12 + __BIT_OFFSET__) # bitarray('0000100000000000')
   BUTTON_START    =   BitMask32.bit(13 + __BIT_OFFSET__) # bitarray('0001000000000000')
   BUTTON_SELECT   =   BitMask32.bit(14 + __BIT_OFFSET__) # bitarray('0010000000000000')
+  TRIGGER_R3      =   BitMask32.bit(15 + __BIT_OFFSET__) # bitarray('0000000100000000')
+  TRIGGER_L3      =   BitMask32.bit(16 + __BIT_OFFSET__) # bitarray('0000001000000000')
     
     
