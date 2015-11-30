@@ -79,8 +79,6 @@ class Hiei(CharacterBase):
     self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.LAND_EDGE.key, CharacterStateKeys.EDGE_LANDING)
     
     self.sm_.addTransition(CharacterStateKeys.EDGE_LANDING, StateMachineActions.DONE.key, CharacterStateKeys.STANDING)
-    #self.sm_.addTransition(CharacterStateKeys.EDGE_LANDING,CharacterActions.MOVE_RIGHT.key,CharacterStateKeys.RUNNING)
-    #self.sm_.addTransition(CharacterStateKeys.EDGE_LANDING,CharacterActions.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
     
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_RIGHT.key,CharacterStateKeys.RUNNING)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
@@ -109,6 +107,7 @@ class Hiei(CharacterBase):
     
     self.sm_.addTransition(CharacterStateKeys.LANDING, StateMachineActions.DONE.key, CharacterStateKeys.STANDING)
     self.sm_.addTransition(CharacterStateKeys.LANDING, CollisionAction.FREE_FALL, CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.LANDING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
     
     return True
     
@@ -159,23 +158,6 @@ class TestBasicGame(TestGame):
     self.character_input_manager_ = self.setupJoystickController()
     if self.character_input_manager_ is None:
       self.character_input_manager_ = self.setupKeyboardController()
-    #self.character_input_manager_ = self.setupKeyboardController()
-      
-#     button_map = {'a' : KeyboardButtons.KEY_A , 's' : KeyboardButtons.KEY_S,'d' : KeyboardButtons.KEY_D}
-#     self.character_input_manager_ = KeyboardController(self.input_state_, button_map)
-    
-#     # Creating press moves
-#     self.character_input_manager_.addMove(Move('UP',[KeyboardButtons.DPAD_UP],True, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
-#     self.character_input_manager_.addMove(Move('DOWN',[KeyboardButtons.DPAD_DOWN],True,  lambda : self.character_.execute(CharacterActions.MOVE_DOWN)))
-#     self.character_input_manager_.addMove(Move('LEFT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_LEFT)))
-#     self.character_input_manager_.addMove(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_RIGHT)))
-#     self.character_input_manager_.addMove(Move('JUMP',[KeyboardButtons.KEY_S],True, lambda : self.character_.execute(CharacterActions.JUMP)))
-#     #self.character_input_manager_.addMove(Move('DASH',[KeyboardButtons.KEY_Q],False, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
-#     
-#     # Creating release moves
-#     self.character_input_manager_.addMove(Move('HALT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
-#     self.character_input_manager_.addMove(Move('HALT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
-#     self.character_input_manager_.addMove(Move('JUMP_CANCEL',[KeyboardButtons.KEY_S],True, lambda : self.character_.execute(CharacterActions.JUMP_CANCEL)),False)
     
     # setting camera relative to player
     self.camera_input_manager_ = self.input_manager_
