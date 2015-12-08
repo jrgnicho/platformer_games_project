@@ -5,15 +5,19 @@ class JoystickButtons(object):
   __BIT_OFFSET__ = 0 
     
   # directions
-  NONE            =   BitMask32.bit(0 + __BIT_OFFSET__)  # bitarray('0000000000000000')
+  NONE            =   BitMask32(0)  # bitarray('0000000000000000')
   DPAD_UP         =   BitMask32.bit(1 + __BIT_OFFSET__)  # bitarray('0000000000000001')
   DPAD_DOWN       =   BitMask32.bit(2 + __BIT_OFFSET__)  # bitarray('0000000000000010') 
   DPAD_LEFT       =   BitMask32.bit(3 + __BIT_OFFSET__)  # bitarray('0000000000000100')
   DPAD_RIGHT      =   BitMask32.bit(4 + __BIT_OFFSET__)  # bitarray('0000000000001000')    
-  DPAD_UPRIGHT    =   DPAD_UP | DPAD_RIGHT
-  DPAD_UPLEFT     =   DPAD_UP | DPAD_LEFT
-  DPAD_DOWNRIGHT  =   DPAD_DOWN | DPAD_RIGHT
-  DPAD_DOWNLEFT   =   DPAD_DOWN | DPAD_LEFT
+#   DPAD_UPRIGHT    =   DPAD_UP | DPAD_RIGHT
+#   DPAD_UPLEFT     =   DPAD_UP | DPAD_LEFT
+#   DPAD_DOWNRIGHT  =   DPAD_DOWN | DPAD_RIGHT
+#   DPAD_DOWNLEFT   =   DPAD_DOWN | DPAD_LEFT
+  DPAD_UPRIGHT    =   BitMask32.bit(17 + __BIT_OFFSET__)
+  DPAD_UPLEFT     =   BitMask32.bit(18 + __BIT_OFFSET__)
+  DPAD_DOWNRIGHT  =   BitMask32.bit(19 + __BIT_OFFSET__)
+  DPAD_DOWNLEFT   =   BitMask32.bit(20 + __BIT_OFFSET__)
   
   # buttons
   BUTTON_A        =   BitMask32.bit(5 + __BIT_OFFSET__)  # bitarray('0000000000010000')

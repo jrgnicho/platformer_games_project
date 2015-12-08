@@ -16,9 +16,9 @@ class ControllerInterface(object):
       ControllerInterface.setMoves()
       '''
       if button_press:
-        self.button_press_moves_ = sorted(move_list, key=lambda move : len(move), reverse=True)
+        self.button_press_moves_ = sorted(move_list, key=lambda move : len(move) + int( not move.is_submove), reverse=True)
       else:
-        self.button_release_moves_ = sorted(move_list, key=lambda move : len(move), reverse=True)
+        self.button_release_moves_ = sorted(move_list, key=lambda move : len(move) + int( not move.is_submove), reverse=True)
         
     def addMove(self, move, button_press=True):
       if button_press:

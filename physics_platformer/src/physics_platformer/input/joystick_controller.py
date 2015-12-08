@@ -9,8 +9,8 @@ import logging
         
 class JoystickController(ControllerInterface):
     
-  DEFAULT_BUFFER_TIMEOUT = 2 # 2 seconds
-  DEFAULT_UPDATE_TIME = 0.05 # seconds 
+  DEFAULT_BUFFER_TIMEOUT = 0.2 #  seconds
+  DEFAULT_MERGE_TIME = 0.1 # seconds 
   __MAX_BUFFER_SIZE__ = 30   
   
   class JoystickAxes(object):
@@ -39,18 +39,28 @@ class JoystickController(ControllerInterface):
           
           direction = JoystickButtons.NONE
           
-          # check x direction
           if js.isAxisDown(self.x_axis_,(self.xrange_[0],self.xrange_[1])):    
-              direction = direction | JoystickButtons.DPAD_RIGHT
+              direction = JoystickButtons.DPAD_RIGHT
           
           if js.isAxisDown(self.x_axis_,(-self.xrange_[1],-self.xrange_[0])): 
-              direction = direction | JoystickButtons.DPAD_LEFT
+              direction = JoystickButtons.DPAD_LEFT
               
           if js.isAxisDown(self.y_axis_,(self.yrange_[0],self.yrange_[1])): 
-              direction = direction | JoystickButtons.DPAD_DOWN
+            direction = JoystickButtons.DPAD_DOWN
+              
+            if js.isAxisDown(self.x_axis_,(self.xrange_[0],self.xrange_[1])):    
+                direction = JoystickButtons.DPAD_DOWNRIGHT
+            
+            if js.isAxisDown(self.x_axis_,(-self.xrange_[1],-self.xrange_[0])): 
+                direction = JoystickButtons.DPAD_DOWNLEFT                
               
           if js.isAxisDown(self.y_axis_,(-self.yrange_[1],-self.yrange_[0])): 
-              direction = direction | JoystickButtons.DPAD_UP
+            direction = JoystickButtons.DPAD_UP
+            if js.isAxisDown(self.x_axis_,(self.xrange_[0],self.xrange_[1])):    
+                direction = JoystickButtons.DPAD_UPRIGHT
+            
+            if js.isAxisDown(self.x_axis_,(-self.xrange_[1],-self.xrange_[0])): 
+                direction = JoystickButtons.DPAD_UPLEFT
               
           return direction
   
@@ -64,7 +74,7 @@ class JoystickController(ControllerInterface):
   #  @param joystick_axes  A physics_platformer.input.JoystickAxes object for detection the direction of the D-pad
   #  @param buffer_timeout A float in seconds.  The button buffer is cleared when this value is exceeded 
   """  
-  def __init__(self,button_map,joystick_obj,joystick_axes,buffer_timeout = DEFAULT_BUFFER_TIMEOUT,update_time = DEFAULT_UPDATE_TIME):
+  def __init__(self,button_map,joystick_obj,joystick_axes,buffer_timeout = DEFAULT_BUFFER_TIMEOUT,merge_time = DEFAULT_MERGE_TIME):
 
       
       ControllerInterface.__init__(self)
@@ -75,18 +85,20 @@ class JoystickController(ControllerInterface):
                                                   # physics_platformer.input.JoystickButtons class
                                                   # and the button mask (value)
       self.joystick_axes_ = joystick_axes      # Joystick axes object for detecting the direction of the D-pad
-      self.one_shot_mode_ = False
+      self.one_shot_mode_ = True
       
       # Support members
       self.button_press_buffer_ = []
       self.buffer_time_elapsed_ = 0
-      self.update_time_ = update_time
+      self.merge_time_ = merge_time
       self.buffer_timeout_ = buffer_timeout
       self.button_release_buffer_ = []
-      self.update_time_elapsed_ = 0
+      self.merge_time_elapsed_ = 0
   
       # history
-      self.previous_down_buttons_ = JoystickButtons.NONE
+      self.previous_buttons_down_ = JoystickButtons.NONE
+      self.previous_directions_down_ = JoystickButtons.NONE
+      self.buttons_down_ = JoystickButtons.NONE
       
       # Initializing joystick support members        
       self.joystick_state_ = None   
@@ -97,21 +109,13 @@ class JoystickController(ControllerInterface):
         
       self.joystick_state_ = JoystickState(self.joystick_)
           
-  def reset(self):
-    
+  def reset(self):    
     self.buffer_time_elapsed_ = 0
-    self.button_press_buffer_ = []      
-      
+    self.button_press_buffer_ = []     
                                        
-  def update(self,dt = 0):
-      
+  def update(self,dt): 
     
     ControllerInterface.update(self,dt)
-    
-    # Update internal time elapsed and clear buffer if timeout exceeded
-    self.buffer_time_elapsed_ = self.buffer_time_elapsed_ + dt
-    if self.buffer_time_elapsed_ > self.buffer_timeout_:            
-        self.reset()
     
     if self.joystick_ == None:
         logging.error( "ERROR: No joystick found")
@@ -120,64 +124,85 @@ class JoystickController(ControllerInterface):
     # Capturing Joystick Buttons
     self.joystick_state_.capture(self.joystick_)
             
-    # Combining pressed buttons
-    buttons_down = self.joystick_axes_.getDirection(self.joystick_state_)                 
+    # getting directions
+    direction = self.joystick_axes_.getDirection(self.joystick_state_)  
+     
+    # combining button presses          
     button_count = self.joystick_.get_numbuttons()
     for i in range(0,button_count):
-        if self.joystick_state_.isButtonDown(i):
+      if self.joystick_state_.isButtonDown(i):
+          
+        # Combining button presses
+        self.buttons_down_ = self.buttons_down_ | self.button_map_[i]
+          
+    # buffering button presses
+    buttons_pressed = JoystickButtons.NONE
+    buttons_released = JoystickButtons.NONE
+    
+    
+    # finding directions pressed
+    buttons_pressed = direction & ~self.previous_directions_down_  if self.one_shot_mode_ else direction   
+
+    # finding directions released
+    buttons_released = ~direction & self.previous_directions_down_
+    
+    # storing last direction presses
+    self.previous_directions_down_ = direction
+    
+    # merging directions with buttons pressed
+    self.merge_time_elapsed_+=dt    
+    if self.merge_time_elapsed_ > self.merge_time_:
+      self.merge_time_elapsed_ = 0      
             
-          # Combining button presses
-          buttons_down = buttons_down | self.button_map_[i]
-         
-    
-    # finding buttons pressed
-    buttons_pressed = buttons_down & ~self.previous_down_buttons_  if self.one_shot_mode_ else buttons_down    
-
-    # finding released buttons
-    buttons_released = ~buttons_down & self.previous_down_buttons_
-    
-    # Saving buttons pressed into buffer      
-    self.button_press_buffer_ = self.storeIntoBuffer(self.button_press_buffer_, buttons_pressed)
-    self.button_release_buffer_ = self.storeIntoBuffer(self.button_release_buffer_, buttons_released)
-    
-    # storing last button presses
-    self.previous_down_buttons_ = buttons_down
-    
-    # checking button combinations for button release matches
-    matched_moves = self.findMatchingMoves(self.button_release_moves_,self.button_release_buffer_)
-    for move in matched_moves:
-      move.execute()
-      if not move.is_submove:
-        self.button_release_buffer_ = []
-        break  
-    
-    # delaying press move executions
-    self.update_time_elapsed_+=dt    
-    if self.update_time_elapsed_ > self.update_time_:
-      self.update_time_elapsed_ = 0
-    else:
-      return
-    
-    # checking button combinations for button press matches
-    matched_moves = self.findMatchingMoves(self.button_press_moves_,self.button_press_buffer_)
-    for move in matched_moves:
-      move.execute()
-      if not move.is_submove:
-        self.reset() # clear buffer
-        break  
-
-  def reset(self): 
-    
-    self.buffer_time_elapsed_ = 0
-    self.button_press_buffer_ = [] 
+      # finding buttons pressed
+      buttons_pressed =  buttons_pressed | (self.buttons_down_ & ~self.previous_buttons_down_  if self.one_shot_mode_ else self.buttons_down_)          
   
+      # finding released buttons
+      buttons_released = buttons_released | (~self.buttons_down_ & self.previous_buttons_down_)
+      
+      # storing last button presses
+      self.previous_buttons_down_ = self.buttons_down_ 
+      self.buttons_down_ = JoystickButtons.NONE
+      
+    
+    # Saving and executing pressed moves    
+    if buttons_pressed != JoystickButtons.NONE:
+      self.button_press_buffer_ = self.storeIntoBuffer(self.button_press_buffer_, buttons_pressed)
+      
+      # checking button combinations for button press matches
+      matched_moves = self.findMatchingMoves(self.button_press_moves_,self.button_press_buffer_)
+      for move in matched_moves:
+        move.execute()
+        if not move.is_submove:
+          self.reset() # clear buffer
+          break  
+      
+    
+    # Saving and executing released moves  
+    if buttons_released != JoystickButtons.NONE:  
+      self.button_release_buffer_ = self.storeIntoBuffer(self.button_release_buffer_, buttons_released)
+        
+      # checking button combinations for button release matches
+      matched_moves = self.findMatchingMoves(self.button_release_moves_,self.button_release_buffer_)
+      for move in matched_moves:
+        move.execute()
+        if not move.is_submove:
+          self.button_release_buffer_ = []
+          break
+        
+    # Update internal time elapsed and clear buffer when timeout is exceeded
+    self.buffer_time_elapsed_ = self.buffer_time_elapsed_ + dt if buttons_pressed == JoystickButtons.NONE else 0
+    if self.buffer_time_elapsed_ > self.buffer_timeout_:  
+      self.reset()    
+
+ 
   def storeIntoBuffer(self, button_buffer,buttons):
     
     # Saving buttons into buffer      
     if (len(button_buffer) == 0):            
       button_buffer.append(buttons)
     else:
-      if buttons != button_buffer[-1]:
+      if buttons != button_buffer[-1] :
         button_buffer.append(buttons)
                    
     # Keeping buffer size to max allowed

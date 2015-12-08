@@ -16,16 +16,47 @@ from physics_platformer.input import KeyboardButtons
 from physics_platformer.input import KeyboardController
 from physics_platformer.input import JoystickButtons
 from physics_platformer.input import JoystickController
+from direct.interval.MetaInterval import Sequence
+from direct.interval.FunctionInterval import Func
 
 RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/characters/Hiei/'
 PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
 ANIMATIONS = ['RUNNING','STANDING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE']
+
+class MotionCommander(object):
+  
+  def __init__(self, character):
+    self.character_ = character
+    self.move_execution_seq_ = Sequence()
+    
+  def moveRight(self):    
+    self.move_execution_seq_.finish()
+    self.move_execution_seq_.clearIntervals()
+    finterv = Func(lambda : self.character_.execute(CharacterActions.MOVE_RIGHT))
+    self.move_execution_seq_.append(finterv)
+    self.move_execution_seq_.loop()
+  
+  def moveLeft(self):
+    self.move_execution_seq_.finish()
+    self.move_execution_seq_.clearIntervals()
+    finterv = Func(lambda : self.character_.execute(CharacterActions.MOVE_LEFT))
+    self.move_execution_seq_.append(finterv)
+    self.move_execution_seq_.loop()
+  
+  def stop(self):
+    self.move_execution_seq_.finish()
+    self.move_execution_seq_.clearIntervals()
+    self.character_.execute(CharacterActions.MOVE_NONE)
+    
+    
+    
 
 class Hiei(CharacterBase):
   
   def __init__(self,character_loader):
     self.character_loader_ = character_loader
     CharacterBase.__init__(self,character_loader.getCharacterInfo())
+    self.motion_commander_ = MotionCommander(self)
     
   def setup(self):
     if(not self.loadResources()):
@@ -173,13 +204,13 @@ class TestBasicGame(TestGame):
     keyboard_manager.addMove(Move('UP',[KeyboardButtons.DPAD_UP],True, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
     keyboard_manager.addMove(Move('DOWN',[KeyboardButtons.DPAD_DOWN],True,  lambda : self.character_.execute(CharacterActions.MOVE_DOWN)))
     keyboard_manager.addMove(Move('LEFT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_LEFT)))
-    keyboard_manager.addMove(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_RIGHT)))
+    keyboard_manager.addMove(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_RIGHT)))    
     keyboard_manager.addMove(Move('JUMP',[KeyboardButtons.KEY_S],True, lambda : self.character_.execute(CharacterActions.JUMP)))
     #keyboard_manager.addMove(Move('DASH',[KeyboardButtons.KEY_Q],False, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
     
     # Creating release moves
     keyboard_manager.addMove(Move('HALT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
-    keyboard_manager.addMove(Move('HALT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
+    keyboard_manager.addMove(Move('HALT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)    
     keyboard_manager.addMove(Move('JUMP_CANCEL',[KeyboardButtons.KEY_S],True, lambda : self.character_.execute(CharacterActions.JUMP_CANCEL)),False)
     
     return keyboard_manager
@@ -210,16 +241,21 @@ class TestBasicGame(TestGame):
     
     joystick_manager = JoystickController(button_map,joystick, JoystickController.JoystickAxes(),2)
     
+#     joystick_manager.addMove(Move('LEFT',[JoystickButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_LEFT)))
+#     joystick_manager.addMove(Move('RIGHT',[JoystickButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_RIGHT)))
+    joystick_manager.addMove(Move('LEFT',[JoystickButtons.DPAD_LEFT],True, lambda : self.character_.motion_commander_.moveLeft()))
+    joystick_manager.addMove(Move('RIGHT',[JoystickButtons.DPAD_RIGHT],True, lambda : self.character_.motion_commander_.moveRight()))
+    
     joystick_manager.addMove(Move('UP',[JoystickButtons.DPAD_UP],True, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
     joystick_manager.addMove(Move('DOWN',[JoystickButtons.DPAD_DOWN],True,  lambda : self.character_.execute(CharacterActions.MOVE_DOWN)))
-    joystick_manager.addMove(Move('LEFT',[JoystickButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_LEFT)))
-    joystick_manager.addMove(Move('RIGHT',[JoystickButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_RIGHT)))
     joystick_manager.addMove(Move('JUMP',[JoystickButtons.BUTTON_B],True, lambda : self.character_.execute(CharacterActions.JUMP)))
     #joystick_manager.addMove(Move('DASH',[JoystickButtons.TRIGGER_R1],False, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
     
     # Creating release moves
-    joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
-    joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
+#     joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
+#     joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
+    joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_RIGHT],True, lambda : self.character_.motion_commander_.stop()),False)
+    joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_LEFT],True, lambda : self.character_.motion_commander_.stop()),False)
     joystick_manager.addMove(Move('JUMP_CANCEL',[JoystickButtons.BUTTON_B],True, lambda : self.character_.execute(CharacterActions.JUMP_CANCEL)),False)
     
 

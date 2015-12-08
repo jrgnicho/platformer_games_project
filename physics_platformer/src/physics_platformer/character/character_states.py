@@ -6,6 +6,8 @@ from physics_platformer.game_actions import AnimationActions
 from physics_platformer.game_actions import CharacterActions
 from physics_platformer.game_actions import CollisionAction
 from physics_platformer.character import CharacterStatus
+from direct.interval.MetaInterval import Sequence
+from direct.interval.FunctionInterval import Func
 from panda3d.core import LVector3
 from panda3d.core import Vec3
 import logging
@@ -81,6 +83,12 @@ class AerialBaseState(CharacterState):
     self.character_obj_.stop()
     
   def moveRight(self,action):   
+    
+#     if not self.character_obj_.isFacingRight():
+#       self.character_obj_.faceRight(True)
+#       
+#     self.forward_speed_ = abs(self.forward_speed_)
+      
     if not self.character_obj_.isFacingRight():
       self.character_obj_.faceRight(True)
       
@@ -116,12 +124,10 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
       self.character_obj_.setLinearVelocity(LVector3(0,0,0))
       self.character_obj_.clearForces()      
-      #self.character_obj_.setRigidBodyActive(False, True)
       
     def exit(self):
       self.character_obj_.stop()
       self.character_obj_.node().setLinearFactor(LVector3(1,0,1))
-      #self.character_obj_.setRigidBodyActive(True, True)   
       
     def nearEdgeCallback(self,collision_action):
             
@@ -216,7 +222,8 @@ class CharacterStates(object): # Class Namespace
     def __init__(self,character_obj,parent_state_machine, animation_key = None):
       CharacterState.__init__(self, CharacterStateKeys.RUNNING, character_obj, parent_state_machine, animation_key)
       self.forward_speed_ = self.character_obj_.character_info_.run_speed
-      self.forward_direction_ = LVector3(self.forward_speed_,0,0)      
+      self.forward_direction_ = LVector3(self.forward_speed_,0,0)   
+      self.move_exec_seq_   = None
       
       self.addAction(CharacterActions.MOVE_RIGHT.key,self.turnRight)
       self.addAction(CharacterActions.MOVE_LEFT.key,self.turnLeft)  
@@ -224,28 +231,46 @@ class CharacterStates(object): # Class Namespace
     def enter(self):
       
       logging.debug("%s state entered"%(self.getKey()))
-      self.character_obj_.loop(self.animation_key_)   
+      self.character_obj_.loop(self.animation_key_)  
+      
+      self.forward_speed_ = 0       
+      self.move_exec_seq_ = Sequence()
+      finterv = Func(self.moveCallback)
+      self.move_exec_seq_.append(finterv)
+      self.move_exec_seq_.loop()
       
     def exit(self):      
-      self.character_obj_.stop()       
+      self.character_obj_.stop()  
+      self.move_exec_seq_.finish()
+      self.move_exec_seq_ = None     
+      
+    def moveCallback(self):
+      
+      self.forward_direction_ = self.character_obj_.node().getLinearVelocity()
+      self.forward_direction_.setX(self.forward_speed_)
+      self.character_obj_.setLinearVelocity(self.forward_direction_)
       
     def turnRight(self,action):   
       if not self.character_obj_.isFacingRight():
         self.character_obj_.faceRight(True)
         
-      self.forward_speed_ = abs(self.forward_speed_)
-      self.forward_direction_ = self.character_obj_.node().getLinearVelocity()
-      self.forward_direction_.setX(self.forward_speed_)
-      self.character_obj_.setLinearVelocity(self.forward_direction_)
+      self.forward_speed_ = self.character_obj_.character_info_.run_speed
+        
+#       self.forward_speed_ = abs(self.forward_speed_)
+#       self.forward_direction_ = self.character_obj_.node().getLinearVelocity()
+#       self.forward_direction_.setX(self.forward_speed_)
+#       self.character_obj_.setLinearVelocity(self.forward_direction_)
       
     def turnLeft(self,action):
       if self.character_obj_.isFacingRight():
         self.character_obj_.faceRight(False)
         
-      self.forward_speed_ = -abs(self.forward_speed_)
-      self.forward_direction_ = self.character_obj_.node().getLinearVelocity()
-      self.forward_direction_.setX(self.forward_speed_)
-      self.character_obj_.setLinearVelocity(self.forward_direction_)
+      self.forward_speed_ = -self.character_obj_.character_info_.run_speed
+        
+#       self.forward_speed_ = -abs(self.forward_speed_)
+#       self.forward_direction_ = self.character_obj_.node().getLinearVelocity()
+#       self.forward_direction_.setX(self.forward_speed_)
+#       self.character_obj_.setLinearVelocity(self.forward_direction_)
 
       
   class TakeoffState(AerialBaseState):

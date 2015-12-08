@@ -59,7 +59,7 @@ class TestJoystickController(ShowBase):
       if joystick.init() and joystick.get_numbuttons() > 0:
         break;
       
-    self.joystick_manager_ = JoystickController(button_map,joystick, JoystickController.JoystickAxes(),2)
+    self.joystick_manager_ = JoystickController(button_map,joystick, JoystickController.JoystickAxes(),0.2)
     
     # Creating directional moves
     self.joystick_manager_.addMove(Move('UP',[JoystickButtons.DPAD_UP],True))
@@ -101,6 +101,11 @@ class TestJoystickController(ShowBase):
                                                  #JoystickButtons.DPAD_LEFT | JoystickButtons.BUTTON_Y],False,
                                                  JoystickButtons.BUTTON_Y],False,
                                         lambda : sys.stdout.write("<-----> LEFT ABUKE \n")))
+    
+    self.joystick_manager_.addMove(Move('FOCUS ATTACK',[
+                                             JoystickButtons.BUTTON_X | JoystickButtons.BUTTON_Y],False,
+                                             #JoystickButtons.BUTTON_Y],False,
+                                    lambda : sys.stdout.write("<-----> FOCUS ATTACK \n")))
 
 if __name__ == '__main__':
   
