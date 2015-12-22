@@ -137,8 +137,7 @@ class JoystickController(ControllerInterface):
           
     # buffering button presses
     buttons_pressed = JoystickButtons.NONE
-    buttons_released = JoystickButtons.NONE
-    
+    buttons_released = JoystickButtons.NONE    
     
     # finding directions pressed
     buttons_pressed = direction & ~self.previous_directions_down_  if self.one_shot_mode_ else direction   
