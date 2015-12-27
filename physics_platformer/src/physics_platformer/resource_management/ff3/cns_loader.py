@@ -24,7 +24,8 @@ class CNSLoader(object):
     __WALK__ = 'walk\.fwd\s+=\s+(\d*\.?\d*)'
     __RUN__= 'run\.fwd\s+=\s+(\d*\.?\d*)'
     __JUMP_UP__ = '^jump\.neu\s+=\s+\d+,([-+]?\d+\.?\d*)'
-    __JUMP_FORWARD__ = '^jump\.fwd\s+=\s+(\d+\.?\d*)'
+    __JUMP_FORWARD__ = '^jump\.fwd\s+=\s+([-+]?\d+\.?\d*)'
+    __JUMP_BACK__ = '^jump\.back\s+=\s+([-+]?\d+\.?\d*)'
     
   class MovementTokens(object):    
     __AIR_JUMPS__ = 'airjump.num\s+=\s+(\d+)'
@@ -140,7 +141,12 @@ class CNSLoader(object):
     
     m = re.search(CNSLoader.VelocityTokens.__JUMP_FORWARD__,line)
     if m is not None:
-      self.char_info_.jump_forward = float(m.group(1))
+      self.char_info_.jump_fwd_speed = float(m.group(1))
+      return True
+  
+    m = re.search(CNSLoader.VelocityTokens.__JUMP_BACK__,line)
+    if m is not None:
+      self.char_info_.fall_max_speed = float(m.group(1))
       return True
     
     m = re.search(CNSLoader.VelocityTokens.__JUMP_UP__,line)

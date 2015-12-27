@@ -22,6 +22,7 @@ class CharacterStateKeys(object):
   RUNNING="RUNNING"
   TAKEOFF = "TAKEOFF"
   JUMPING="JUMPING"
+  AIR_JUMPING = "AIR_JUMPING"
   FALLING="FALLING"
   LANDING="LANDING"
   EDGE_LANDING = "EDGE_LANDING"
@@ -62,24 +63,26 @@ class AerialBaseState(CharacterState):
   
   def __init__(self,key,character_obj,parent_state_machine, animation_key = None):
     CharacterState.__init__(self, key, character_obj, parent_state_machine, animation_key)
-    self.forward_speed_ = self.character_obj_.character_info_.jump_forward
+    self.forward_speed_ = self.character_obj_.character_info_.jump_fwd_speed
+    self.current_speed_ = 0
     self.move_exec_seq_ = None
     
     self.addAction(CharacterActions.MOVE_RIGHT.key,self.moveRight)
     self.addAction(CharacterActions.MOVE_LEFT.key,self.moveLeft)
+    self.addAction(CharacterActions.MOVE_NONE.key,self.moveStop)
     
   def enter(self):
     
     logging.debug("%s state entered"%(self.getKey()))
     
-    vel = self.character_obj_.getLinearVelocity()     
-    if abs(vel.getX()) > self.character_obj_.character_info_.jump_forward:
-      self.forward_speed_ = abs(vel.getX())
+    # store forward speed
+    inertia_x = self.character_obj_.getStatus().inertia.getX()  
+    if abs(inertia_x) > self.character_obj_.character_info_.jump_fwd_speed:
+      self.forward_speed_ = abs(inertia_x)
     else:
-      self.forward_speed_ = self.character_obj_.character_info_.jump_forward  
+      self.forward_speed_ = self.character_obj_.character_info_.jump_fwd_speed  
       
-    self.character_obj_.loop(self.animation_key_)
-          
+    self.character_obj_.loop(self.animation_key_)          
     self.move_exec_seq_ = Sequence()
     finterv = Func(self.moveForwardCallback)
     self.move_exec_seq_.append(finterv)
@@ -94,22 +97,23 @@ class AerialBaseState(CharacterState):
   def moveForwardCallback(self):
     
     self.forward_direction_ = self.character_obj_.node().getLinearVelocity()
-    self.forward_direction_.setX(self.forward_speed_)
+    self.forward_direction_.setX(self.current_speed_)
     self.character_obj_.setLinearVelocity(self.forward_direction_)
-
     
-  def moveRight(self,action):   
+  def moveStop(self,action):    
+    self.current_speed_ = 0
     
+  def moveRight(self,action):    
     if not self.character_obj_.isFacingRight():
       self.character_obj_.faceRight(True)
       
-    self.forward_speed_ = abs(self.forward_speed_)
+    self.current_speed_ = abs(self.forward_speed_)
     
   def moveLeft(self,action):
     if self.character_obj_.isFacingRight():
       self.character_obj_.faceRight(False)
       
-    self.forward_speed_ = -abs(self.forward_speed_)     
+    self.current_speed_ = -abs(self.forward_speed_)     
           
 class CharacterStates(object): # Class Namespace
   
@@ -135,6 +139,7 @@ class CharacterStates(object): # Class Namespace
     def exit(self):
       self.character_obj_.stop()
       self.character_obj_.node().setLinearFactor(LVector3(1,0,1))
+      self.character_obj_.getStatus().inertia.setX(0)
       
     def nearEdgeCallback(self,collision_action):
             
@@ -197,6 +202,7 @@ class CharacterStates(object): # Class Namespace
     def exit(self):
       self.character_obj_.setAnimationEndCallback(None)
       self.character_obj_.stop()
+      self.character_obj_.getStatus().inertia.setX(0)
         
   class StandingNearEdge(CharacterState):
     def __init__(self,character_obj, parent_state_machine,animation_key = None):   
@@ -223,9 +229,9 @@ class CharacterStates(object): # Class Namespace
       
     def exit(self):
       self.character_obj_.stop()
+      self.character_obj_.getStatus().inertia.setX(0)
     
   class RunningState(CharacterState):
-    
     def __init__(self,character_obj,parent_state_machine, animation_key = None):
       CharacterState.__init__(self, CharacterStateKeys.RUNNING, character_obj, parent_state_machine, animation_key)
       self.forward_speed_ = self.character_obj_.character_info_.run_speed
@@ -233,7 +239,7 @@ class CharacterStates(object): # Class Namespace
       self.move_exec_seq_   = None
       
       self.addAction(CharacterActions.MOVE_RIGHT.key,self.turnRight)
-      self.addAction(CharacterActions.MOVE_LEFT.key,self.turnLeft)  
+      self.addAction(CharacterActions.MOVE_LEFT.key,self.turnLeft)   
       
     def enter(self):
       
@@ -250,6 +256,7 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.stop()  
       self.move_exec_seq_.finish()
       self.move_exec_seq_ = None     
+      self.character_obj_.getStatus().inertia.setX(self.character_obj_.character_info_.run_speed)
       
     def moveForwardCallback(self):
       
@@ -275,25 +282,20 @@ class CharacterStates(object): # Class Namespace
     def __init__(self,character_obj,parent_state_machine, animation_key = None):
       AerialBaseState.__init__(self, CharacterStateKeys.TAKEOFF, character_obj, parent_state_machine, animation_key)     
       
-      self.forward_speed_ = self.character_obj_.character_info_.jump_forward
-      
-      self.addAction(CharacterActions.MOVE_RIGHT.key,self.moveRight)
-      self.addAction(CharacterActions.MOVE_LEFT.key,self.moveLeft)
+      self.forward_speed_ = self.character_obj_.character_info_.jump_fwd_speed
+
       self.addAction(CollisionAction.CEILING_COLLISION,self.ceilingCollisionCallback) 
       
     def enter(self):      
       logging.debug("%s state entered"%(self.getKey()))
             
-      # setting z+ speed
-      vel = self.character_obj_.node().getLinearVelocity()
-      
-      # storing x speed  
-      if abs(vel.getX()) - self.character_obj_.character_info_.jump_forward > 0:
-        self.forward_speed_ = abs(vel.getX())
+      # store forward speed
+      inertia_x = self.character_obj_.getStatus().inertia.getX()  
+      if abs(inertia_x) > self.character_obj_.character_info_.jump_fwd_speed:
+        self.forward_speed_ = abs(inertia_x)
       else:
-        self.forward_speed_ = self.character_obj_.character_info_.jump_forward  
-          
-      vel.setZ(self.character_obj_.character_info_.jump_force)
+        self.forward_speed_ = self.character_obj_.character_info_.jump_fwd_speed  
+      
       self.character_obj_.setAnimationEndCallback(self.done)
       self.character_obj_.play(self.animation_key_)
       self.character_obj_.applyCentralImpulse(LVector3(0,0,self.character_obj_.character_info_.jump_force))
@@ -314,16 +316,43 @@ class CharacterStates(object): # Class Namespace
     
     def __init__(self,character_obj,parent_state_machine, animation_key = None):
       AerialBaseState.__init__(self, CharacterStateKeys.JUMPING, character_obj, parent_state_machine, animation_key)
-      self.forward_speed_ = self.character_obj_.character_info_.jump_forward
-        
-      self.addAction(GeneralActions.GAME_STEP,self.checkAscendFinished)    
-        
+      self.forward_speed_ = self.character_obj_.character_info_.jump_fwd_speed
+      
+      self.addAction(GeneralActions.GAME_STEP,self.checkAscendFinished) 
+              
     def exit(self):
       
+      AerialBaseState.exit(self)
       vel = self.character_obj_.getLinearVelocity()
       vel.setZ(0)
       self.character_obj_.setLinearVelocity(vel)
+      
+    def checkAscendFinished(self,action):
+      
+      vel = self.character_obj_.node().getLinearVelocity()
+      if vel.getZ() < 0.01:
+        StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))
+        
+  class AirJumpState(AerialBaseState):
+    
+    def __init__(self,character_obj,parent_state_machine, animation_key = None):
+      AerialBaseState.__init__(self, CharacterStateKeys.AIR_JUMPING, character_obj, parent_state_machine, animation_key)
+      self.forward_speed_ = self.character_obj_.character_info_.jump_fwd_speed
+        
+      self.addAction(GeneralActions.GAME_STEP,self.checkAscendFinished)   
+      
+    def enter(self):
+      
+      self.character_obj_.applyCentralImpulse(LVector3(0,0,self.character_obj_.character_info_.jump_force))      
+      self.character_obj_.getStatus().air_jump_count+=1
+      AerialBaseState.enter(self) 
+        
+    def exit(self):
+      
       AerialBaseState.exit(self)
+      vel = self.character_obj_.getLinearVelocity()
+      vel.setZ(0)
+      self.character_obj_.setLinearVelocity(vel)
       
     def checkAscendFinished(self,action):
       
@@ -335,17 +364,31 @@ class CharacterStates(object): # Class Namespace
     
     def __init__(self,character_obj,parent_state_machine, animation_key = None):
       AerialBaseState.__init__(self, CharacterStateKeys.FALLING, character_obj, parent_state_machine, animation_key)
-      self.forward_speed_ = self.character_obj_.character_info_.jump_forward
+      self.forward_speed_ = self.character_obj_.character_info_.jump_fwd_speed      
       
+      self.addAction(CharacterActions.JUMP.key,self.requestJump)
       self.addAction(CollisionAction.SURFACE_COLLISION,self.surfaceCollisionCallback)
+      self.addAction(GeneralActions.GAME_STEP,self.capFallSpeed)      
       
     def enter(self):
+      self.character_obj_.enableFriction(False)
       AerialBaseState.enter(self)
       
       vel = self.character_obj_.getLinearVelocity()
       if vel.getZ() > 0:
         vel.setZ(0)
         self.character_obj_.setLinearVelocity(vel)
+        
+    def requestJump(self,action):
+      if self.character_obj_.getStatus().air_jump_count < self.character_obj_.character_info_.air_jumps:
+        StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.AIR_JUMP))
+        
+    def capFallSpeed(self,action):
+        
+        vel = self.character_obj_.getLinearVelocity()
+        if vel.getZ() < self.character_obj_.character_info_.fall_max_speed:
+            vel.setZ(self.character_obj_.character_info_.fall_max_speed)
+            self.character_obj_.setLinearVelocity(vel)
         
 
     def surfaceCollisionCallback(self,action):
@@ -368,16 +411,18 @@ class CharacterStates(object): # Class Namespace
             StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND_EDGE))
           
           if d < info.land_edge_min:
-            # push out of platform
+            
             if self.character_obj_.isFacingRight():
+              # push out of platform
               self.character_obj_.clampRight(platform.getLeft()-CharacterStates.EDGE_PUSH_DISTANCE)
             else:
+              # pull into platform
               self.character_obj_.clampLeft(platform.getRight()+CharacterStates.EDGE_PUSH_DISTANCE)
           if d > info.land_edge_max:
-            StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))
+            StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND))
             
         else:
-          StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))
+          StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND))
        
       
   class LandState(CharacterState):
@@ -393,6 +438,7 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.play(self.animation_key_)  
       self.clampToPlatform(self.character_obj_.getStatus().platform)
       self.character_obj_.enableFriction(True)
+      self.character_obj_.getStatus().air_jump_count = 0
       
     def clampToPlatform(self,platform):
       

@@ -18,6 +18,7 @@ from physics_platformer.game_object import AnimationSpriteAlignment
 from physics_platformer.game_object import AnimatableObject
 from physics_platformer.character.character_status import *
 from physics_platformer.character.character_states import *
+from physics_platformer.character import MotionCommander
 from physics_platformer.state_machine import Action
 from physics_platformer.state_machine import State
 from physics_platformer.state_machine import StateMachine
@@ -69,6 +70,9 @@ class CharacterBase(AnimatableObject):
     # state machine
     self.sm_ = StateMachine()     
     
+    # motion commander
+    self.motion_commander_ = MotionCommander(self)
+    
   def setup(self):    
 
     self.__setupDefaultStates__()
@@ -91,6 +95,8 @@ class CharacterBase(AnimatableObject):
       self.getAnimatorActor().getRigidBody().node().setFriction(friction)
     else:
       self.getAnimatorActor().getRigidBody().node().setFriction(0)
+      
+    self.status_.friction_enabled = enable
   
   def getStatus(self):
     '''
@@ -298,6 +304,7 @@ class CharacterBase(AnimatableObject):
     self.selected_animation_name_ = animation_name     
     self.faceRight(face_right)
     self.animator_.pose(frame) 
+    self.enableFriction(self.getStatus().friction_enabled)
       
     return True 
     

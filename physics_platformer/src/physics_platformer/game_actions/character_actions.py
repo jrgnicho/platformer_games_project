@@ -21,10 +21,12 @@ class CharacterActions(object):
   MOVE_DOWN = CharacterAction("MOVE_DOWN")
   MOVE_NONE = CharacterAction("MOVE_NONE")
   JUMP = CharacterAction('JUMP')
+  AIR_JUMP = CharacterAction('AIR_JUMP')
   JUMP_CANCEL = CharacterAction('JUMP_CANCEL')
   DASH = CharacterAction('DASH')
   HALT = CharacterAction('HALT')
   FALL = CharacterAction('FALL')
   EDGE_RECOVERY = CharacterAction('EDGE_RECOVERY')
   LAND_EDGE = CharacterAction('LAND_EDGE')
+  LAND = CharacterAction('LAND')
     

@@ -16,47 +16,16 @@ from physics_platformer.input import KeyboardButtons
 from physics_platformer.input import KeyboardController
 from physics_platformer.input import JoystickButtons
 from physics_platformer.input import JoystickController
-from direct.interval.MetaInterval import Sequence
-from direct.interval.FunctionInterval import Func
 
 RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/characters/Hiei/'
 PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
 ANIMATIONS = ['RUNNING','STANDING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE']
-
-class MotionCommander(object):
-  
-  def __init__(self, character):
-    self.character_ = character
-    self.move_execution_seq_ = Sequence()
-    
-  def moveRight(self):    
-    self.move_execution_seq_.finish()
-    self.move_execution_seq_.clearIntervals()
-    finterv = Func(lambda : self.character_.execute(CharacterActions.MOVE_RIGHT))
-    self.move_execution_seq_.append(finterv)
-    self.move_execution_seq_.loop()
-  
-  def moveLeft(self):
-    self.move_execution_seq_.finish()
-    self.move_execution_seq_.clearIntervals()
-    finterv = Func(lambda : self.character_.execute(CharacterActions.MOVE_LEFT))
-    self.move_execution_seq_.append(finterv)
-    self.move_execution_seq_.loop()
-  
-  def stop(self):
-    self.move_execution_seq_.finish()
-    self.move_execution_seq_.clearIntervals()
-    self.character_.execute(CharacterActions.MOVE_NONE)
-    
-    
-    
 
 class Hiei(CharacterBase):
   
   def __init__(self,character_loader):
     self.character_loader_ = character_loader
     CharacterBase.__init__(self,character_loader.getCharacterInfo())
-    self.motion_commander_ = MotionCommander(self)
     
   def setup(self):
     if(not self.loadResources()):
@@ -89,6 +58,7 @@ class Hiei(CharacterBase):
     running_state = CharacterStates.RunningState(self,self.sm_,ANIMATIONS[0])
     takeoff_state = CharacterStates.TakeoffState(self,self.sm_,ANIMATIONS[2])
     jump_state = CharacterStates.JumpState(self,self.sm_,ANIMATIONS[3])
+    air_jump_state = CharacterStates.AirJumpState(self,self.sm_,ANIMATIONS[3])
     fall_state = CharacterStates.FallState(self,self.sm_,ANIMATIONS[4])
     land_state = CharacterStates.LandState(self,self.sm_,ANIMATIONS[5])
     standing_edge_recovery_state = CharacterStates.StandingEdgeRecovery(self,self.sm_,ANIMATIONS[6])
@@ -100,14 +70,16 @@ class Hiei(CharacterBase):
     self.sm_.addState(running_state)
     self.sm_.addState(takeoff_state)
     self.sm_.addState(jump_state)
+    self.sm_.addState(air_jump_state)
     self.sm_.addState(land_state)  
     self.sm_.addState(standing_edge_recovery_state)
     self.sm_.addState(standing_near_edge_state) 
     self.sm_.addState(edge_landing_state) 
        
     
-    self.sm_.addTransition(CharacterStateKeys.FALLING, StateMachineActions.DONE.key, CharacterStateKeys.LANDING)
+    self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.LAND.key, CharacterStateKeys.LANDING)
     self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.LAND_EDGE.key, CharacterStateKeys.EDGE_LANDING)
+    self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.AIR_JUMP.key, CharacterStateKeys.AIR_JUMPING)
     
     self.sm_.addTransition(CharacterStateKeys.EDGE_LANDING, StateMachineActions.DONE.key, CharacterStateKeys.STANDING)
     
@@ -139,6 +111,8 @@ class Hiei(CharacterBase):
     self.sm_.addTransition(CharacterStateKeys.LANDING, StateMachineActions.DONE.key, CharacterStateKeys.STANDING)
     self.sm_.addTransition(CharacterStateKeys.LANDING, CollisionAction.FREE_FALL, CharacterStateKeys.FALLING)
     self.sm_.addTransition(CharacterStateKeys.LANDING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
+    
+    self.sm_.addTransition(CharacterStateKeys.AIR_JUMPING, StateMachineActions.DONE.key, CharacterStateKeys.FALLING)
     
     return True
     
@@ -241,8 +215,6 @@ class TestBasicGame(TestGame):
     
     joystick_manager = JoystickController(button_map,joystick, JoystickController.JoystickAxes(),2)
     
-#     joystick_manager.addMove(Move('LEFT',[JoystickButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_LEFT)))
-#     joystick_manager.addMove(Move('RIGHT',[JoystickButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_RIGHT)))
     joystick_manager.addMove(Move('LEFT',[JoystickButtons.DPAD_LEFT],True, lambda : self.character_.motion_commander_.moveLeft()))
     joystick_manager.addMove(Move('RIGHT',[JoystickButtons.DPAD_RIGHT],True, lambda : self.character_.motion_commander_.moveRight()))
     

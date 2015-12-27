@@ -17,9 +17,11 @@ class CharacterInfo(object):
     self.walk_speed = 1
     self.run_speed = 2
     self.jump_force = 1
-    self.jump_forward = 1
-    self.fall_recovery_min = 0.2 # minimum distance from edge for attempting a recovery and avoid falling from edge
-    self.fall_recovery_max = 0.5 # beyond this distance the character drops from the platform
+    self.jump_fwd_speed = 1
+    self.fall_max_speed = -8
+    self.fall_recovery_min = 0.2 # minimum distance from edge for attempting a recovery and avoid falling from edge,
+                                 # when less than this value the character is pushed out of the platform
+    self.fall_recovery_max = 0.5 # at this distance from the edge then the character performs a normal land action
     self.land_edge_min = 0.1
     self.land_edge_max = 0.6
     
@@ -41,7 +43,8 @@ class CharacterInfo(object):
       walk_speed:  %f
       run_speed:  %f
       jump_force:  %f
-      jump_forward:  %f
+      jump_fwd_speed:  %f
+      fall_max_speed:  %f
       fall_recovery_min: %f
       fall_recovery_max: %f
       land_edge_min: %f
@@ -60,7 +63,8 @@ class CharacterInfo(object):
          self.walk_speed,
          self.run_speed,
          self.jump_force,
-         self.jump_forward,
+         self.jump_fwd_speed,
+         self.fall_max_speed,
          self.fall_recovery_min,
          self.fall_recovery_max,
          self.land_edge_min,
