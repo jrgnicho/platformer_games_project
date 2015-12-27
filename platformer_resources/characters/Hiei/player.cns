@@ -42,13 +42,13 @@ draw.offset = 0,0		;Player drawing offset in pixels (x, y)
 [Velocity]
 walk.fwd  = 2.4		;Walk forward
 walk.back = -2.2		;Walk backward
-run.fwd  = 4.6, 0		;Run forward (x, y)
+run.fwd  = 4.6, 6.8		; * (run speed , dash speed)
 run.back = -4.5,-3.8	;Hop backward (x, y)
-jump.neu = 0,28.0		;Neutral jumping velocity (x, y)
-jump.back = -2.55		;Jump back Speed (x, y)
-jump.fwd = 2.0		;Jump forward Speed (x, y)
-runjump.back = 0.2,0.4	; {Custom] (land_edge_min, land_edge_max)
-runjump.fwd = 0.3,0.6	;.[Custom] (edge_recovery_min, edge_recovery_max) Distance range from 
+jump.neu = 0,32.0		; * ( 0 , Jump Impulse) Jump Impulse is the vertical force applied at takeoff during a jump
+jump.back = -8.55		; * Maximum Fall Speed
+jump.fwd = 2.2		; * Jump forward Speed 
+runjump.back = 0.1,0.7	; * (land_edge_min, land_edge_max)
+runjump.fwd = 0.3,0.7	;.* (edge_recovery_min, edge_recovery_max) Distance range from 
 			;	edge within which a recovery maneuver will be performed to avoid dropping from platform
 airjump.neu = 0,-8.1	;.
 airjump.back = -2.55	;Air jump speeds (opt)
