@@ -10,7 +10,7 @@ import logging
 class JoystickController(ControllerInterface):
     
   DEFAULT_BUFFER_TIMEOUT = 0.2 #  seconds
-  DEFAULT_MERGE_TIME = 0.1 # seconds 
+  DEFAULT_MERGE_TIME = 0.02 # seconds 
   __MAX_BUFFER_SIZE__ = 30   
   
   class JoystickAxes(object):
