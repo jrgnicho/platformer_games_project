@@ -24,6 +24,7 @@ class CharacterActions(object):
   AIR_JUMP = CharacterAction('AIR_JUMP')
   JUMP_CANCEL = CharacterAction('JUMP_CANCEL')
   DASH = CharacterAction('DASH')
+  DASH_CANCEL = CharacterAction('DASH_CANCEL')
   HALT = CharacterAction('HALT')
   FALL = CharacterAction('FALL')
   EDGE_RECOVERY = CharacterAction('EDGE_RECOVERY')

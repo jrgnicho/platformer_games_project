@@ -196,7 +196,9 @@ class CharacterStates(object): # Class Namespace
       last_contact = self.character_obj_.getStatus().contact_data
       pos_x = platform.getRight() if facing_right else platform.getLeft()
       pos_x -= xoffset    
-      self.character_obj_.clampOriginX(pos_x)         
+      self.character_obj_.clampOriginX(pos_x)   
+      self.character_obj_.clampBottom(platform.getMax().getZ())      
+      #self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z      
       self.character_obj_.play(self.animation_key_)  
       
     def exit(self):
@@ -275,7 +277,101 @@ class CharacterStates(object): # Class Namespace
         self.character_obj_.faceRight(False)
         
       self.forward_speed_ = -self.character_obj_.character_info_.run_speed
-        
+      
+      
+  class DashState(CharacterState):
+    
+    def __init__(self,character_obj,parent_state_machine, animation_key = None):
+      CharacterState.__init__(self, CharacterStateKeys.DASHING, character_obj, parent_state_machine, animation_key)
+      self.forward_speed_ = abs(self.character_obj_.character_info_.dash_speed)
+      self.forward_direction_ = LVector3(self.forward_speed_,0,0)   
+      self.move_exec_seq_   = None
+      self.falling_ = True
+      
+      self.addAction(CollisionAction.FREE_FALL,self.freeFallCallback) 
+      self.addAction(CollisionAction.SURFACE_COLLISION,self.surfaceCollisionCallback)
+      
+    def enter(self):
+      logging.debug("%s state entered"%(self.getKey()))
+      self.character_obj_.setAnimationEndCallback(self.animationEndCallback)
+      self.character_obj_.play(self.animation_key_)  
+      
+      self.forward_speed_ = abs(self.character_obj_.character_info_.dash_speed)
+      if self.character_obj_.isFacingRight():
+        self.forward_speed_ = abs(self.forward_speed_)
+      else:
+        self.forward_speed_ = -abs(self.forward_speed_)
+      
+      self.move_exec_seq_ = Sequence()
+      finterv = Func(self.moveForwardCallback)
+      self.move_exec_seq_.append(finterv)
+      self.move_exec_seq_.loop()
+      
+    def exit(self):      
+      self.character_obj_.stop()        
+      self.character_obj_.setAnimationEndCallback(None)
+      self.move_exec_seq_.finish()
+      self.move_exec_seq_ = None     
+      self.character_obj_.getStatus().inertia.setX(self.character_obj_.character_info_.dash_speed)
+      
+    def surfaceCollisionCallback(self,action):
+      self.falling_ = False
+      platform  = action.game_obj2
+      self.character_obj_.getStatus().platform = platform
+      
+    def freeFallCallback(self,action):
+      self.falling_ = True
+      
+    def animationEndCallback(self):
+      
+      if self.falling_:
+        StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.FALL))
+      else:
+        self.done()
+      
+    def moveForwardCallback(self):
+      
+      self.forward_direction_ = self.character_obj_.node().getLinearVelocity()
+      self.forward_direction_.setX(self.forward_speed_)
+      self.character_obj_.setLinearVelocity(self.forward_direction_)     
+      
+  class MidairDashState(CharacterState):
+    
+    def __init__(self,character_obj,parent_state_machine, animation_key = None):
+      CharacterState.__init__(self, CharacterStateKeys.MIDAIR_DASHING, character_obj, parent_state_machine, animation_key)
+      self.forward_speed_ = abs(self.character_obj_.character_info_.dash_speed)
+      self.forward_direction_ = LVector3(self.forward_speed_,0,0)   
+      self.move_exec_seq_   = None
+      self.falling_ = True
+      
+    def enter(self):
+      logging.debug("%s state entered"%(self.getKey()))
+      self.character_obj_.setAnimationEndCallback(self.done)
+      self.character_obj_.play(self.animation_key_)  
+      
+      self.forward_speed_ = abs(self.character_obj_.character_info_.dash_speed)
+      if self.character_obj_.isFacingRight():
+        self.forward_speed_ = abs(self.forward_speed_)
+      else:
+        self.forward_speed_ = -abs(self.forward_speed_)
+      
+      self.move_exec_seq_ = Sequence()
+      finterv = Func(self.moveForwardCallback)
+      self.move_exec_seq_.append(finterv)
+      self.move_exec_seq_.loop()
+      
+    def exit(self):      
+      self.character_obj_.stop()        
+      self.character_obj_.setAnimationEndCallback(None)
+      self.move_exec_seq_.finish()
+      self.move_exec_seq_ = None     
+      self.character_obj_.getStatus().inertia.setX(self.character_obj_.character_info_.dash_speed)
+      
+    def moveForwardCallback(self):
+      
+      self.forward_direction_ = self.character_obj_.node().getLinearVelocity()
+      self.forward_direction_.setX(self.forward_speed_)
+      self.character_obj_.setLinearVelocity(self.forward_direction_)           
       
   class TakeoffState(AerialBaseState):
     
@@ -292,7 +388,7 @@ class CharacterStates(object): # Class Namespace
       # store forward speed
       inertia_x = self.character_obj_.getStatus().inertia.getX()  
       if abs(inertia_x) > self.character_obj_.character_info_.jump_fwd_speed:
-        self.forward_speed_ = abs(inertia_x)
+        self.forward_speed_ = abs(inertia_x)*self.character_obj_.character_info_.jump_fwd_momentum
       else:
         self.forward_speed_ = self.character_obj_.character_info_.jump_fwd_speed  
       
@@ -343,7 +439,10 @@ class CharacterStates(object): # Class Namespace
       
     def enter(self):
       
-      self.character_obj_.applyCentralImpulse(LVector3(0,0,self.character_obj_.character_info_.jump_force))      
+      vel = self.character_obj_.getLinearVelocity()
+      vel.setZ(0)
+      self.character_obj_.setLinearVelocity(vel)
+      self.character_obj_.applyCentralImpulse(LVector3(0,0,self.character_obj_.character_info_.airjump_force))      
       self.character_obj_.getStatus().air_jump_count+=1
       AerialBaseState.enter(self) 
         
@@ -366,7 +465,6 @@ class CharacterStates(object): # Class Namespace
       AerialBaseState.__init__(self, CharacterStateKeys.FALLING, character_obj, parent_state_machine, animation_key)
       self.forward_speed_ = self.character_obj_.character_info_.jump_fwd_speed      
       
-      self.addAction(CharacterActions.JUMP.key,self.requestJump)
       self.addAction(CollisionAction.SURFACE_COLLISION,self.surfaceCollisionCallback)
       self.addAction(GeneralActions.GAME_STEP,self.capFallSpeed)      
       
@@ -378,11 +476,7 @@ class CharacterStates(object): # Class Namespace
       if vel.getZ() > 0:
         vel.setZ(0)
         self.character_obj_.setLinearVelocity(vel)
-        
-    def requestJump(self,action):
-      if self.character_obj_.getStatus().air_jump_count < self.character_obj_.character_info_.air_jumps:
-        StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.AIR_JUMP))
-        
+                
     def capFallSpeed(self,action):
         
         vel = self.character_obj_.getLinearVelocity()
@@ -423,13 +517,16 @@ class CharacterStates(object): # Class Namespace
             
         else:
           StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND))
-       
-      
+     
   class LandState(CharacterState):
     
     def __init__(self,character_obj,parent_state_machine, animation_key = None):
       CharacterState.__init__(self, CharacterStateKeys.LANDING, character_obj, parent_state_machine, animation_key)
       self.clamped_ = False      
+      
+      self.addAction(CharacterActions.MOVE_RIGHT.key,self.turnRight)
+      self.addAction(CharacterActions.MOVE_LEFT.key,self.turnLeft) 
+      self.addAction(CharacterActions.MOVE_NONE.key,self.turnNone) 
       
     def enter(self):
       
@@ -439,6 +536,21 @@ class CharacterStates(object): # Class Namespace
       self.clampToPlatform(self.character_obj_.getStatus().platform)
       self.character_obj_.enableFriction(True)
       self.character_obj_.getStatus().air_jump_count = 0
+      self.character_obj_.getStatus().inertia.setX(0)
+      
+  
+    def turnNone(self,action):
+      self.character_obj_.getStatus().inertia.setX(0)
+      
+    def turnRight(self,action):   
+      if not self.character_obj_.isFacingRight():
+        self.character_obj_.faceRight(True)
+      self.character_obj_.getStatus().inertia.setX(self.character_obj_.character_info_.run_speed)
+      
+    def turnLeft(self,action):
+      if self.character_obj_.isFacingRight():
+        self.character_obj_.faceRight(False)
+      self.character_obj_.getStatus().inertia.setX(self.character_obj_.character_info_.run_speed)
       
     def clampToPlatform(self,platform):
       
@@ -463,6 +575,7 @@ class CharacterStates(object): # Class Namespace
       
       self.character_obj_.setAnimationEndCallback(self.done)
       self.character_obj_.play(self.animation_key_)  
+      self.character_obj_.getStatus().air_jump_count = 0
       
       # placing character  on platform      
       platform = self.character_obj_.getStatus().platform

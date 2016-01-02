@@ -19,7 +19,7 @@ from physics_platformer.input import JoystickController
 
 RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/characters/Hiei/'
 PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
-ANIMATIONS = ['RUNNING','STANDING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE']
+ANIMATIONS = ['RUNNING','STANDING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE', 'DASH']
 
 class Hiei(CharacterBase):
   
@@ -63,7 +63,8 @@ class Hiei(CharacterBase):
     land_state = CharacterStates.LandState(self,self.sm_,ANIMATIONS[5])
     standing_edge_recovery_state = CharacterStates.StandingEdgeRecovery(self,self.sm_,ANIMATIONS[6])
     standing_near_edge_state = CharacterStates.StandingNearEdge(self,self.sm_,ANIMATIONS[7])
-    edge_landing_state = CharacterStates.EdgeLandingState(self,self.sm_,ANIMATIONS[8])
+    edge_landing_state = CharacterStates.EdgeLandingState(self,self.sm_,ANIMATIONS[8])    
+    dashing_state = CharacterStates.DashState(self,self.sm_,ANIMATIONS[9])
         
     self.sm_.addState(fall_state)
     self.sm_.addState(standing_state)
@@ -75,11 +76,12 @@ class Hiei(CharacterBase):
     self.sm_.addState(standing_edge_recovery_state)
     self.sm_.addState(standing_near_edge_state) 
     self.sm_.addState(edge_landing_state) 
+    self.sm_.addState(dashing_state) 
        
     
     self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.LAND.key, CharacterStateKeys.LANDING)
     self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.LAND_EDGE.key, CharacterStateKeys.EDGE_LANDING)
-    self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.AIR_JUMP.key, CharacterStateKeys.AIR_JUMPING)
+    self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.JUMP.key, CharacterStateKeys.AIR_JUMPING, lambda: self.getStatus().air_jump_count < self.getInfo().air_jumps)
     
     self.sm_.addTransition(CharacterStateKeys.EDGE_LANDING, StateMachineActions.DONE.key, CharacterStateKeys.STANDING)
     
@@ -87,7 +89,8 @@ class Hiei(CharacterBase):
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CollisionAction.FREE_FALL,CharacterStateKeys.FALLING)
-    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.EDGE_RECOVERY.key,CharacterStateKeys.STANDING_EDGE_RECOVERY)    
+    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.EDGE_RECOVERY.key,CharacterStateKeys.STANDING_EDGE_RECOVERY) 
+    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.DASH.key,CharacterStateKeys.DASHING)   
     
     self.sm_.addTransition(CharacterStateKeys.STANDING_EDGE_RECOVERY,StateMachineActions.DONE.key,CharacterStateKeys.STANDING)
     self.sm_.addTransition(CharacterStateKeys.STANDING_EDGE_RECOVERY,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
@@ -101,6 +104,7 @@ class Hiei(CharacterBase):
     self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
     self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.MOVE_NONE.key,CharacterStateKeys.STANDING)
     self.sm_.addTransition(CharacterStateKeys.RUNNING,CollisionAction.FREE_FALL,CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.RUNNING,CharacterActions.DASH.key,CharacterStateKeys.DASHING)
     
     self.sm_.addTransition(CharacterStateKeys.TAKEOFF, StateMachineActions.DONE.key, CharacterStateKeys.JUMPING)
     self.sm_.addTransition(CharacterStateKeys.TAKEOFF, CharacterActions.JUMP_CANCEL.key, CharacterStateKeys.FALLING)
@@ -111,8 +115,15 @@ class Hiei(CharacterBase):
     self.sm_.addTransition(CharacterStateKeys.LANDING, StateMachineActions.DONE.key, CharacterStateKeys.STANDING)
     self.sm_.addTransition(CharacterStateKeys.LANDING, CollisionAction.FREE_FALL, CharacterStateKeys.FALLING)
     self.sm_.addTransition(CharacterStateKeys.LANDING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
+    self.sm_.addTransition(CharacterStateKeys.LANDING,CharacterActions.DASH.key,CharacterStateKeys.DASHING) 
     
     self.sm_.addTransition(CharacterStateKeys.AIR_JUMPING, StateMachineActions.DONE.key, CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.AIR_JUMPING, CharacterActions.JUMP_CANCEL.key, CharacterStateKeys.FALLING)
+    
+    self.sm_.addTransition(CharacterStateKeys.DASHING,StateMachineActions.DONE.key,CharacterStateKeys.STANDING)
+    self.sm_.addTransition(CharacterStateKeys.DASHING,CharacterActions.DASH_CANCEL.key,CharacterStateKeys.STANDING)
+    self.sm_.addTransition(CharacterStateKeys.DASHING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
+    self.sm_.addTransition(CharacterStateKeys.DASHING,CharacterActions.FALL.key,CharacterStateKeys.FALLING)
     
     return True
     
@@ -221,7 +232,7 @@ class TestBasicGame(TestGame):
     joystick_manager.addMove(Move('UP',[JoystickButtons.DPAD_UP],True, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
     joystick_manager.addMove(Move('DOWN',[JoystickButtons.DPAD_DOWN],True,  lambda : self.character_.execute(CharacterActions.MOVE_DOWN)))
     joystick_manager.addMove(Move('JUMP',[JoystickButtons.BUTTON_B],True, lambda : self.character_.execute(CharacterActions.JUMP)))
-    #joystick_manager.addMove(Move('DASH',[JoystickButtons.TRIGGER_R1],False, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
+    joystick_manager.addMove(Move('DASH',[JoystickButtons.TRIGGER_R1],True, lambda : self.character_.execute(CharacterActions.DASH)))
     
     # Creating release moves
 #     joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
@@ -229,6 +240,7 @@ class TestBasicGame(TestGame):
     joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_RIGHT],True, lambda : self.character_.motion_commander_.stop()),False)
     joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_LEFT],True, lambda : self.character_.motion_commander_.stop()),False)
     joystick_manager.addMove(Move('JUMP_CANCEL',[JoystickButtons.BUTTON_B],True, lambda : self.character_.execute(CharacterActions.JUMP_CANCEL)),False)
+    joystick_manager.addMove(Move('DASH_CANCEL',[JoystickButtons.TRIGGER_R1],True, lambda : self.character_.execute(CharacterActions.DASH_CANCEL)),False)
     
 
     return joystick_manager

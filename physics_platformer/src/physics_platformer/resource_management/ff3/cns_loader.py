@@ -22,10 +22,11 @@ class CNSLoader(object):
     
   class VelocityTokens(object):
     __WALK__ = 'walk\.fwd\s+=\s+(\d*\.?\d*)'
-    __RUN__= 'run\.fwd\s+=\s+(\d*\.?\d*)'
-    __JUMP_UP__ = '^jump\.neu\s+=\s+\d+,([-+]?\d+\.?\d*)'
+    __RUN__= 'run\.fwd\s+=\s+(\d*\.?\d*),\s?(\d*\.?\d*)' 
+    __JUMP_UP__ = '^jump\.neu\s+=\s+([-+]?\d+\.?\d*),([-+]?\d+\.?\d*)'
     __JUMP_FORWARD__ = '^jump\.fwd\s+=\s+([-+]?\d+\.?\d*)'
     __JUMP_BACK__ = '^jump\.back\s+=\s+([-+]?\d+\.?\d*)'
+    __AIR_JUMP_UP__ = '^airjump\.neu\s+=\s+\d+,([-+]?\d+\.?\d*)'
     
   class MovementTokens(object):    
     __AIR_JUMPS__ = 'airjump.num\s+=\s+(\d+)'
@@ -151,8 +152,14 @@ class CNSLoader(object):
     
     m = re.search(CNSLoader.VelocityTokens.__JUMP_UP__,line)
     if m is not None:
-      self.char_info_.jump_force = float(m.group(1))
+      self.char_info_.jump_fwd_momentum = float(m.group(1))
+      self.char_info_.jump_force = float(m.group(2))
       return True
+    
+    m = re.search(CNSLoader.VelocityTokens.__AIR_JUMP_UP__,line)
+    if m is not None:
+      self.char_info_.airjump_force = float(m.group(1))
+      return True    
     
     m = re.search(CNSLoader.VelocityTokens.__WALK__,line)
     if m is not None:
@@ -162,7 +169,9 @@ class CNSLoader(object):
     m = re.search(CNSLoader.VelocityTokens.__RUN__,line)
     if m is not None:
       self.char_info_.run_speed = float(m.group(1))
+      self.char_info_.dash_speed = float(m.group(2))
       return True
+
     
     return False
   

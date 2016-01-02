@@ -16,8 +16,11 @@ class CharacterInfo(object):
     self.air_jumps = 1
     self.walk_speed = 1
     self.run_speed = 2
+    self.dash_speed = 4
     self.jump_force = 1
+    self.airjump_force = 1
     self.jump_fwd_speed = 1
+    self.jump_fwd_momentum = 0.6 # percentage of the forward momemtum retained during jumping
     self.fall_max_speed = -8
     self.fall_recovery_min = 0.2 # minimum distance from edge for attempting a recovery and avoid falling from edge,
                                  # when less than this value the character is pushed out of the platform
@@ -42,8 +45,11 @@ class CharacterInfo(object):
       air_jumps:  %i
       walk_speed:  %f
       run_speed:  %f
+      dash_speed: %f
       jump_force:  %f
+      airjump_force: %f
       jump_fwd_speed:  %f
+      jump_fwd_momentum: %f
       fall_max_speed:  %f
       fall_recovery_min: %f
       fall_recovery_max: %f
@@ -62,8 +68,11 @@ class CharacterInfo(object):
          self.air_jumps,
          self.walk_speed,
          self.run_speed,
+         self.dash_speed,
          self.jump_force,
+         self.airjump_force,
          self.jump_fwd_speed,
+         self.jump_fwd_momentum,
          self.fall_max_speed,
          self.fall_recovery_min,
          self.fall_recovery_max,
