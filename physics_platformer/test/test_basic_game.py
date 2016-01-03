@@ -19,7 +19,7 @@ from physics_platformer.input import JoystickController
 
 RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/characters/Hiei/'
 PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
-ANIMATIONS = ['RUNNING','STANDING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE', 'DASH']
+ANIMATIONS = ['RUNNING','STANDING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE', 'DASH', 'MIDAIR_DASH']
 
 class Hiei(CharacterBase):
   
@@ -65,6 +65,7 @@ class Hiei(CharacterBase):
     standing_near_edge_state = CharacterStates.StandingNearEdge(self,self.sm_,ANIMATIONS[7])
     edge_landing_state = CharacterStates.EdgeLandingState(self,self.sm_,ANIMATIONS[8])    
     dashing_state = CharacterStates.DashState(self,self.sm_,ANIMATIONS[9])
+    midair_dashing_state = CharacterStates.MidairDashState(self,self.sm_,ANIMATIONS[10])
         
     self.sm_.addState(fall_state)
     self.sm_.addState(standing_state)
@@ -77,13 +78,17 @@ class Hiei(CharacterBase):
     self.sm_.addState(standing_near_edge_state) 
     self.sm_.addState(edge_landing_state) 
     self.sm_.addState(dashing_state) 
+    self.sm_.addState(midair_dashing_state)
        
     
     self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.LAND.key, CharacterStateKeys.LANDING)
     self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.LAND_EDGE.key, CharacterStateKeys.EDGE_LANDING)
     self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.JUMP.key, CharacterStateKeys.AIR_JUMPING, lambda: self.getStatus().air_jump_count < self.getInfo().air_jumps)
+    self.sm_.addTransition(CharacterStateKeys.FALLING,CharacterActions.DASH.key,CharacterStateKeys.MIDAIR_DASHING,lambda: self.getStatus().air_dashes_count < self.getInfo().air_dashes)
     
     self.sm_.addTransition(CharacterStateKeys.EDGE_LANDING, StateMachineActions.DONE.key, CharacterStateKeys.STANDING)
+    self.sm_.addTransition(CharacterStateKeys.EDGE_LANDING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
+    self.sm_.addTransition(CharacterStateKeys.EDGE_LANDING,CharacterActions.DASH.key,CharacterStateKeys.DASHING)
     
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_RIGHT.key,CharacterStateKeys.RUNNING)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
@@ -96,6 +101,7 @@ class Hiei(CharacterBase):
     self.sm_.addTransition(CharacterStateKeys.STANDING_EDGE_RECOVERY,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
     self.sm_.addTransition(CharacterStateKeys.STANDING_EDGE_RECOVERY,CharacterActions.MOVE_RIGHT.key,CharacterStateKeys.RUNNING)
     self.sm_.addTransition(CharacterStateKeys.STANDING_EDGE_RECOVERY,CharacterActions.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
+    self.sm_.addTransition(CharacterStateKeys.STANDING_EDGE_RECOVERY,CharacterActions.DASH.key,CharacterStateKeys.DASHING)
     
     self.sm_.addTransition(CharacterStateKeys.STANDING_NEAR_EDGE,CharacterActions.MOVE_RIGHT.key,CharacterStateKeys.RUNNING)
     self.sm_.addTransition(CharacterStateKeys.STANDING_NEAR_EDGE,CharacterActions.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
@@ -111,6 +117,7 @@ class Hiei(CharacterBase):
     
     self.sm_.addTransition(CharacterStateKeys.JUMPING, StateMachineActions.DONE.key, CharacterStateKeys.FALLING)
     self.sm_.addTransition(CharacterStateKeys.JUMPING, CharacterActions.JUMP_CANCEL.key, CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.JUMPING,CharacterActions.DASH.key,CharacterStateKeys.MIDAIR_DASHING,lambda: self.getStatus().air_dashes_count < self.getInfo().air_dashes)
     
     self.sm_.addTransition(CharacterStateKeys.LANDING, StateMachineActions.DONE.key, CharacterStateKeys.STANDING)
     self.sm_.addTransition(CharacterStateKeys.LANDING, CollisionAction.FREE_FALL, CharacterStateKeys.FALLING)
@@ -119,11 +126,16 @@ class Hiei(CharacterBase):
     
     self.sm_.addTransition(CharacterStateKeys.AIR_JUMPING, StateMachineActions.DONE.key, CharacterStateKeys.FALLING)
     self.sm_.addTransition(CharacterStateKeys.AIR_JUMPING, CharacterActions.JUMP_CANCEL.key, CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.AIR_JUMPING, CharacterActions.DASH.key,CharacterStateKeys.MIDAIR_DASHING,lambda: self.getStatus().air_dashes_count < self.getInfo().air_dashes)
     
     self.sm_.addTransition(CharacterStateKeys.DASHING,StateMachineActions.DONE.key,CharacterStateKeys.STANDING)
     self.sm_.addTransition(CharacterStateKeys.DASHING,CharacterActions.DASH_CANCEL.key,CharacterStateKeys.STANDING)
     self.sm_.addTransition(CharacterStateKeys.DASHING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
     self.sm_.addTransition(CharacterStateKeys.DASHING,CharacterActions.FALL.key,CharacterStateKeys.FALLING)
+    
+    self.sm_.addTransition(CharacterStateKeys.MIDAIR_DASHING,StateMachineActions.DONE.key,CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.MIDAIR_DASHING,CharacterActions.JUMP.key,CharacterStateKeys.AIR_JUMPING,lambda: self.getStatus().air_jump_count < self.getInfo().air_jumps)
+    self.sm_.addTransition(CharacterStateKeys.MIDAIR_DASHING,CharacterActions.DASH_CANCEL.key,CharacterStateKeys.FALLING)
     
     return True
     
@@ -235,8 +247,6 @@ class TestBasicGame(TestGame):
     joystick_manager.addMove(Move('DASH',[JoystickButtons.TRIGGER_R1],True, lambda : self.character_.execute(CharacterActions.DASH)))
     
     # Creating release moves
-#     joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
-#     joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
     joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_RIGHT],True, lambda : self.character_.motion_commander_.stop()),False)
     joystick_manager.addMove(Move('HALT',[JoystickButtons.DPAD_LEFT],True, lambda : self.character_.motion_commander_.stop()),False)
     joystick_manager.addMove(Move('JUMP_CANCEL',[JoystickButtons.BUTTON_B],True, lambda : self.character_.execute(CharacterActions.JUMP_CANCEL)),False)

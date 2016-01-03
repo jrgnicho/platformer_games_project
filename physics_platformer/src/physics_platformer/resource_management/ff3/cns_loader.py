@@ -152,7 +152,7 @@ class CNSLoader(object):
     
     m = re.search(CNSLoader.VelocityTokens.__JUMP_UP__,line)
     if m is not None:
-      self.char_info_.jump_fwd_momentum = float(m.group(1))
+      self.char_info_.jump_momentum = float(m.group(1))
       self.char_info_.jump_force = float(m.group(2))
       return True
     

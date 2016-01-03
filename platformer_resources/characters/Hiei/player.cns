@@ -44,18 +44,18 @@ walk.fwd  = 2.4		;Walk forward
 walk.back = -2.2		;Walk backward
 run.fwd  = 4.6, 6.8		; * (run speed , dash speed)
 run.back = -4.5,-3.8	;Hop backward (x, y)
-jump.neu = 0.8,32.0		; * ( 0 , Jump Impulse) Jump Impulse is the vertical force applied at takeoff during a jump
+jump.neu = 0.8,24.0		; * ( Jump Foward Inertia % , Jump Impulse) Jump Impulse is the vertical force applied at takeoff during a jump
 jump.back = -8.55		; * Maximum Fall Speed
 jump.fwd = 2.2		; * Jump forward Speed 
 runjump.back = 0.1,0.7	; * (land_edge_min, land_edge_max)
 runjump.fwd = 0.3,0.7	;.* (edge_recovery_min, edge_recovery_max) Distance range from 
 			;	edge within which a recovery maneuver will be performed to avoid dropping from platform
-airjump.neu = 0,24.0	; * Air Jump Impulse
+airjump.neu = 0,20.0	; * Air Jump Impulse
 airjump.back = -2.55	;Air jump speeds (opt)
 airjump.fwd = 2.5		;.
 
 [Movement]
-airjump.num = 1		;Number of air jumps allowed (opt)
+airjump.num = 1		; * Number of air jumps allowed (opt)
 airjump.height = 35	;Minimum distance from ground before you can air jump (opt)
 yaccel = .44		;Vertical acceleration
 stand.friction = .35	;Friction coefficient when standing

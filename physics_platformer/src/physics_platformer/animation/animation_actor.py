@@ -281,10 +281,11 @@ class AnimationActor(SpriteAnimator):
     offsety = aabb.center[1]
     top = Box2D(aabb.width, AnimationActor.BOUND_PADDING ,(offsetx, offsety + 0.5*aabb.height + 0.5*AnimationActor.BOUND_PADDING))
     bottom = Box2D(aabb.width, AnimationActor.BOUND_PADDING ,(offsetx, offsety - 0.5*aabb.height -0.5*AnimationActor.BOUND_PADDING))
-    left = Box2D(AnimationActor.BOUND_PADDING, aabb.height,(offsetx + -0.5*(aabb.width + AnimationActor.BOUND_PADDING) , 
+    left = Box2D(AnimationActor.BOUND_PADDING, aabb.height,(offsetx + -0.5*aabb.width - 0.5*AnimationActor.BOUND_PADDING , 
                                                             offsety ))
-    right = Box2D(AnimationActor.BOUND_PADDING, aabb.height ,(offsetx + 0.5*(aabb.width + AnimationActor.BOUND_PADDING) ,
+    right = Box2D(AnimationActor.BOUND_PADDING, aabb.height ,(offsetx + 0.5*aabb.width + 0.5*AnimationActor.BOUND_PADDING ,
                                                             offsety ))
+    logging.info("Animation %s Box Center %s"%(self.getName(),str(aabb.center)))
     
     scale = (1,1)
     self.bbox_top_np_ = self.rigid_body_np_.attachNewNode(self.__createBulletGhostNodeFromBoxes__([top], scale))
