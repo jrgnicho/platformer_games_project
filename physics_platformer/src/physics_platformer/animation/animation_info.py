@@ -45,14 +45,15 @@ class AnimationInfo(object):
   def __init__(self,name = ''):
     self.name = name
     self.id = 0
-    self.loopstar = -1
+    self.loopstart = 0
+    self.loop_mode = True
     self.scalex = 1
     self.scaley = 1
     self.framerate = 0
-    self.rigid_body_boxes = [] # boxes used to represent the rigid body that is subjected to the world physics'. It is the first box in the Clsn2Default list.
-    self.auxiliary_boxes = [] # boxes used for especialized actions 
-    self.action_boxes = [] # boxes used for responding to landmarks in the environment
-    self.animation_elements =[] # list of AnimationElement objects, should be the same size as the number of sprites
+    self.rigid_body_boxes = [] # boxes used to represent the rigid body that is subjected to the world physics'. It is the last box in the Clsn2Default list.
+    self.auxiliary_boxes = [] # boxes used for especialized actions.  It's composed of the boxes in the Clsn2Default list except for the last
+    self.action_boxes = [] # boxes used for responding to landmarks in the environment. It's composed of the boxes in the Clsn1Default list.
+    self.animation_elements =[] # list of AnimationElement objects, should be the same size as the number of sprites lists.
     self.sprites_left = []
     self.sprites_right = []
     
@@ -73,12 +74,22 @@ class AnimationInfo(object):
     Animation Action: %s
       id : %i
       framerate : %i
+      loopstart : %i
+      loop_mode : %s
       collision boxes : %i
       %s
       hit boxes: %i
       %s
       animation elements: 
         %s
-    """%(self.name,self.id,self.framerate,len(self.rigid_body_boxes),col_str,len(self.action_boxes),hit_str,elmt_str)
+    """%(self.name,
+         self.id,
+         self.framerate,
+         self.loopstart,
+         ('TRUE' if self.loop_mode else 'FALSE'),
+         len(self.rigid_body_boxes),
+         col_str,len(self.action_boxes),
+         hit_str,
+         elmt_str)
     
     return s

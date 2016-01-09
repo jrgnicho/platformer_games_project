@@ -16,14 +16,14 @@ import logging
 
 class SpriteAnimator(NodePath):
     
-    class PlayMode(object):
+    class AnimationStatus(object):
         
         STOPPED = -1
         PLAYING = 0
         LOOPING = 1
         PAUSED = 2
         
-        ALLOWED_MODES = [STOPPED,
+        ALLOWED_STATUS = [STOPPED,
                          PLAYING,
                          LOOPING,
                          PAUSED]
@@ -36,7 +36,9 @@ class SpriteAnimator(NodePath):
         self.seq_right_ = None
         self.facing_right_ = True
         self.size_ = (0,0) # (horizontal_scale, vertical_scale
-        self.play_mode_ = SpriteAnimator.PlayMode.STOPPED
+        self.loop_start_frame_ = 0 #only in LOOPING mode
+        self.loop_mode_ = False
+        self.animation_status_ = SpriteAnimator.AnimationStatus.STOPPED
     
     
     def loadImages(self,images_right, images_left,frame_rate, scale = 1.0):   
@@ -123,7 +125,14 @@ class SpriteAnimator(NodePath):
             self.node().unstashChild(self.seq_left_)  
     
         self.facing_right_ = face_right  
-        self.setPlayMode(self.play_mode_,frame)  
+        self.setAnimationStatus(self.animation_status_, frame) 
+        
+    def animate(self):
+        if self.loop_mode_:
+          self.loop(self.loop_start_frame_)
+        else:
+          self.play()
+
         
     def getSelectedNode(self):
         """
@@ -132,7 +141,7 @@ class SpriteAnimator(NodePath):
         return self.seq_right_ if self.facing_right_ else self.seq_left_
     
     def play(self,start_frame = 0):   
-        self.play_mode_ = SpriteAnimator.PlayMode.PLAYING
+        self.animation_status_ = SpriteAnimator.AnimationStatus.PLAYING
         
         if self.seq_right_.isPlaying() and self.seq_left_.isPlaying() :
           return
@@ -141,7 +150,7 @@ class SpriteAnimator(NodePath):
         self.seq_left_.play(start_frame,self.getNumFrames()-1)
         
     def loop(self,start_frame = 0):    
-        self.play_mode_ = SpriteAnimator.PlayMode.LOOPING  
+        self.animation_status_ = SpriteAnimator.AnimationStatus.LOOPING  
         
         if self.seq_right_.isPlaying() and self.seq_left_.isPlaying() :
           return 
@@ -152,22 +161,22 @@ class SpriteAnimator(NodePath):
     def stop(self):
         self.seq_right_.stop()
         self.seq_left_.stop()
-        self.play_mode_ = SpriteAnimator.PlayMode.STOPPED
+        self.animation_status_ = SpriteAnimator.AnimationStatus.STOPPED
         
     def pose(self,frame):
         self.getSelectedNode().pose(frame)
         
-    def setPlayMode(self,mode,frame):
+    def setAnimationStatus(self,status,frame):
         
-        if SpriteAnimator.PlayMode.ALLOWED_MODES.count(mode) > 0:
+        if SpriteAnimator.AnimationStatus.ALLOWED_STATUS.count(status) > 0:
             
-            if mode == SpriteAnimator.PlayMode.STOPPED:
+            if status == SpriteAnimator.AnimationStatus.STOPPED:
                 self.stop()
                 
-            if mode == SpriteAnimator.PlayMode.PLAYING:
+            if status == SpriteAnimator.AnimationStatus.PLAYING:
                 self.play(frame)
                 
-            if mode == SpriteAnimator.PlayMode.LOOPING:
+            if status == SpriteAnimator.AnimationStatus.LOOPING:
                 self.loop(frame)
             
         else:
@@ -175,8 +184,8 @@ class SpriteAnimator(NodePath):
         
         return True
     
-    def getPlayMode(self):
-        return self.play_mode_
+    def getAnimationStatus(self):
+        return self.animation_status_
     
     def isPlaying(self):
         return self.getSelectedNode().isPlaying()

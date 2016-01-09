@@ -228,12 +228,12 @@ class AnimatableObject(GameObject):
             self.animation_start_cb_()
         
         
-        if self.animator_.getPlayMode() == SpriteAnimator.PlayMode.PLAYING : 
+        if self.animator_.getAnimationStatus() == SpriteAnimator.AnimationStatus.PLAYING : 
           ##logging.debug("animation play end monitor started")           
-          finterv = Func(lambda n = (self.getNumFrames()-1) : self.__monitorEndInPlayMode__(n))
+          finterv = Func(lambda n = (self.getNumFrames()-1) : self.__monitorEndInAnimationStatus__(n))
           self.frame_monitor_seq_.append(finterv)
             
-        if self.animator_.getPlayMode() == SpriteAnimator.PlayMode.LOOPING :
+        if self.animator_.getAnimationStatus() == SpriteAnimator.AnimationStatus.LOOPING :
           ##logging.debug("animation loop monitor started")   
           self.triggered_callbacks_ = True
           finterv = Func(self.__monitorInLoopMode__)
@@ -248,7 +248,7 @@ class AnimatableObject(GameObject):
           self.frame_monitor_seq_ = None     
         
             
-    def __monitorEndInPlayMode__(self,last_frame):
+    def __monitorEndInAnimationStatus__(self,last_frame):
         
         if (not self.animator_.isPlaying()) and (self.getFrame() == last_frame):
             

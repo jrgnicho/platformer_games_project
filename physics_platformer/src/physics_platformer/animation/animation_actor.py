@@ -33,7 +33,7 @@ class AnimationActor(SpriteAnimator):
     SpriteAnimator.__init__(self,name)
     
     self.mass_ = mass
-    self.animation_action_ = None
+    self.animation_info_ = None
     self.rigid_body_np_ = None # NodePath to a bullet rigid body that contains the collision boxes that are used to handle interactions with the environment    
     self.action_body_np_ = None # NodePath to a bullet ghost node containing boxes that will be used to trigger a specific player action upon coming into contact with the environment
     self.damage_box_np_ = None # NodePath to a bullet ghost node containing collision boxes that are active during the duration of the animation
@@ -74,20 +74,24 @@ class AnimationActor(SpriteAnimator):
     scale = (animation.scalex, animation.scaley)
     
     # saving animation
-    self.animation_action_ = animation
+    self.animation_info_ = animation
+    
+    # setting properties
+    self.loop_mode_ = animation.loop_mode
+    self.loop_start_frame_ = animation.loopstart
     
     # creating representative rigid body (Used to determine collisions with the environment
     self.__createRigidBody__(scale)
     
     # creating bullet ghost body for detecting interactions with the environment
-    if len(self.animation_action_.action_boxes) > 0: # collecting boxes from each individual sprite          
-      self.action_body_np_ =  self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(self.animation_action_.action_boxes,scale) )
+    if len(self.animation_info_.action_boxes) > 0: # collecting boxes from each individual sprite          
+      self.action_body_np_ =  self.rigid_body_np_.attachNewNode( self.__createBulletGhostNodeFromBoxes__(self.animation_info_.action_boxes,scale) )
       self.action_body_np_.node().setIntoCollideMask(CollisionMasks.ACTION_BODY)
 
     # creating attack collision and hit ghosts bodies for handling attack boxes
     col_boxes = []    
     hit_boxes = []
-    for elmt in self.animation_action_.animation_elements:
+    for elmt in self.animation_info_.animation_elements:
       col_boxes = col_boxes + elmt.damage_boxes
       hit_boxes = hit_boxes + elmt.hit_boxes
       
@@ -217,18 +221,18 @@ class AnimationActor(SpriteAnimator):
     """
     SpriteAnimator.setScale(self,Vec3(scale.getX(),1,scale.getZ()))
     
-    if self.animation_action_ is None:
+    if self.animation_info_ is None:
       return  
     
     # scaling sprite boxes
-    for i in range(0,len(self.animation_action_.sprites_left)):      
-      sprt_right = self.animation_action_.sprites_right[i]
-      sprt_left = self.animation_action_.sprites_left[i]      
+    for i in range(0,len(self.animation_info_.sprites_left)):      
+      sprt_right = self.animation_info_.sprites_right[i]
+      sprt_left = self.animation_info_.sprites_left[i]      
       boxes = sprt_right.hit_boxes + sprt_right.damage_boxes + sprt_left.hit_boxes + sprt_left.damage_boxes
       for box in boxes:
         box.scale = (scale.getX(), scale.getZ())
         
-    for box in self.animation_action_.auxiliary_boxes:
+    for box in self.animation_info_.auxiliary_boxes:
       box.scale = (scale.getX(), scale.getZ())
       self.auxiliary_boxes_.append(box)
      
@@ -241,15 +245,15 @@ class AnimationActor(SpriteAnimator):
     
     # collection all boxes
     collision_boxes = []
-    if len(self.animation_action_.rigid_body_boxes) > 0:      
+    if len(self.animation_info_.rigid_body_boxes) > 0:      
       # use existing collision boxes 
-      collision_boxes = self.animation_action_.rigid_body_boxes
+      collision_boxes = self.animation_info_.rigid_body_boxes
       AnimationActor.LOGGER.info("Using existing rigid body boxes: %s "%( ';'.join(str(x) for x in collision_boxes ) ))
     else:      
       # compute bounding box of all collision boxes from every sprite 
       AnimationActor.LOGGER.warning("Rigid body boxes not found for this animation, creating AABB from damage boxes in all frames")
       boxes = []
-      for elemt in self.animation_action_.animation_elements:
+      for elemt in self.animation_info_.animation_elements:
         boxes = boxes + elemt.damage_boxes
       
       if len(boxes) > 0:

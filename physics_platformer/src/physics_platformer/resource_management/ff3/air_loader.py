@@ -8,6 +8,10 @@ import logging
   
 class AIRLoader(object):
   
+  # CONSTANTS
+  __STOP_ANIMATION_GAMETICKS__ = -1 # value set on the "gameticks" property to indicate that the animation plays just once.
+  
+  # SEARCH TOKENS
   __EXTENSION__ = ".air"
   __ANIMATION_NAME__ = '^; (.*)'
   __BEGIN_HEADER__ = '\[Begin Action ([0-9]+)\]'
@@ -18,7 +22,8 @@ class AIRLoader(object):
   __HIT_BOX_DEFAULT_LIST__ = 'Clsn1Default: ([1-9]+)'
   __HIT_BOX_LIST__ = 'Clsn1: ([1-9]+)'
   __HIT_BOX_ENTRY__ = 'Clsn1\[([0-9]+)\] = '
-  __SPRITE_ENTRY__ = '[,| ]*([0-9]+)'*5 #  group, sprite_no, offsetx, offsety, time(framerate) -> 50,1, 0,0, 6
+  __SPRITE_ENTRY__ = '[,| ]*(-?[0-9]+)'*5 #  group, sprite_no, offsetx, offsety, time(framerate) -> 50,1, 0,0, 6
+  __LOOPSTART__ = 'Loopstart'
   
   def __init__(self):
     self.animations_ = []
@@ -52,6 +57,7 @@ class AIRLoader(object):
       line = lines[linecount]      
       linecount+=1     
       
+      # check for new animation
       m = re.search(AIRLoader.__ANIMATION_NAME__,line)
       if m is not None: # new animation found
         
@@ -140,14 +146,28 @@ class AIRLoader(object):
                 
         anim_elmt.damage_boxes = box_list
         continue
+      
+      # find loopstart entry
+      m = re.search(AIRLoader.__LOOPSTART__,line)
+      if m is not None:
+        anim_info.loopstart = len(anim_info.animation_elements)
+        anim_info.loop_mode = True
+        continue
         
-      # find parent sprite
+      # find sprite entry
       sprite_entry = self.__parseSpriteEntry__(line)
       if sprite_entry is not None:
       
         anim_elmt.group_no = sprite_entry[0]
         anim_elmt.im_no = sprite_entry[1]
         anim_elmt.game_ticks = sprite_entry[4]
+        
+        # check if game_tick == -1 (Play Mode)
+        if anim_elmt.game_ticks == AIRLoader.__STOP_ANIMATION_GAMETICKS__:
+          anim_info.loop_mode = False
+          anim_elmt.game_ticks = anim_info.animation_elements[-1].game_ticks
+          logging.info("Gameticks -1 found in animation %s element %i"%(anim_info.name,len(anim_info.animation_elements)))
+          
         
         # save animation element
         anim_info.animation_elements.append(anim_elmt)
