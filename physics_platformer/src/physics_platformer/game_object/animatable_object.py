@@ -109,7 +109,11 @@ class AnimatableObject(GameObject):
         """
         Invokes the callback 'cb()' at the start of the animation. Pass 'None' to remove callback.
         """
-        self.animation_start_cb_ = cb                   
+        self.animation_start_cb_ = cb 
+        
+    def clearAllAnimationCallbacks(self):
+      self.setAnimationEndCallback(None)
+      self.setAnimationStartCallback(None)                  
             
     def clearSpriteAnimations(self):
         
@@ -180,7 +184,13 @@ class AnimatableObject(GameObject):
         """
         Selects the frame of the current animation
         """  
-        self.animator_.pose(frame)        
+        self.animator_.pose(frame) 
+        
+    def animate(self,animation_name):    
+      if self.pose(animation_name):            
+        self.stop()            
+        self.animator_.animate()
+        self.__startFrameMonitor__()   
         
         
     def play(self,animation_name):
@@ -224,17 +234,15 @@ class AnimatableObject(GameObject):
         
         # invoking start callback
         if self.animation_start_cb_ is not None:
-            ##logging.debug("Animation start callback invoked")
             self.animation_start_cb_()
         
-        
+        # monitor animation end in PLAYING 
         if self.animator_.getAnimationStatus() == SpriteAnimator.AnimationStatus.PLAYING : 
-          ##logging.debug("animation play end monitor started")           
           finterv = Func(lambda n = (self.getNumFrames()-1) : self.__monitorEndInAnimationStatus__(n))
           self.frame_monitor_seq_.append(finterv)
-            
+        
+        # monitoranimation end in LOOPING    
         if self.animator_.getAnimationStatus() == SpriteAnimator.AnimationStatus.LOOPING :
-          ##logging.debug("animation loop monitor started")   
           self.triggered_callbacks_ = True
           finterv = Func(self.__monitorInLoopMode__)
           self.frame_monitor_seq_.append(finterv)
