@@ -10,6 +10,7 @@ from direct.interval.MetaInterval import Sequence
 from direct.interval.FunctionInterval import Func
 from panda3d.core import LVector3
 from panda3d.core import Vec3
+from panda3d.core import TransformState
 import logging
 
 class CharacterStateKeys(object):
@@ -448,6 +449,44 @@ class CharacterStates(object): # Class Namespace
       vel.setZ(0)
       self.character_obj_.setLinearVelocity(vel)
       
+  class CatchLedgeState(CharacterState):
+    
+    def __init__(self,character_obj,parent_state_machine,animation_key = None):
+      CharacterState.__init__(self, CharacterStateKeys.CATCH_LEDGE, character_obj, parent_state_machine, animation_key)
+      
+      self.addAction(CollisionAction.LEDGE_COLLISION,self.ledgeCollisionCallback)
+      
+    def enter(self):
+      logging.debug("%s state entered"%(self.getKey()))
+      
+      self.character_obj_.animate(self.animation_key_) 
+      
+    def ledgeCollisionCallback(self,action):
+      gbody = self.character_obj_.getActionGhostBody()
+      
+      ledge = None
+      if self.character_obj_.isFacingRight():
+        ledge = action.game_obj2.getLeftLedge()
+      else:
+        ledge = action.game_obj2.getRightLedge() 
+        
+      pos = ledge.getPos(self.character_obj_.getParent()) 
+      logging.info("Edge on platform " + action.game_obj2.getName())
+      logging.info("Ledge Pos %s"%(str(pos)))
+      logging.info("Platform Pos %s"%(str(action.game_obj2.getPos())))
+      logging.info("Platform Pos Z %s"%(str(action.game_obj2.getBottom() )) )
+      logging.info("Anchor Pos %s"%(str(gbody.getPos(self.character_obj_))))
+      logging.info("Character Pos %s"%(str(self.character_obj_.getPos())))
+        
+      
+      self.character_obj_.clampTop(pos.getZ())      
+      self.character_obj_.clampFront(pos.getX())
+      self.character_obj_.node().setStatic(True)
+      
+      
+    def exit(self):      
+      self.character_obj_.node().setStatic(False)
+      self.character_obj_.stop()
         
   class FallState(AerialBaseState):
     

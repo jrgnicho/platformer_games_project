@@ -1,32 +1,32 @@
+from docutils import TransformSpec
 import logging
-from panda3d.core import NodePath
-from panda3d.core import TransformState
 from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletGenericConstraint
 from panda3d.bullet import BulletWorld
-from docutils import TransformSpec
-from panda3d.core import Vec3
-from panda3d.core import LPoint3
-from panda3d.core import BoundingVolume
 from panda3d.core import BoundingBox
+from panda3d.core import BoundingVolume
+from panda3d.core import LPoint3
+from panda3d.core import NodePath
+from panda3d.core import TransformState
+from panda3d.core import Vec3
 
-from physics_platformer.collision import CollisionMasks
-from physics_platformer.sprite import SpriteAnimator
 from physics_platformer.animation import AnimationActor
 from physics_platformer.character import CharacterInfo
-from physics_platformer.game_object import AnimationSpriteAlignment
-from physics_platformer.game_object import AnimatableObject
-from physics_platformer.character.character_status import *
-from physics_platformer.character.character_states import *
 from physics_platformer.character import MotionCommander
-from physics_platformer.state_machine import Action
-from physics_platformer.state_machine import State
-from physics_platformer.state_machine import StateMachine
-from physics_platformer.state_machine import StateEvent
-from physics_platformer.state_machine import StateMachineActions
-from physics_platformer.game_actions import *
+from physics_platformer.character.character_states import *
 from physics_platformer.character.character_states import CharacterStateKeys
 from physics_platformer.character.character_states import CharacterStates
+from physics_platformer.character.character_status import *
+from physics_platformer.collision import CollisionMasks
+from physics_platformer.game_actions import *
+from physics_platformer.game_object import AnimatableObject
+from physics_platformer.game_object import AnimationSpriteAlignment
+from physics_platformer.sprite import SpriteAnimator
+from physics_platformer.state_machine import Action
+from physics_platformer.state_machine import State
+from physics_platformer.state_machine import StateEvent
+from physics_platformer.state_machine import StateMachine
+from physics_platformer.state_machine import StateMachineActions
 
 
 class CharacterBase(AnimatableObject):
@@ -162,6 +162,18 @@ class CharacterBase(AnimatableObject):
     self.__deactivateConstraint__() # avoids recoil due to rapid position change
     self.setX(x + local_offset) 
     self.__activateConstraint__(self.selected_constraint_)   
+    
+  def clampFront(self,x):
+    if self.isFacingRight():
+      self.clampRight(x)
+    else:
+      self.clampLeft(x)
+      
+  def clampBack(self,x):
+    if self.isFacingRight():
+      self.clampLeft(x)
+    else:
+      self.clampRight(x)
   
   def clampBottom(self,z):
     '''
@@ -307,8 +319,31 @@ class CharacterBase(AnimatableObject):
     self.addSpriteAnimation(name, anim_actor, align, center_offset)
     
     if (self.animator_np_ is None):
-      self.pose(name)
+      self.pose(name)  
       
+  def getActionGhostBody(self):   
+    '''
+    Returns the Node Path to the BulletGhost node containing the action body
+    '''
+    return self.animator_.getActionGhostBody() if (self.animator_ is not None) else None
+  
+  def getHitBox(self):
+    '''
+    Returns the Node Path to the BulletGhost node containing the hit bounding box
+    '''
+    return self.animator_.getHitBox() if (self.animator_ is not None) else None
+  
+  def getDamageBox(self):
+    '''
+    Returns the Node Path to the BulletGhost node containing the damage bounding box
+    '''
+    return self.animator_.getDamageBox() if (self.animator_ is not None) else None
+  
+  def getRigidBody(self):
+    '''
+    Returns the Node Path to the BulletRigidBody node containing the character's AABB
+    '''
+    return self.animator_.getRigidBody() if (self.animator_ is not None) else None
       
   def getAnimatorActor(self):
     if self.animator_ is None:
