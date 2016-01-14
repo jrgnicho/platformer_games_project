@@ -8,7 +8,7 @@ from physics_platformer.game_actions import CollisionAction
 from physics_platformer.character import CharacterStatus
 from direct.interval.MetaInterval import Sequence
 from direct.interval.FunctionInterval import Func
-from panda3d.core import LVector3
+from panda3d.core import LVector3, LMatrix4
 from panda3d.core import Vec3
 from panda3d.core import TransformState
 import logging
@@ -139,7 +139,7 @@ class CharacterStates(object): # Class Namespace
       
       CharacterState.__init__(self, CharacterStateKeys.STANDING, character_obj, parent_state_machine, animation_key) 
       
-      self.addAction(CollisionAction.ACTION_BODY_COLLISION,self.nearEdgeCallback)     
+      self.addAction(CollisionAction.LEDGE_COLLISION,self.nearEdgeCallback)     
       
     def enter(self):      
       logging.debug("%s state entered"%(self.getKey()))
@@ -453,16 +453,22 @@ class CharacterStates(object): # Class Namespace
     
     def __init__(self,character_obj,parent_state_machine,animation_key = None):
       CharacterState.__init__(self, CharacterStateKeys.CATCH_LEDGE, character_obj, parent_state_machine, animation_key)
+      self.anchored_ = False
       
       self.addAction(CollisionAction.LEDGE_COLLISION,self.ledgeCollisionCallback)
       
     def enter(self):
       logging.debug("%s state entered"%(self.getKey()))
+      self.anchored_ = False
       
       self.character_obj_.animate(self.animation_key_) 
       
     def ledgeCollisionCallback(self,action):
-      gbody = self.character_obj_.getActionGhostBody()
+      
+      if self.anchored_:
+        return
+      
+      ghost_body = self.character_obj_.getActionGhostBody()
       
       ledge = None
       if self.character_obj_.isFacingRight():
@@ -475,17 +481,31 @@ class CharacterStates(object): # Class Namespace
       logging.info("Ledge Pos %s"%(str(pos)))
       logging.info("Platform Pos %s"%(str(action.game_obj2.getPos())))
       logging.info("Platform Pos Z %s"%(str(action.game_obj2.getBottom() )) )
-      logging.info("Anchor Pos %s"%(str(gbody.getPos(self.character_obj_))))
+      logging.info("Anchor Pos %s"%(str(ghost_body.getPos(self.character_obj_))))
       logging.info("Character Pos %s"%(str(self.character_obj_.getPos())))
+      
+      
+      pos = ghost_body.node().getShapePos(0)
+      if not self.character_obj_.isFacingRight(): # rotate about z by 180 if looking left
+        pos.setX(-pos.getX())
+      tf_obj_to_ghost = LMatrix4.translateMat(pos)
+        
+      tf_ghost_to_object = LMatrix4(tf_obj_to_ghost)
+      tf_ghost_to_object.invertInPlace()
+      tf_world_to_ledge = ledge.getMat(self.character_obj_.getParent())
+      
+      transform = TransformState.makeMat(tf_world_to_ledge * tf_ghost_to_object)
+      self.character_obj_.setPos(transform.getPos())
         
       
-      self.character_obj_.clampTop(pos.getZ())      
-      self.character_obj_.clampFront(pos.getX())
-      self.character_obj_.node().setStatic(True)
+      #self.character_obj_.clampTop(pos.getZ())      
+      #self.character_obj_.clampFront(pos.getX())
+      self.character_obj_.setStatic(True)
+      self.anchored_ = True
       
       
     def exit(self):      
-      self.character_obj_.node().setStatic(False)
+      self.character_obj_.setStatic(False)
       self.character_obj_.stop()
         
   class FallState(AerialBaseState):

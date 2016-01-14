@@ -209,11 +209,40 @@ class CharacterBase(AnimatableObject):
     self.setZ(z - bbox.top) 
     self.__activateConstraint__(self.selected_constraint_)
     
+  def setPos(self,pos):
+    
+    # setting matrix
+    #self.__deactivateConstraint__() # avoids recoil due to rapid position change    
+    NodePath.setPos(self,pos)
+    
+    if self.getAnimatorActor() is not None:
+      self.getAnimatorActor().getRigidBody().setPos(pos)
+    #self.__activateConstraint__(self.selected_constraint_)    
+    
+  def setStatic(self,static):
+    '''
+    setStatic(Bool static)
+    Sets the static property to either True or False.
+    '''
+    
+    #if self.node().isStatic() == static:
+    #  return
+     
+    self.node().setStatic(static)
+    self.getAnimatorActor().getRigidBody().node().setStatic(static)
+    pos = self.getAnimatorActor().getRigidBody().getPos()
+    NodePath.setPos(self,pos)
+    
+    if static:
+      self.__deactivateConstraint__()
+    else:
+      self.__activateConstraint__(self.selected_constraint_)    
+    
+    
   def execute(self,action):
     self.sm_.execute(action)
     
   def update(self,dt):
-    #self.node().setActive(True)
     self.sm_.execute(GeneralActions.GameStep(dt))
     
   # =========== Rigid Body Methods =========== #

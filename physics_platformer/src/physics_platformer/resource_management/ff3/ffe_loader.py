@@ -17,8 +17,8 @@ class FFELoader(object):
   __SPRITE_HEADER__ = '(\[SpriteDef\])'
   __GROUP_FIELD__ = 'group =\s*(\d+)'
   __IMAGE_FIELD__ = 'image =\s*(\d+)'
-  __XAXIS_FIELD__ = 'xaxis =\s*(\d+)'
-  __YAXIS_FIELD__ = 'yaxis =\s*(\d+)'
+  __XAXIS_FIELD__ = 'xaxis =\s*([+-]?\d+)'
+  __YAXIS_FIELD__ = 'yaxis =\s*([+-]?\d+)'
   __FILE_FIELD__ = 'file =\s*(\d+-\d+\.png)'
   
   class SpriteDetails(object):

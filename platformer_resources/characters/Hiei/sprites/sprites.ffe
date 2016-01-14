@@ -462,7 +462,7 @@ file = 4-9.png
 [SpriteDef]
 group = 5
 image = 0
-xaxis = 8
+xaxis = 5
 yaxis = 58
 flags = 0
 palette = 2,0
@@ -471,7 +471,7 @@ file = 5-0.png
 [SpriteDef]
 group = 5
 image = 1
-xaxis = 1
+xaxis = -2
 yaxis = 58
 flags = 0
 palette = 2,0
@@ -480,7 +480,7 @@ file = 5-1.png
 [SpriteDef]
 group = 5
 image = 2
-xaxis = 3
+xaxis = 0
 yaxis = 58
 flags = 0
 palette = 2,0
