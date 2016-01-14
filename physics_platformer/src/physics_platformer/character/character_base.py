@@ -211,23 +211,17 @@ class CharacterBase(AnimatableObject):
     
   def setPos(self,pos):
     
-    # setting matrix
-    #self.__deactivateConstraint__() # avoids recoil due to rapid position change    
-    NodePath.setPos(self,pos)
-    
+    # setting position   
+    NodePath.setPos(self,pos)    
     if self.getAnimatorActor() is not None:
-      self.getAnimatorActor().getRigidBody().setPos(pos)
-    #self.__activateConstraint__(self.selected_constraint_)    
+      self.getAnimatorActor().getRigidBody().setPos(pos)   
     
   def setStatic(self,static):
     '''
     setStatic(Bool static)
     Sets the static property to either True or False.
     '''
-    
-    #if self.node().isStatic() == static:
-    #  return
-     
+         
     self.node().setStatic(static)
     self.getAnimatorActor().getRigidBody().node().setStatic(static)
     pos = self.getAnimatorActor().getRigidBody().getPos()
@@ -477,6 +471,7 @@ class CharacterBase(AnimatableObject):
         else:
           actorrb_np.setH(self,180)
         actorrb_np.node().setStatic(static)
+        self.node().setStatic(static)
           
         self.selected_constraint_ = constraint
         self.selected_constraint_.setEnabled(True)

@@ -456,12 +456,26 @@ class CharacterStates(object): # Class Namespace
       self.anchored_ = False
       
       self.addAction(CollisionAction.LEDGE_COLLISION,self.ledgeCollisionCallback)
+      self.addAction(CharacterActions.MOVE_RIGHT.key,self.moveRight)
+      self.addAction(CharacterActions.MOVE_LEFT.key,self.moveLeft) 
+      self.addAction(CharacterActions.MOVE_NONE.key,self.moveNone) 
       
     def enter(self):
       logging.debug("%s state entered"%(self.getKey()))
       self.anchored_ = False
       
       self.character_obj_.animate(self.animation_key_) 
+      self.character_obj_.getStatus().air_jump_count = 0
+      self.character_obj_.getStatus().air_dashes_count = 0
+      
+    def moveNone(self,action):   
+      self.character_obj_.getStatus().momentum.setX(0)   
+      
+    def moveRight(self,action):   
+      self.character_obj_.getStatus().momentum.setX(self.character_obj_.character_info_.run_speed)
+      
+    def moveLeft(self,action):
+      self.character_obj_.getStatus().momentum.setX(self.character_obj_.character_info_.run_speed)
       
     def ledgeCollisionCallback(self,action):
       
@@ -475,32 +489,23 @@ class CharacterStates(object): # Class Namespace
         ledge = action.game_obj2.getLeftLedge()
       else:
         ledge = action.game_obj2.getRightLedge() 
-        
-      pos = ledge.getPos(self.character_obj_.getParent()) 
-      logging.info("Edge on platform " + action.game_obj2.getName())
-      logging.info("Ledge Pos %s"%(str(pos)))
-      logging.info("Platform Pos %s"%(str(action.game_obj2.getPos())))
-      logging.info("Platform Pos Z %s"%(str(action.game_obj2.getBottom() )) )
-      logging.info("Anchor Pos %s"%(str(ghost_body.getPos(self.character_obj_))))
-      logging.info("Character Pos %s"%(str(self.character_obj_.getPos())))
       
+      self.character_obj_.setStatic(True)
       
       pos = ghost_body.node().getShapePos(0)
       if not self.character_obj_.isFacingRight(): # rotate about z by 180 if looking left
         pos.setX(-pos.getX())
-      tf_obj_to_ghost = LMatrix4.translateMat(pos)
-        
+      
+      # creating transform  
+      tf_obj_to_ghost = LMatrix4.translateMat(pos)        
       tf_ghost_to_object = LMatrix4(tf_obj_to_ghost)
       tf_ghost_to_object.invertInPlace()
-      tf_world_to_ledge = ledge.getMat(self.character_obj_.getParent())
-      
+      tf_world_to_ledge = ledge.getMat(self.character_obj_.getParent())      
       transform = TransformState.makeMat(tf_world_to_ledge * tf_ghost_to_object)
-      self.character_obj_.setPos(transform.getPos())
-        
       
-      #self.character_obj_.clampTop(pos.getZ())      
-      #self.character_obj_.clampFront(pos.getX())
-      self.character_obj_.setStatic(True)
+      self.character_obj_.setPos(transform.getPos())
+      self.character_obj_.setLinearVelocity(Vec3(0,0,0))        
+      
       self.anchored_ = True
       
       
