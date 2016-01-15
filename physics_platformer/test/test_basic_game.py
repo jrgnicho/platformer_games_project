@@ -19,7 +19,7 @@ from physics_platformer.input import JoystickController
 
 RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/characters/Hiei/'
 PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
-ANIMATIONS = ['RUNNING','STANDING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE', 'DASH', 'MIDAIR_DASH','CATCH_LEDGE']
+ANIMATIONS = ['STANDING','RUNNING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE', 'DASH', 'MIDAIR_DASH','CATCH_LEDGE']
 
 class Hiei(CharacterBase):
   
@@ -54,8 +54,8 @@ class Hiei(CharacterBase):
   def setupStates(self):
     
     # creating default states
-    standing_state = CharacterStates.StandingState(self, self.sm_,ANIMATIONS[1])
-    running_state = CharacterStates.RunningState(self,self.sm_,ANIMATIONS[0])
+    standing_state = CharacterStates.StandingState(self, self.sm_,ANIMATIONS[0])
+    running_state = CharacterStates.RunningState(self,self.sm_,ANIMATIONS[1])
     takeoff_state = CharacterStates.TakeoffState(self,self.sm_,ANIMATIONS[2])
     jump_state = CharacterStates.JumpState(self,self.sm_,ANIMATIONS[3])
     air_jump_state = CharacterStates.AirJumpState(self,self.sm_,ANIMATIONS[3])

@@ -1,5 +1,6 @@
 from physics_platformer.sprite import Sprite
 from physics_platformer.sprite import SpriteGroup
+from physics_platformer.sprite import SpriteSequencePlayer
 from physics_platformer.sprite import SpriteAnimator
 from physics_platformer.animation import AnimationInfo
 from physics_platformer.collision import *
@@ -323,7 +324,8 @@ class AnimationActor(SpriteAnimator):
     """
       Creates the sequence node that plays these images
     """
-    seq = SequenceNode(name)
+    #seq = SequenceNode(name)
+    seq = SpriteSequencePlayer(name)
     
     for i in range(0,len(sff_images)):
         
@@ -339,6 +341,7 @@ class AnimationActor(SpriteAnimator):
       card = NodePath(cm.generate())            
       card.setTexture(txtr)
       seq.addChild(card.node(),i)
+      seq.addFrame(card.node(),i,framerate/60.0)
       
       # offseting image
       xoffset = float(txtr.axisx + (-w if is_left else 0))
@@ -347,7 +350,7 @@ class AnimationActor(SpriteAnimator):
       
       AnimationActor.LOGGER.debug("Animation %s Sprite [%i] image size %s and offset %s."%( name,i, str((w,h)), str((txtr.axisx,txtr.axisy)) ) ) 
      
-    seq.setFrameRate(framerate)            
+    #seq.setFrameRate(framerate)            
     return seq     
     
     
