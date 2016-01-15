@@ -19,7 +19,7 @@ from physics_platformer.input import JoystickController
 
 RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/characters/Hiei/'
 PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
-ANIMATIONS = ['RUNNING','STANDING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE', 'DASH', 'MIDAIR_DASH']
+ANIMATIONS = ['RUNNING','STANDING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE', 'DASH', 'MIDAIR_DASH','CATCH_LEDGE']
 
 class Hiei(CharacterBase):
   
@@ -66,6 +66,7 @@ class Hiei(CharacterBase):
     edge_landing_state = CharacterStates.EdgeLandingState(self,self.sm_,ANIMATIONS[8])    
     dashing_state = CharacterStates.DashState(self,self.sm_,ANIMATIONS[9])
     midair_dashing_state = CharacterStates.MidairDashState(self,self.sm_,ANIMATIONS[10])
+    catch_ledge_state = CharacterStates.CatchLedgeState(self,self.sm_,ANIMATIONS[11])
         
     self.sm_.addState(fall_state)
     self.sm_.addState(standing_state)
@@ -79,12 +80,16 @@ class Hiei(CharacterBase):
     self.sm_.addState(edge_landing_state) 
     self.sm_.addState(dashing_state) 
     self.sm_.addState(midair_dashing_state)
+    self.sm_.addState(catch_ledge_state)
        
     
     self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.LAND.key, CharacterStateKeys.LANDING)
     self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.LAND_EDGE.key, CharacterStateKeys.EDGE_LANDING)
     self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.JUMP.key, CharacterStateKeys.AIR_JUMPING, lambda: self.getStatus().air_jump_count < self.getInfo().air_jumps)
     self.sm_.addTransition(CharacterStateKeys.FALLING,CharacterActions.DASH.key,CharacterStateKeys.MIDAIR_DASHING,lambda: self.getStatus().air_dashes_count < self.getInfo().air_dashes)
+    self.sm_.addTransition(CharacterStateKeys.FALLING, CollisionAction.LEDGE_COLLISION, CharacterStateKeys.CATCH_LEDGE)
+    
+    self.sm_.addTransition(CharacterStateKeys.CATCH_LEDGE, CharacterActions.JUMP.key, CharacterStateKeys.JUMPING)
     
     self.sm_.addTransition(CharacterStateKeys.EDGE_LANDING, StateMachineActions.DONE.key, CharacterStateKeys.STANDING)
     self.sm_.addTransition(CharacterStateKeys.EDGE_LANDING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)

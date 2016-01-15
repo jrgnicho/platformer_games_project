@@ -180,7 +180,7 @@ class AnimationActor(SpriteAnimator):
     """
     Returns ghost body for determining that the action geometry is in overlap
     """
-    return (None if (self.action_body_np_ is None) else self.action_body_np_)
+    return self.action_body_np_
     
   def loadAnimationSprites(self,sprites_right, sprites_left,framerate):
     """

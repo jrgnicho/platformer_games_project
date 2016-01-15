@@ -159,7 +159,7 @@ class Level(NodePath):
     self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_TOP.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),CollisionAction.CEILING_COLLISION)
     self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_LEFT.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),CollisionAction.LEFT_WALL_COLLISION)
     self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_RIGHT.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),CollisionAction.RIGHT_WALL_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.ACTION_BODY.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),CollisionAction.ACTION_BODY_COLLISION)
+    self.collision_action_matrix_.addEntry(CollisionMasks.ACTION_BODY.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),CollisionAction.LEDGE_COLLISION)
     self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_AABB.getLowestOnBit(),CollisionMasks.LEVEL_BOUND.getLowestOnBit(),CollisionAction.COLLIDE_LEVEL_BOUND)
   
     logging.debug(str(self.collision_action_matrix_))

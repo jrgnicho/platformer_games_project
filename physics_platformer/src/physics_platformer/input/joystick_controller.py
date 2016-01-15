@@ -75,39 +75,38 @@ class JoystickController(ControllerInterface):
   #  @param buffer_timeout A float in seconds.  The button buffer is cleared when this value is exceeded 
   """  
   def __init__(self,button_map,joystick_obj,joystick_axes,buffer_timeout = DEFAULT_BUFFER_TIMEOUT,merge_time = DEFAULT_MERGE_TIME):
-
       
-      ControllerInterface.__init__(self)
+    ControllerInterface.__init__(self)
+    
+    self.buffer_timeout_ = buffer_timeout    # Buffer is cleared when this value is exceeded.
+    self.button_map_ = button_map            # Dictionary containing the mapping of the device button index (key) in the 
+                                                # pygame.joystick.Joystick interface and the constants defined in the 
+                                                # physics_platformer.input.JoystickButtons class
+                                                # and the button mask (value)
+    self.joystick_axes_ = joystick_axes      # Joystick axes object for detecting the direction of the D-pad
+    self.one_shot_mode_ = True
+    
+    # Support members
+    self.button_press_buffer_ = []
+    self.buffer_time_elapsed_ = 0
+    self.merge_time_ = merge_time
+    self.buffer_timeout_ = buffer_timeout
+    self.button_release_buffer_ = []
+    self.merge_time_elapsed_ = 0
+    
+    # history
+    self.previous_buttons_down_ = JoystickButtons.NONE
+    self.previous_directions_down_ = JoystickButtons.NONE
+    self.buttons_down_ = JoystickButtons.NONE
+    
+    # Initializing joystick support members        
+    self.joystick_state_ = None   
+    self.joystick_ = joystick_obj   
+    
+    if not self.joystick_.get_init():
+      self.joystick_.init()
       
-      self.buffer_timeout_ = buffer_timeout    # Buffer is cleared when this value is exceeded.
-      self.button_map_ = button_map            # Dictionary containing the mapping of the device button index (key) in the 
-                                                  # pygame.joystick.Joystick interface and the constants defined in the 
-                                                  # physics_platformer.input.JoystickButtons class
-                                                  # and the button mask (value)
-      self.joystick_axes_ = joystick_axes      # Joystick axes object for detecting the direction of the D-pad
-      self.one_shot_mode_ = True
-      
-      # Support members
-      self.button_press_buffer_ = []
-      self.buffer_time_elapsed_ = 0
-      self.merge_time_ = merge_time
-      self.buffer_timeout_ = buffer_timeout
-      self.button_release_buffer_ = []
-      self.merge_time_elapsed_ = 0
-  
-      # history
-      self.previous_buttons_down_ = JoystickButtons.NONE
-      self.previous_directions_down_ = JoystickButtons.NONE
-      self.buttons_down_ = JoystickButtons.NONE
-      
-      # Initializing joystick support members        
-      self.joystick_state_ = None   
-      self.joystick_ = joystick_obj   
-      
-      if not self.joystick_.get_init():
-        self.joystick_.init()
-        
-      self.joystick_state_ = JoystickState(self.joystick_)
+    self.joystick_state_ = JoystickState(self.joystick_)
           
   def reset(self):    
     self.buffer_time_elapsed_ = 0
