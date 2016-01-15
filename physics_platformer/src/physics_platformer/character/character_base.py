@@ -137,18 +137,18 @@ class CharacterBase(AnimatableObject):
     local_offset = self.getBack() if self.isFacingRight() else self.getFront()
     local_offset = self.getX() - local_offset
     
-    self.__deactivateConstraint__() # avoids recoil due to rapid position change
     self.setX(x + local_offset)
-    self.__activateConstraint__(self.selected_constraint_)
+    if self.getAnimatorActor() is not None:
+      self.getAnimatorActor().getRigidBody().setX(x + local_offset)
     
   def clampOriginX(self,x):
     vel = self.node().getLinearVelocity()
     vel.setX(0)
     self.node().setLinearVelocity(vel)  
-    
-    self.__deactivateConstraint__() # avoids recoil due to rapid position change     
+       
     self.setX(x)
-    self.__activateConstraint__(self.selected_constraint_)
+    if self.getAnimatorActor() is not None:
+      self.getAnimatorActor().getRigidBody().setX(x)
     
   def clampRight(self,x):
     
@@ -159,9 +159,9 @@ class CharacterBase(AnimatableObject):
     local_offset = self.getFront() if self.isFacingRight() else self.getBack()
     local_offset = self.getX() - local_offset
     
-    self.__deactivateConstraint__() # avoids recoil due to rapid position change
     self.setX(x + local_offset) 
-    self.__activateConstraint__(self.selected_constraint_)   
+    if self.getAnimatorActor() is not None:
+      self.getAnimatorActor().getRigidBody().setX(x + local_offset)
     
   def clampFront(self,x):
     if self.isFacingRight():
@@ -188,9 +188,9 @@ class CharacterBase(AnimatableObject):
     
     # placing bottom at z value
     bbox = self.getAnimatorActor().getRigidBodyBoundingBox()  
-    self.__deactivateConstraint__() # avoids recoil due to rapid position change
     self.setZ(z - bbox.bottom) 
-    self.__activateConstraint__(self.selected_constraint_)
+    if self.getAnimatorActor() is not None:
+      self.getAnimatorActor().getRigidBody().setZ(z - bbox.bottom)
   
   def clampTop(self,z):
     '''
@@ -204,10 +204,10 @@ class CharacterBase(AnimatableObject):
     self.node().setLinearVelocity(vel)
     
     # placing top at z value
-    bbox = self.getAnimatorActor().getRigidBodyBoundingBox()     
-    self.__deactivateConstraint__() # avoids recoil due to rapid position change    
+    bbox = self.getAnimatorActor().getRigidBodyBoundingBox()       
     self.setZ(z - bbox.top) 
-    self.__activateConstraint__(self.selected_constraint_)
+    if self.getAnimatorActor() is not None:
+      self.getAnimatorActor().getRigidBody().setZ(z - bbox.top)
     
   def setPos(self,pos):
     
