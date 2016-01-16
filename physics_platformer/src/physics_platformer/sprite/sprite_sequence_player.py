@@ -8,11 +8,12 @@ class SpriteSequencePlayer(SequenceNode):
   
   def __init__(self,name):
     SequenceNode.__init__(self,name)
-    self.play_sequence_ = Sequence()  # shows each frame during its alloted time.
+    self.play_sequence_ = None  # shows each frame during its alloted time.
     self.frame_times_ = [] # contains the time in seconds that each frame is shown
+    self.playing_ = False
     
   def __setupSequence__(self,start_frame, end_frame):
-    self.play_sequence_.finish()
+    self.__cleanupSequence__()
     self.play_sequence_ = Sequence()  
     
     if start_frame > self.getNumFrames()-1:
@@ -30,21 +31,32 @@ class SpriteSequencePlayer(SequenceNode):
     logging.info("Sequence animation %s with times %s"%(self.getName(),str(self.frame_times_[start_frame:end_frame+1])))
       
     return True
+
+  def __cleanupSequence__(self):
+    if self.play_sequence_ is not None:
+      self.play_sequence_.finish()
+      self.play_sequence_ = None
+    self.playing_ = False
+      
       
   def play(self,from_frame,to_frame):
     
     if self.__setupSequence__(from_frame, to_frame):
+      self.play_sequence_.append(Func(self.__cleanupSequence__))      
       self.play_sequence_.start()
-      logging.info("Playing animation %s"%(self.getName()))
+      self.playing_ = True
     
   def loop(self,restart,from_frame , to_frame):
     
     if self.__setupSequence__(from_frame, to_frame):
       self.play_sequence_.loop()
-      logging.info("Looping animation %s"%(self.getName()))
+      self.playing_ = True
     
   def stop(self):
-    self.play_sequence_.finish()
+    self.__cleanupSequence__()
+    
+  def isPlaying(self):
+    return self.playing_
     
   def addFrame(self,card_frame, sort, frame_time):
     '''

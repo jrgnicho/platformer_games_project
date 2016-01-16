@@ -341,7 +341,7 @@ class AnimationActor(SpriteAnimator):
       card = NodePath(cm.generate())            
       card.setTexture(txtr)
       seq.addChild(card.node(),i)
-      seq.addFrame(card.node(),i,framerate/60.0)
+      seq.addFrame(card.node(),i,1/framerate)
       
       # offseting image
       xoffset = float(txtr.axisx + (-w if is_left else 0))
