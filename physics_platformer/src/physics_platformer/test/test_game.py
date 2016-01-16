@@ -93,8 +93,6 @@ class TestGame(ShowBase):
     self.accept('f2', self.toggleTexture)
     self.accept('f3', self.toggleWireframe)
     self.accept('f5', self.doScreenshot)
-    #self.accept('q',self.zoomIn)
-    #self.accept('a',self.zoomOut)
     
     self.input_state_ = InputState()
     button_map = {'a' : KeyboardButtons.KEY_A , 'q' : KeyboardButtons.KEY_Q,'escape' : KeyboardButtons.KEY_ESC,

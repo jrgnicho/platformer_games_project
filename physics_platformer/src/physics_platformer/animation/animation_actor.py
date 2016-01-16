@@ -67,7 +67,7 @@ class AnimationActor(SpriteAnimator):
       return False
     
     # load sprites
-    if not self.loadAnimationSprites(animation.sprites_right, animation.sprites_left, animation.framerate):
+    if not self.loadAnimationSprites(animation.sprites_right, animation.sprites_left, animation.sprites_time):
       AnimationActor.LOGGER.error('Failed to load sprites from AnimationInfo object')
       return False
     
@@ -183,14 +183,14 @@ class AnimationActor(SpriteAnimator):
     """
     return self.action_body_np_
     
-  def loadAnimationSprites(self,sprites_right, sprites_left,framerate):
+  def loadAnimationSprites(self,sprites_right, sprites_left,sprites_time):
     """
     loadAnimationSprites
       Loads Sprites for the right and left animations
       Inputs:
       - sprites_right: list[Sprite] list of images for the right side
       - sprites_left: list[Sprite] list of images for the left side
-      - framerate: (double) 
+      - sprites_time: list of time values in seconds that each sprite will be shown during an animation 
       - scale: (Vec3) Only the x and z values are used 
     """
     
@@ -207,8 +207,8 @@ class AnimationActor(SpriteAnimator):
     h = sprites_right[0].getYSize()
     self.size_ = (w,h) # image size in pixels
     
-    self.seq_right_ = self.__createAnimationSequence__(str(self.getName() )+ '-right-seq',sprites_right,framerate,False)
-    self.seq_left_ = self.__createAnimationSequence__(str(self.getName() ) + '-left-seq',sprites_left,framerate,True)
+    self.seq_right_ = self.__createAnimationSequence__(str(self.getName() )+ '-right-seq',sprites_right,sprites_time,False)
+    self.seq_left_ = self.__createAnimationSequence__(str(self.getName() ) + '-left-seq',sprites_left,sprites_time,True)
     self.node().addStashed(self.seq_right_)
     self.node().addStashed(self.seq_left_)
     
@@ -320,16 +320,16 @@ class AnimationActor(SpriteAnimator):
     return ghost_node
       
   
-  def __createAnimationSequence__(self,name,sff_images,framerate,is_left = False):
+  def __createAnimationSequence__(self,name,sprite_images,sprites_time,is_left = False):
     """
       Creates the sequence node that plays these images
     """
-    #seq = SequenceNode(name)
+    
     seq = SpriteSequencePlayer(name)
     
-    for i in range(0,len(sff_images)):
+    for i in range(0,len(sprite_images)):
         
-      txtr = sff_images[i]
+      txtr = sprite_images[i]
       
       w = txtr.getXSize() 
       h = txtr.getYSize()       
@@ -337,11 +337,10 @@ class AnimationActor(SpriteAnimator):
       # creating CardMaker to hold the texture
       cm = CardMaker(name +    str(i))
       cm.setFrame(0,w,-h,0 )  # This configuration places the image's topleft corner at the origin
-      #cm.setFrame(-0.5*w,0.5*w,-h,0)  
       card = NodePath(cm.generate())            
       card.setTexture(txtr)
       seq.addChild(card.node(),i)
-      seq.addFrame(card.node(),i,1/framerate)
+      seq.addFrame(card.node(),i,sprites_time[i])
       
       # offseting image
       xoffset = float(txtr.axisx + (-w if is_left else 0))
@@ -350,7 +349,7 @@ class AnimationActor(SpriteAnimator):
       
       AnimationActor.LOGGER.debug("Animation %s Sprite [%i] image size %s and offset %s."%( name,i, str((w,h)), str((txtr.axisx,txtr.axisy)) ) ) 
      
-    #seq.setFrameRate(framerate)            
+               
     return seq     
     
     

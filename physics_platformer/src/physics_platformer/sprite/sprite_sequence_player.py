@@ -28,7 +28,6 @@ class SpriteSequencePlayer(SequenceNode):
       self.play_sequence_.append(Func(self.pose,i))
       self.play_sequence_.append(Wait(self.frame_times_[i]))
       
-    logging.info("Sequence animation %s with times %s"%(self.getName(),str(self.frame_times_[start_frame:end_frame+1])))
       
     return True
 
@@ -40,14 +39,12 @@ class SpriteSequencePlayer(SequenceNode):
       
       
   def play(self,from_frame,to_frame):
-    
     if self.__setupSequence__(from_frame, to_frame):
       self.play_sequence_.append(Func(self.__cleanupSequence__))      
       self.play_sequence_.start()
       self.playing_ = True
     
   def loop(self,restart,from_frame , to_frame):
-    
     if self.__setupSequence__(from_frame, to_frame):
       self.play_sequence_.loop()
       self.playing_ = True
