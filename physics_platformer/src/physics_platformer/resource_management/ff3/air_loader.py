@@ -163,14 +163,15 @@ class AIRLoader(object):
         anim_elmt.game_ticks = sprite_entry[4]
         
         # check if game_tick == -1 (Play Mode)
-        if anim_elmt.game_ticks == AIRLoader.__STOP_ANIMATION_GAMETICKS__:
+        if anim_elmt.game_ticks <= AIRLoader.__STOP_ANIMATION_GAMETICKS__:
           anim_info.loop_mode = False
-          anim_elmt.game_ticks = anim_info.animation_elements[-1].game_ticks
+          anim_elmt.game_ticks = abs(anim_elmt.game_ticks)
           logging.info("Gameticks -1 found in animation %s element %i"%(anim_info.name,len(anim_info.animation_elements)))
           
         
         # save animation element
         anim_info.animation_elements.append(anim_elmt)
+        anim_info.sprites_time.append(anim_elmt.game_ticks/AnimationInfo.DEFAULT_FPS)
         anim_elmt = AnimationElement()
         
         continue
