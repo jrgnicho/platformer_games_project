@@ -24,6 +24,7 @@ from panda3d.core import Texture
 from panda3d.core import TextureStage
 from panda3d.core import TransparencyAttrib
 from panda3d.core import TextNode
+from panda3d.direct import SmoothMover
 
 from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletPlaneShape
@@ -136,6 +137,11 @@ class TestGame(ShowBase):
     
     self.cam.reparentTo(self.level_)
     self.cam.setPos(self.level_,0, -TestGame.__CAM_ZOOM__*24, TestGame.__CAM_STEP__*25)
+    
+#     self.camera_mover_ = SmoothMover()
+#     self.camera_mover_.setSmoothMode(SmoothMover.SMOn)
+#     self.camera_mover_.setPredictionMode(SmoothMover.PMOff)
+#     self.camera_mover_.applySmoothPos(self.cam)
     
   def setupResources(self):
     pass  

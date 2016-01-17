@@ -6,12 +6,14 @@ from physics_platformer.game_actions import AnimationActions
 from physics_platformer.game_actions import CharacterActions
 from physics_platformer.game_actions import CollisionAction
 from physics_platformer.character import CharacterStatus
+from physics_platformer.collision import CollisionMasks
 from direct.interval.MetaInterval import Sequence
 from direct.interval.FunctionInterval import Func
 from panda3d.core import LVector3, LMatrix4
 from panda3d.core import Vec3
 from panda3d.core import TransformState
 import logging
+import inspect
 
 class CharacterStateKeys(object):
   
@@ -453,7 +455,6 @@ class CharacterStates(object): # Class Namespace
     
     def __init__(self,character_obj,parent_state_machine,animation_key = None):
       CharacterState.__init__(self, CharacterStateKeys.CATCH_LEDGE, character_obj, parent_state_machine, animation_key)
-      self.anchored_ = False
       
       self.addAction(CollisionAction.LEDGE_COLLISION,self.ledgeCollisionCallback)
       self.addAction(CharacterActions.MOVE_RIGHT.key,self.moveRight)
@@ -462,7 +463,6 @@ class CharacterStates(object): # Class Namespace
       
     def enter(self):
       logging.debug("%s state entered"%(self.getKey()))
-      self.anchored_ = False
       
       self.character_obj_.animate(self.animation_key_) 
       self.character_obj_.getStatus().air_jump_count = 0
@@ -478,13 +478,11 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.getStatus().momentum.setX(self.character_obj_.character_info_.run_speed)
       
     def ledgeCollisionCallback(self,action):
-      
-      if self.anchored_:
-        return
-      
+
       ghost_body = self.character_obj_.getActionGhostBody()
+      self.character_obj_.getStatus().platform = action.game_obj2
       
-      ledge = None
+      ledge = None      
       if self.character_obj_.isFacingRight():
         ledge = action.game_obj2.getLeftLedge()
       else:
@@ -492,26 +490,60 @@ class CharacterStates(object): # Class Namespace
       
       self.character_obj_.setStatic(True)
       
+      # detemining position of ghost action body relative to character
       pos = ghost_body.node().getShapePos(0)
       if not self.character_obj_.isFacingRight(): # rotate about z by 180 if looking left
         pos.setX(-pos.getX())
       
-      # creating transform  
+      # creating transform  for placement of character relative to ledge
       tf_obj_to_ghost = LMatrix4.translateMat(pos)        
       tf_ghost_to_object = LMatrix4(tf_obj_to_ghost)
       tf_ghost_to_object.invertInPlace()
       tf_world_to_ledge = ledge.getMat(self.character_obj_.getParent())      
       transform = TransformState.makeMat(tf_world_to_ledge * tf_ghost_to_object)
       
+      # placing character on ledge
       self.character_obj_.setPos(transform.getPos())
       self.character_obj_.setLinearVelocity(Vec3(0,0,0))        
       
-      self.anchored_ = True
+      # turning off collision
+      ghost_body.node().setIntoCollideMask(CollisionMasks.NO_COLLISION)
       
+      logging.info(inspect.stack()[0][3] + ' invoked')
       
-    def exit(self):      
+    def exit(self): 
+      
+      self.character_obj_.getActionGhostBody().node().setIntoCollideMask(CollisionMasks.ACTION_BODY)   
       self.character_obj_.setStatic(False)
       self.character_obj_.stop()
+      
+  class ClimbingState(CharacterState):
+    
+    def __init__(self,character_obj,parent_state_machine,animation_key = None):
+      CharacterState.__init__(self, CharacterStateKeys.CLIMBING, character_obj, parent_state_machine, animation_key)
+      
+    def enter(self):
+      logging.debug("%s state entered"%(self.getKey()))
+      
+      self.character_obj_.setAnimationEndCallback(self.done)
+      self.character_obj_.animate(self.animation_key_)
+      
+      self.clampToPlatform()
+      
+    def clampToPlatform(self):
+      platform = self.character_obj_.getStatus().platform
+
+      self.character_obj_.clampBottom(platform.getTop())
+      self.character_obj_.clampBack(platform.getLeft() if self.character_obj_.isFacingRight() else platform.getRight())
+      self.character_obj_.setLinearVelocity(Vec3(0,0,0))   
+      
+    def exit(self):
+      
+      self.character_obj_.stop()      
+      self.character_obj_.setAnimationEndCallback(None)
+      
+    def climb(self):
+      pass
         
   class FallState(AerialBaseState):
     
