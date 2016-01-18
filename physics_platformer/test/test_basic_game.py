@@ -161,7 +161,7 @@ class TestBasicGame(TestGame):
     
   def setupScene(self):
     TestGame.setupScene(self)
-    self.setupCharacter()
+    self.setupCharacter()    
     
   def setupControls(self):
     
@@ -268,11 +268,15 @@ class TestBasicGame(TestGame):
   def toggleCameraController(self):
     
     if self.follow_player_:
-      self.input_manager_ = self.character_input_manager_      
-      self.cam.reparentTo(self.character_)
-      self.cam.setPos(self.character_,0, -TestGame.__CAM_ZOOM__*24, 0)
+      self.input_manager_ = self.character_input_manager_
+      self.camera_controller_.reparentTo(self.level_)
+      self.camera_controller_.setEnabled(True)      
+      self.camera_controller_.setTargetNode(self.character_,Vec3(0, -TestGame.__CAM_ZOOM__*24, 0))
+      #self.cam.reparentTo(self.character_)
+      #self.cam.setPos(self.character_,0, -TestGame.__CAM_ZOOM__*24, 0)
     else:
       self.input_manager_ = self.camera_input_manager_
+      self.camera_controller_.setEnabled(False)
       pos = self.cam.getPos(self.level_)
       self.cam.reparentTo(self.level_)
       self.cam.setPos(pos)

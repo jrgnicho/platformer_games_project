@@ -24,7 +24,6 @@ from panda3d.core import Texture
 from panda3d.core import TextureStage
 from panda3d.core import TransparencyAttrib
 from panda3d.core import TextNode
-from panda3d.direct import SmoothMover
 
 from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletPlaneShape
@@ -40,6 +39,7 @@ from physics_platformer.input import Move
 from physics_platformer.input import KeyboardButtons
 from physics_platformer.input import KeyboardController
 from physics_platformer.game_object import GameObject
+from physics_platformer.camera import CameraController
 
 class TestGame(ShowBase):
   
@@ -138,10 +138,7 @@ class TestGame(ShowBase):
     self.cam.reparentTo(self.level_)
     self.cam.setPos(self.level_,0, -TestGame.__CAM_ZOOM__*24, TestGame.__CAM_STEP__*25)
     
-#     self.camera_mover_ = SmoothMover()
-#     self.camera_mover_.setSmoothMode(SmoothMover.SMOn)
-#     self.camera_mover_.setPredictionMode(SmoothMover.PMOff)
-#     self.camera_mover_.applySmoothPos(self.cam)
+    self.camera_controller_ = CameraController(self.cam)
     
   def setupResources(self):
     pass  
@@ -157,6 +154,7 @@ class TestGame(ShowBase):
     self.level_.update(dt)
     StateMachine.processEvents() 
     self.input_manager_.update(dt)
+    self.camera_controller_.update(dt)
     
     return task.cont
     
