@@ -10,6 +10,7 @@ class CameraController(NodePath):
   
   __TRACKING_SPEED__ = 4.0 # meters/second
   __TRACKING_RADIUS__ = 1.0
+  __MAX_INTERPOLATION_TIME__ = 0.5
   
   def __init__(self,camera_np, name = "CameraController"):
     NodePath.__init__(self,name)
@@ -74,6 +75,8 @@ class CameraController(NodePath):
     start_pos = self.target_tracker_np_.getPos()
     end_pos= self.target_np_.getPos()
     time_ = (end_pos - start_pos).length()/CameraController.__TRACKING_SPEED__
+    time_ = time_ if time_ < CameraController.__MAX_INTERPOLATION_TIME__ else CameraController.__MAX_INTERPOLATION_TIME__
+    
     pos_interval = LerpPosInterval(self.target_tracker_np_, time_, end_pos, startPos=start_pos,
                                    other=None,
                                    blendType='easeOut',
