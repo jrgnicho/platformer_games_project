@@ -6,7 +6,7 @@ from direct.showbase.ShowBase import ShowBase
 from direct.controls.InputState import InputState
 from direct.gui.OnscreenText import OnscreenText
 
-from panda3d.core import AmbientLight
+from panda3d.core import AmbientLight, Filename
 from panda3d.core import DirectionalLight
 from panda3d.core import Vec3
 from panda3d.core import Vec4
@@ -18,6 +18,7 @@ from panda3d.core import PandaNode
 from panda3d.core import ClockObject
 from panda3d.core import TextNode
 
+# physics
 from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletPlaneShape
 from panda3d.bullet import BulletBoxShape
@@ -25,9 +26,18 @@ from panda3d.bullet import BulletSphereShape
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletDebugNode
 
+# background image
+from panda3d.core import CardMaker
+from panda3d.core import Texture
+from panda3d.core import TextureStage
+from panda3d.core import TransparencyAttrib
+from rospkg import rospack
+
 LOOP_DELAY = 0.05 # seconds
 CAM_DISTANCE =  20
 ROTATIONAl_SPEED = 20
+BACKGROUND_IMAGE_PACKAGE = 'simple_platformer'
+BACKGROUND_IMAGE_PATH = 'cplusplus_programming_background_960x800.jpg'
 
 # Function to put instructions on the screen.
 def addInstructions(pos, msg):
@@ -77,6 +87,32 @@ class TestApplication(ShowBase):
     self.render.clearLight()
     self.render.setLight(alightNP)
     self.render.setLight(dlightNP)
+    
+  def setupBackgroundImage(self):
+    
+    image_path = rospack.RosPack().get_path(BACKGROUND_IMAGE_PACKAGE) + '/' + BACKGROUND_IMAGE_PACKAGE
+    image_file = Filename(image_path)
+    
+    # check if image can be loaded
+    img_head = PNMImageHeader()
+    if not img_head.readHeader(image_file ):
+        raise IOError, "PNMImageHeader could not read file %s. Try using absolute filepaths"%(file_path)
+        sys.exit()
+        
+    # Load the image with a PNMImage
+    img = PNMImage(img_head.getXSize(),img_head.getYSize())
+    img.alphaFill(0)
+    img.read(image_file) 
+    
+    texture = Texture()        
+    texture.setXSize(w)
+    texture.setYSize(h)
+    texture.setZSize(1)    
+    texture.load(img)
+    texture.setWrapU(Texture.WM_border_color) # gets rid of odd black edges around image
+    texture.setWrapV(Texture.WM_border_color)
+    texture.setBorderColor(LColor(0,0,0,0))
+  
 
   def setupControls(self):
 
