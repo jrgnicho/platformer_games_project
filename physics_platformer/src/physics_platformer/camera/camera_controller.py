@@ -11,6 +11,8 @@ class CameraController(NodePath):
   __TRACKING_SPEED__ = 4.0 # meters/second
   __TRACKING_RADIUS__ = 1.0
   __MAX_INTERPOLATION_TIME__ = 0.5
+  __CAMERA_POS_OFFSET__ = Vec3(0,0,4)
+  __CAMERA_ORIENT_OFFSET__ = Vec3(0,-5,0)
   
   def __init__(self,camera_np, name = "CameraController"):
     NodePath.__init__(self,name)
@@ -42,6 +44,8 @@ class CameraController(NodePath):
   def __activate__(self):
     self.camera_np_.reparentTo(self.target_tracker_np_)
     self.camera_np_.setPos(self.offset_pos_)
+    self.camera_np_.setPos(self.camera_np_.getPos()+ CameraController.__CAMERA_POS_OFFSET__)
+    self.camera_np_.setHpr(self.camera_np_.getHpr() + CameraController.__CAMERA_ORIENT_OFFSET__)
     
     logging.debug("Activated Camera Controller with offset position " + str(self.offset_pos_))
       

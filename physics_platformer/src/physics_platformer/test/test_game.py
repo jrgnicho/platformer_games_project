@@ -55,6 +55,8 @@ class TestGame(ShowBase):
   __BACKGROUND_POSITION__ = Vec3(0,100,0)
   __BACKGROUND_SCALE__ = 0.2
   
+  __PLATFORM_DEPTH__ = 10
+  
   def __init__(self,name ='TestGame'):
     
     # configure to use group-mask collision filtering mode in the bullet physics world
@@ -210,12 +212,12 @@ class TestGame(ShowBase):
 
     # Adding platforms
     platform_details =[ 
-      (-20, 4, 20, 4, 1  ),
-      (-2, 5, 10, 4, 1  ),
-      ( 4 , 1 , 16, 2, 2),
-      (-4 , 1, 10, 4, 1),
-      ( 16, 6, 30, 4, 1),
-      ( 0, -0.5, 30, 4, 1),
+      (-20, 4, 20, TestGame.__PLATFORM_DEPTH__, 1  ),
+      (-2, 5, 10, TestGame.__PLATFORM_DEPTH__, 1  ),
+      ( 4 , 1 , 16, TestGame.__PLATFORM_DEPTH__, 2),
+      (-4 , 1, 10, TestGame.__PLATFORM_DEPTH__, 1),
+      ( 16, 6, 30, TestGame.__PLATFORM_DEPTH__, 1),
+      ( 0, -0.5, 30, TestGame.__PLATFORM_DEPTH__, 1),
       ]
     for i in range(0,len(platform_details)):
       p = platform_details[i]
