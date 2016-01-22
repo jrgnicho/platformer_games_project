@@ -1,6 +1,8 @@
 import sys
 import time
 
+from rospkg import rospack
+
 from direct.showbase.ShowBase import ShowBase
 from direct.controls.InputState import InputState
 from direct.gui.OnscreenText import OnscreenText
@@ -48,6 +50,11 @@ class TestGame(ShowBase):
   __NUM_BOXES__ = 10
   __BOX_SIDE_LENGTH__ = 0.4
   
+  __BACKGROUND_IMAGE_PACKAGE__ = 'physics_platformer'
+  __BACKGROUND_IMAGE_PATH__ = rospack.RosPack().get_path(__BACKGROUND_IMAGE_PACKAGE__) + '/resources/backgrounds/' + 'sky02.png'
+  __BACKGROUND_POSITION__ = Vec3(0,100,0)
+  __BACKGROUND_SCALE__ = 0.2
+  
   def __init__(self,name ='TestGame'):
     
     # configure to use group-mask collision filtering mode in the bullet physics world
@@ -84,6 +91,44 @@ class TestGame(ShowBase):
     self.render.clearLight()
     self.render.setLight(alightNP)
     self.render.setLight(dlightNP)
+    
+    self.setupBackgroundImage()
+    
+  def setupBackgroundImage(self):    
+    
+    image_file = Filename(TestGame.__BACKGROUND_IMAGE_PATH__)
+    
+    # check if image can be loaded
+    img_head = PNMImageHeader()
+    if not img_head.readHeader(image_file ):
+        raise IOError, "PNMImageHeader could not read file %s. Try using absolute filepaths"%(image_file.c_str())
+        sys.exit()
+        
+    # Load the image with a PNMImage
+    w = img_head.getXSize()
+    h = img_head.getYSize()
+    img = PNMImage(w,h)
+    #img.alphaFill(0)
+    img.read(image_file) 
+    
+    texture = Texture()        
+    texture.setXSize(w)
+    texture.setYSize(h)
+    texture.setZSize(1)    
+    texture.load(img)
+    texture.setWrapU(Texture.WM_border_color) # gets rid of odd black edges around image
+    texture.setWrapV(Texture.WM_border_color)
+    texture.setBorderColor(LColor(0,0,0,0))
+    
+    # creating CardMaker to hold the texture
+    cm = CardMaker('background')
+    cm.setFrame(-0.5*w,0.5*w,-0.5*h,0.5*h)  # This configuration places the image's topleft corner at the origin (left, right, bottom, top)
+    background_np = NodePath(cm.generate())            
+    background_np.setTexture(texture)
+    
+    background_np.reparentTo(self.render)
+    background_np.setPos(TestGame.__BACKGROUND_POSITION__)
+    background_np.setScale(TestGame.__BACKGROUND_SCALE__)
     
   def setupControls(self):
     

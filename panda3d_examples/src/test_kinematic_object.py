@@ -6,7 +6,7 @@ from direct.showbase.ShowBase import ShowBase
 from direct.controls.InputState import InputState
 from direct.gui.OnscreenText import OnscreenText
 
-from panda3d.core import AmbientLight, Filename
+from panda3d.core import AmbientLight, Filename, LColor
 from panda3d.core import DirectionalLight
 from panda3d.core import Vec3
 from panda3d.core import Vec4
@@ -27,6 +27,7 @@ from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletDebugNode
 
 # background image
+from panda3d.core import PNMImage, PNMImageHeader, Filename
 from panda3d.core import CardMaker
 from panda3d.core import Texture
 from panda3d.core import TextureStage
@@ -38,6 +39,8 @@ CAM_DISTANCE =  20
 ROTATIONAl_SPEED = 20
 BACKGROUND_IMAGE_PACKAGE = 'simple_platformer'
 BACKGROUND_IMAGE_PATH = 'cplusplus_programming_background_960x800.jpg'
+BACKGROUND_POSITION = Vec3(0,100,0)
+BACKGROUND_IMAGE_SCALE = 0.2
 
 # Function to put instructions on the screen.
 def addInstructions(pos, msg):
@@ -88,20 +91,24 @@ class TestApplication(ShowBase):
     self.render.setLight(alightNP)
     self.render.setLight(dlightNP)
     
+    self.setupBackgroundImage()
+    
   def setupBackgroundImage(self):
     
-    image_path = rospack.RosPack().get_path(BACKGROUND_IMAGE_PACKAGE) + '/' + BACKGROUND_IMAGE_PACKAGE
-    image_file = Filename(image_path)
+    
+    image_file = Filename(rospack.RosPack().get_path(BACKGROUND_IMAGE_PACKAGE) + '/resources/backgrounds/' + BACKGROUND_IMAGE_PATH)
     
     # check if image can be loaded
     img_head = PNMImageHeader()
     if not img_head.readHeader(image_file ):
-        raise IOError, "PNMImageHeader could not read file %s. Try using absolute filepaths"%(file_path)
+        raise IOError, "PNMImageHeader could not read file %s. Try using absolute filepaths"%(image_file.c_str())
         sys.exit()
         
     # Load the image with a PNMImage
-    img = PNMImage(img_head.getXSize(),img_head.getYSize())
-    img.alphaFill(0)
+    w = img_head.getXSize()
+    h = img_head.getYSize()
+    img = PNMImage(w,h)
+    #img.alphaFill(0)
     img.read(image_file) 
     
     texture = Texture()        
@@ -112,6 +119,16 @@ class TestApplication(ShowBase):
     texture.setWrapU(Texture.WM_border_color) # gets rid of odd black edges around image
     texture.setWrapV(Texture.WM_border_color)
     texture.setBorderColor(LColor(0,0,0,0))
+    
+    # creating CardMaker to hold the texture
+    cm = CardMaker('background')
+    cm.setFrame(-0.5*w,0.5*w,-0.5*h,0.5*h)  # This configuration places the image's topleft corner at the origin (left, right, bottom, top)
+    background_np = NodePath(cm.generate())            
+    background_np.setTexture(texture)
+    
+    background_np.reparentTo(self.render)
+    background_np.setPos(BACKGROUND_POSITION)
+    background_np.setScale(BACKGROUND_IMAGE_SCALE)
   
 
   def setupControls(self):

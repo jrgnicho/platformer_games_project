@@ -21,6 +21,8 @@ RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/chara
 PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
 ANIMATIONS = ['STANDING','RUNNING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE', 'DASH', 'MIDAIR_DASH','CATCH_LEDGE','CLIMB_LEDGE']
 
+CAMERA_POS_FROM_CHARACTER = -TestGame.__CAM_ZOOM__*24
+
 class Hiei(CharacterBase):
   
   def __init__(self,character_loader):
@@ -271,9 +273,7 @@ class TestBasicGame(TestGame):
       self.input_manager_ = self.character_input_manager_
       self.camera_controller_.reparentTo(self.level_)
       self.camera_controller_.setEnabled(True)      
-      self.camera_controller_.setTargetNode(self.character_,Vec3(0, -TestGame.__CAM_ZOOM__*24, 0))
-      #self.cam.reparentTo(self.character_)
-      #self.cam.setPos(self.character_,0, -TestGame.__CAM_ZOOM__*24, 0)
+      self.camera_controller_.setTargetNode(self.character_,Vec3(0, CAMERA_POS_FROM_CHARACTER, 0))
     else:
       self.input_manager_ = self.camera_input_manager_
       self.camera_controller_.setEnabled(False)
