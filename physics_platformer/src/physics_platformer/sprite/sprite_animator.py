@@ -78,11 +78,6 @@ class SpriteAnimator(NodePath):
         for i in range(0,len(images)):
             
             img = images[i]
-            #sprite_img = PNMImage(w,h)
-            #sprite_img.addAlpha()
-            #sprite_img.alphaFill(0)
-            #sprite_img.fill(1,1,1)
-            #sprite_img.copySubImage(img ,0 ,0 ,0 ,0,w ,h)
             
             w = img.getXSize() 
             h = img.getYSize()       

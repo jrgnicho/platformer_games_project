@@ -47,6 +47,7 @@ class TestGame(ShowBase):
   
   __CAM_ZOOM__ =  1
   __CAM_STEP__ = 0.2
+  __CAM_ORIENT_STEP__ = 4.0
   __NUM_BOXES__ = 10
   __BOX_SIDE_LENGTH__ = 0.4
   
@@ -144,7 +145,8 @@ class TestGame(ShowBase):
     
     self.input_state_ = InputState()
     button_map = {'a' : KeyboardButtons.KEY_A , 'q' : KeyboardButtons.KEY_Q,'escape' : KeyboardButtons.KEY_ESC,
-                  'f1' : KeyboardButtons.KEY_F1}
+                  'f1' : KeyboardButtons.KEY_F1,
+                  'e': KeyboardButtons.KEY_E,'w': KeyboardButtons.KEY_W}
     self.input_manager_ = KeyboardController(self.input_state_, button_map)
     
     # Creating directional moves
@@ -152,6 +154,10 @@ class TestGame(ShowBase):
     self.input_manager_.addMove(Move('DOWN',[KeyboardButtons.DPAD_DOWN],False,lambda : self.moveCamDown()))
     self.input_manager_.addMove(Move('LEFT',[KeyboardButtons.DPAD_LEFT],False,lambda : self.moveCamLeft()))
     self.input_manager_.addMove(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],False,lambda : self.moveCamRight()))
+    
+    self.input_manager_.addMove(Move('ROTATE_LEFT',[KeyboardButtons.KEY_E],False,lambda : self.rotateCamZCounterClockwise()))
+    self.input_manager_.addMove(Move('ROTATE_RIGHT',[KeyboardButtons.KEY_W],False,lambda : self.rotateCamZClockwise()))
+    
     self.input_manager_.addMove(Move('ZoomIn',[KeyboardButtons.KEY_A],False,lambda : self.zoomIn()))
     self.input_manager_.addMove(Move('ZoomOut',[KeyboardButtons.KEY_Q],False,lambda : self.zoomOut()))
     
@@ -249,6 +255,12 @@ class TestGame(ShowBase):
   
   def moveCamLeft(self):
       self.cam.setPos(self.cam.getPos() + Vec3(-TestGame.__CAM_STEP__,0,0))
+      
+  def rotateCamZClockwise(self):
+    self.cam.setH(self.cam.getH() + TestGame.__CAM_ORIENT_STEP__)
+    
+  def rotateCamZCounterClockwise(self):
+    self.cam.setH(self.cam.getH() + -TestGame.__CAM_ORIENT_STEP__)
       
   def zoomIn(self):
     self.cam.setY(self.cam.getY()+TestGame.__CAM_ZOOM__)

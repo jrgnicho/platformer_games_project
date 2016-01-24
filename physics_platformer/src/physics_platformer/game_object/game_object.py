@@ -71,7 +71,7 @@ class GameObject(NodePath):
         self.node().setBoundsType(BoundingVolume.BT_box)    
         self.node().setBounds(BoundingBox(min_point ,max_point ))
         
-        # set visual
+        # visual properties
         if setup_visual:     
                    
             visual_nh = GameObject.DEFAULT_BOX_MODEL 
@@ -142,15 +142,18 @@ class GameObject(NodePath):
       LPoint3 Min in local coordinates
       '''
       return self.node().getInternalBounds().getMin() + self.getPos()
-            
-    def update(self,dt):
-        pass
     
     def getRigidBody(self):
-        return self
+      return self
       
     def execute(self,action):
+      pass    
+            
+    def update(self,dt):
       pass
+
+      
+      
     
         
         

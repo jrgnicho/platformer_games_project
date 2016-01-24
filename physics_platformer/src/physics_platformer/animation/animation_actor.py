@@ -30,6 +30,9 @@ class AnimationActor(SpriteAnimator):
   DEFAULT_MASS = 1.0
   BOUND_PADDING = 0.1
   
+  RIGHT_SPRITE_PLAYER_SUFF = '-rsprite-player'
+  LEFT_SPRITE_PLAYER_SUFF = '-lsprite-player'
+  
   def __init__(self,name,mass = DEFAULT_MASS):
     SpriteAnimator.__init__(self,name)
     
@@ -207,8 +210,8 @@ class AnimationActor(SpriteAnimator):
     h = sprites_right[0].getYSize()
     self.size_ = (w,h) # image size in pixels
     
-    self.seq_right_ = self.__createAnimationSequence__(str(self.getName() )+ '-right-seq',sprites_right,sprites_time,False)
-    self.seq_left_ = self.__createAnimationSequence__(str(self.getName() ) + '-left-seq',sprites_left,sprites_time,True)
+    self.seq_right_ = self.__createAnimationSequence__(str(self.getName() )+ AnimationActor.RIGHT_SPRITE_PLAYER_SUFF ,sprites_right,sprites_time,False)
+    self.seq_left_ = self.__createAnimationSequence__(str(self.getName() ) + AnimationActor.LEFT_SPRITE_PLAYER_SUFF ,sprites_left,sprites_time,True)
     self.node().addStashed(self.seq_right_)
     self.node().addStashed(self.seq_left_)
     

@@ -21,8 +21,6 @@ RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/chara
 PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
 ANIMATIONS = ['STANDING','RUNNING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE', 'DASH', 'MIDAIR_DASH','CATCH_LEDGE','CLIMB_LEDGE']
 
-CAMERA_POS_FROM_CHARACTER = -TestGame.__CAM_ZOOM__*24
-
 class Hiei(CharacterBase):
   
   def __init__(self,character_loader):
@@ -186,6 +184,9 @@ class TestBasicGame(TestGame):
     logging.info(str(info))
     self.character_ = Hiei(self.character_loader_)
     
+    # make player's sprites reorient to face camera  
+    self.character_.setViewingNode(self.cam)
+    
     if not self.character_.setup():
       logging.error("Character setup failed")
       sys.exit()
@@ -273,11 +274,11 @@ class TestBasicGame(TestGame):
       self.input_manager_ = self.character_input_manager_
       self.camera_controller_.reparentTo(self.level_)
       self.camera_controller_.setEnabled(True)      
-      self.camera_controller_.setTargetNode(self.character_,Vec3(0, CAMERA_POS_FROM_CHARACTER, 0))
+      self.camera_controller_.setTargetNode(self.character_)
     else:
-      self.input_manager_ = self.camera_input_manager_
-      self.camera_controller_.setEnabled(False)
+      self.input_manager_ = self.camera_input_manager_      
       pos = self.cam.getPos(self.level_)
+      self.camera_controller_.setEnabled(False)
       self.cam.reparentTo(self.level_)
       self.cam.setPos(pos)
       

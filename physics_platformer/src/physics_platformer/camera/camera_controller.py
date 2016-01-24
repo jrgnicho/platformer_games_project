@@ -11,7 +11,7 @@ class CameraController(NodePath):
   __TRACKING_SPEED__ = 4.0 # meters/second
   __TRACKING_RADIUS__ = 1.0
   __MAX_INTERPOLATION_TIME__ = 0.5
-  __CAMERA_POS_OFFSET__ = Vec3(0,0,4)
+  __CAMERA_POS_OFFSET__ = Vec3(0,-24,4)
   __CAMERA_ORIENT_OFFSET__ = Vec3(0,-5,0)
   
   def __init__(self,camera_np, name = "CameraController"):
@@ -23,7 +23,6 @@ class CameraController(NodePath):
     self.target_tracker_np_ = self.attachNewNode("TargetTrackerNode") 
     self.enabled_ = True  
     self.smoothing_ = False
-    self.offset_pos_ = Vec3.zero()
     
   def setEnabled(self,enable):
     self.enabled_ = enable
@@ -33,21 +32,21 @@ class CameraController(NodePath):
     else:
       self.__deactivate__()
       
-  def setTargetNode(self, target_np, offset = Vec3.zero()):    
+  def setTargetNode(self, target_np):    
     self.target_np_ = target_np  
     self.target_tracker_np_.setFluidPos(target_np.getPos())
-    self.offset_pos_ = offset
     
     if self.enabled_:
       self.__activate__()
       
   def __activate__(self):
     self.camera_np_.reparentTo(self.target_tracker_np_)
-    self.camera_np_.setPos(self.offset_pos_)
-    self.camera_np_.setPos(self.camera_np_.getPos()+ CameraController.__CAMERA_POS_OFFSET__)
-    self.camera_np_.setHpr(self.camera_np_.getHpr() + CameraController.__CAMERA_ORIENT_OFFSET__)
+    self.camera_np_.setPos(CameraController.__CAMERA_POS_OFFSET__)
+    self.camera_np_.setHpr(CameraController.__CAMERA_ORIENT_OFFSET__)
     
-    logging.debug("Activated Camera Controller with offset position " + str(self.offset_pos_))
+    logging.debug("Activated Camera Controller for cam %s with local pos %s and hpr %s"%(str(self.camera_np_),
+                                                                                         str(self.camera_np_.getPos()),
+                                                                                         str(self.camera_np_.getHpr())) )
       
   def __deactivate__(self):
     self.camera_np_.detachNode()

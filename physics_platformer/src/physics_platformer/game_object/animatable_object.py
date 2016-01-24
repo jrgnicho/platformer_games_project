@@ -1,7 +1,7 @@
 from physics_platformer.game_object import GameObject
 from physics_platformer.sprite import SpriteAnimator
 from physics_platformer.animation import AnimationActor
-from panda3d.core import BitMask16
+from panda3d.core import BitMask16, LColor, Material
 from panda3d.core import Vec3
 from panda3d.core import TransparencyAttrib
 from direct.interval.MetaInterval import Sequence
@@ -38,7 +38,12 @@ class AnimatableObject(GameObject):
         self.animators_ = {}
         self.selected_animation_name_ = ''
         self.animator_np_ = None # selected animator NodePath
-        self.animator_ = None          
+        self.animator_ = None     
+        
+        # make sprites brigntess consistent 
+        material = Material(name + 'animation-material')
+        material.setEmission(LColor(1,1,1,1))
+        self.animation_root_np_.setMaterial(material)     
         
         # callbacks
         self.frame_monitor_seq_ = Sequence() # Used to monitor animation frames and invoke callbacks
@@ -49,7 +54,18 @@ class AnimatableObject(GameObject):
       GameObject.setObjectID(self,id)    
       for k in self.animators_.keys():
         animator = self.animators_[k].node().getPythonTag(SpriteAnimator.__name__) 
-        animator.setPythonTag(GameObject.ID_PYTHON_TAG,id)     
+        animator.setPythonTag(GameObject.ID_PYTHON_TAG,id) 
+        
+    # ============ Render Effect Methods ========= #    
+    def setViewingNode(self, viewing_node):
+      '''
+      setViewingNode(NodePath viewing_node)
+      @param viewing_node changes orientation so that it is always visible by the viewing node
+      '''    
+      self.animation_root_np_.setCompass(viewing_node)
+      
+    def clearViewingNode(self):
+      self.animation_root_np_.clearCompass()
         
     def setSpriteAnimations(self,sprite_animator_dict):
         
