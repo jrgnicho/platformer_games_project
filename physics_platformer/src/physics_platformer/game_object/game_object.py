@@ -119,17 +119,22 @@ class GameObject(NodePath):
       '''
       return self.size_
     
-    def getTop(self):      
-      return (self.getZ() + self.getSize().getZ()*0.5)
+    def getTop(self, ref_np = None):   
+      z = self.getZ() if ref_np is None else self.getZ(ref_np)
+         
+      return (z + self.getSize().getZ()*0.5)
     
-    def getBottom(self):
-      return (self.getZ() - self.getSize().getZ()*0.5)
+    def getBottom(self, ref_np = None):
+      z = self.getZ() if (ref_np is None) else self.getZ(ref_np)
+      return (z - self.getSize().getZ()*0.5)
     
-    def getLeft(self):
-      return (self.getX() - self.getSize().getX()*0.5)
+    def getLeft(self, ref_np = None):
+      x = self.getX() if (ref_np is None) else self.getX(ref_np)
+      return (x - self.getSize().getX()*0.5)
     
-    def getRight(self):
-      return (self.getX() + self.getSize().getX()*0.5)    
+    def getRight(self, ref_np = None):
+      x = self.getX() if (ref_np is None) else self.getX(ref_np)
+      return (x + self.getSize().getX()*0.5)    
             
     def getMax(self):
       '''
@@ -151,6 +156,9 @@ class GameObject(NodePath):
             
     def update(self,dt):
       pass
+    
+    def getChildrenGameObjects(self):
+      return []
 
       
       
