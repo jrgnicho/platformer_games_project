@@ -97,8 +97,17 @@ class Level(NodePath):
     platform.reparentTo(self)
     new_id = 'platform-'+str(len(self.platforms_))
     platform.setObjectID(new_id)
-    self.platforms_[platform.getObjectID()] = platform
     self.game_object_map_[platform.getObjectID()] = platform
+    
+    # adding children of platform
+    for obj in platform.getChildrenGameObjects():
+      self.id_counter_+=1
+      new_id = 'game-object-' + str(self.id_counter_)
+      obj.setObjectID(new_id)
+      self.game_object_map_[obj.getObjectID()] = obj
+    
+    
+    self.platforms_[platform.getObjectID()] = platform
     
   def addGameObject(self,game_object):    
     self.id_counter_+=1
