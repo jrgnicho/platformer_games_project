@@ -48,7 +48,7 @@ jump.neu = 0.8,22.0		; * ( Jump Foward Inertia % , Jump Impulse) Jump Impulse is
 jump.back = -8.55		; * Maximum Fall Speed
 jump.fwd = 2.2		; * Jump forward Speed 
 runjump.back = 0.1,0.7	; * (land_edge_min, land_edge_max)
-runjump.fwd = 0.3,0.7	;.* (edge_recovery_min, edge_recovery_max) Distance range from 
+runjump.fwd = 0.2,0.7	;.* (edge_recovery_min, edge_recovery_max) Distance range from 
 			;	edge within which a recovery maneuver will be performed to avoid dropping from platform
 airjump.neu = 0,20.0	; * Air Jump Impulse
 airjump.back = -2.55	;Air jump speeds (opt)

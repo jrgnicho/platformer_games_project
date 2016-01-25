@@ -52,9 +52,13 @@ class AnimationActor(SpriteAnimator):
     self.bbox_back_np_ = None # Node path to the rear box ghost node
     self.bbox_front_np_ = None # Node path to the front box ghost node    
    
+    # store a reference to itself in order to overcome a limitation with the NodePath 'node()' method
     self.node().setPythonTag(SpriteAnimator.__name__,self)
     
   def setPythonTag(self,tag,obj):
+    '''
+    Stores a reference of "obj" under the each node's tag including the BulletBodyNode types.
+    '''
     SpriteAnimator.setPythonTag(self,tag,obj)       
     for np in [self.rigid_body_np_,self.damage_box_np_,self.hit_box_np_,self.action_body_np_,
                self.bbox_top_np_, self.bbox_front_np_, self.bbox_bottom_np_,self.bbox_back_np_]:

@@ -141,7 +141,7 @@ class CharacterStates(object): # Class Namespace
       
       CharacterState.__init__(self, CharacterStateKeys.STANDING, character_obj, parent_state_machine, animation_key) 
       
-      self.addAction(CollisionAction.LEDGE_COLLISION,self.nearEdgeCallback)     
+      self.addAction(CollisionAction.LEDGE_COLLISION,self.ledgeCollisionCallback)     
       
     def enter(self):      
       logging.debug("%s state entered"%(self.getKey()))
@@ -155,37 +155,31 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.node().setLinearFactor(LVector3(1,0,1))
       self.character_obj_.getStatus().momentum.setX(0)
       
-    def nearEdgeCallback(self,collision_action):
+    def ledgeCollisionCallback(self,collision_action):
             
-      platform  = collision_action.game_obj2
-      self.character_obj_.getStatus().platform = platform
+      ledge  = collision_action.game_obj2
       recovery_min = self.character_obj_.getInfo().fall_recovery_min
       recovery_max = self.character_obj_.getInfo().fall_recovery_max
       
-      # check if truly standing near either edge
-      if not (self.character_obj_.getRight() > platform.getRight() or self.character_obj_.getLeft() < platform.getLeft()) :
-        return
-      
-      # determining distance to platform edge
-      near_right_edge = self.character_obj_.getRight() > platform.getRight()       
-      d = (self.character_obj_.getRight() - platform.getRight()) if near_right_edge else (platform.getLeft() - self.character_obj_.getLeft())
-      
-      facing_oposite = near_right_edge != self.character_obj_.isFacingRight()
-      
+      d = abs(self.character_obj_.getFront() - ledge.getX(self.character_obj_.getParent()))
+
+        
+      if self.character_obj_.isFacingRight() == ledge.isRightSideLedge():        
+        # push from the platform  
+        if d >= recovery_max:        
+          logging.debug("Pushing character out of platform")
+          if self.character_obj_.isFacingRight():
+            self.character_obj_.clampLeft(ledge.getX(self.character_obj_.getParent()) + CharacterStates.EDGE_PUSH_DISTANCE)
+          else:
+            self.character_obj_.clampRight(ledge.getX(self.character_obj_.getParent()) - CharacterStates.EDGE_PUSH_DISTANCE)
+  
+        if d > recovery_min and d < recovery_max :      
+            StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.EDGE_RECOVERY)) 
+          
       # storing relevant variables
       self.character_obj_.getStatus().contact_data = CharacterStatus.ContactData(self.character_obj_.getName(),bottom = collision_action.contact_manifold)
-      self.character_obj_.getStatus().platform = platform
-      
-      # push from the platform  
-      if d >= recovery_max:        
-        logging.debug("Pushing character out of platform")
-        if near_right_edge:
-          self.character_obj_.clampLeft(platform.getRight() + CharacterStates.EDGE_PUSH_DISTANCE)
-        else:
-          self.character_obj_.clampRight(platform.getLeft() - CharacterStates.EDGE_PUSH_DISTANCE)
-
-      if d > recovery_min and d < recovery_max and not facing_oposite:      
-          StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.EDGE_RECOVERY))      
+      self.character_obj_.getStatus().platform = ledge.getParentPlatform()      
+      self.character_obj_.getStatus().ledge = ledge     
 
       
   class StandingEdgeRecovery(CharacterState):
@@ -199,21 +193,17 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.setAnimationEndCallback(self.done)
       self.character_obj_.pose(self.animation_key_)
       
-      # determining x position
+      # determining x position of ghost body
       xoffset = 0
       facing_right = self.character_obj_.isFacingRight() 
       if self.character_obj_.getAnimatorActor().getActionGhostBody() is not None:
         node = self.character_obj_.getAnimatorActor().getActionGhostBody().node()
         xoffset = node.getShapePos(0).getX()
         xoffset = xoffset if facing_right else -xoffset
-      
-      platform  = self.character_obj_.getStatus().platform  
-      last_contact = self.character_obj_.getStatus().contact_data
-      pos_x = platform.getRight() if facing_right else platform.getLeft()
-      pos_x -= xoffset    
-      self.character_obj_.clampOriginX(pos_x)   
-      self.character_obj_.clampBottom(platform.getMax().getZ())      
-      #self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z      
+        
+      ledge =  self.character_obj_.getStatus().ledge       
+      self.character_obj_.clampOriginX(ledge.getX(self.character_obj_.getParent()) - xoffset)
+      self.character_obj_.clampBottom(ledge.getZ(self.character_obj_.getParent()) )
       self.character_obj_.animate(self.animation_key_)  
       
     def exit(self):
@@ -479,15 +469,11 @@ class CharacterStates(object): # Class Namespace
       
     def ledgeCollisionCallback(self,action):
 
+      ledge = action.game_obj2
       ghost_body = self.character_obj_.getActionGhostBody()
-      self.character_obj_.getStatus().platform = action.game_obj2
-      
-      ledge = None      
-      if self.character_obj_.isFacingRight():
-        ledge = action.game_obj2.getLeftLedge()
-      else:
-        ledge = action.game_obj2.getRightLedge() 
-      
+      self.character_obj_.getStatus().platform = ledge.getParentPlatform()
+      self.character_obj_.getStatus().ledge = ledge
+            
       self.character_obj_.setStatic(True)
       
       # detemining position of ghost action body relative to character
@@ -509,7 +495,7 @@ class CharacterStates(object): # Class Namespace
       # turning off collision
       ghost_body.node().setIntoCollideMask(CollisionMasks.NO_COLLISION)
       
-      logging.info(inspect.stack()[0][3] + ' invoked')
+      logging.debug(inspect.stack()[0][3] + ' invoked')
       
     def exit(self): 
       
@@ -532,9 +518,10 @@ class CharacterStates(object): # Class Namespace
       
     def clampToPlatform(self):
       platform = self.character_obj_.getStatus().platform
+      ledge = self.character_obj_.getStatus().ledge
 
-      self.character_obj_.clampBottom(platform.getTop())
-      self.character_obj_.clampBack(platform.getLeft() if self.character_obj_.isFacingRight() else platform.getRight())
+      self.character_obj_.clampBottom(ledge.getZ(self.character_obj_.getParent()))
+      self.character_obj_.clampBack(ledge.getX(self.character_obj_.getParent()))
       self.character_obj_.setLinearVelocity(Vec3(0,0,0))   
       
     def exit(self):

@@ -58,7 +58,8 @@ class CharacterStatus(object):
     self.friction_enabled = False
     self.momentum = Vec3(0,0,0)
     self.velocity = Vec3(0,0,0)
-    self.platform = None # Latest platform that the character touched
+    self.platform = None # Last platform that the character touched.
+    self.ledge = None # Last ledge that the player came into contact with.
     self.contact_data = CharacterStatus.ContactData('') # contact data from last collision
     self.air_jumps_count = 0
     self.air_dashes_count = 0

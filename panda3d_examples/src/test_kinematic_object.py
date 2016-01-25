@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import time
+import logging
 
 from direct.showbase.ShowBase import ShowBase
 from direct.controls.InputState import InputState
@@ -262,6 +263,15 @@ class TestApplication(ShowBase):
     self.controlled_objects_.append(mbox)
 
     self.setupLevel()
+    
+    # Nodepath test
+    np = NodePath('testnode0')    
+    print('Created Nodepath to node %s'%(np.getName()))
+    np.clear()    
+    
+    #np.attachNewNode(PandaNode('testnode1'))
+    np.__init__(PandaNode('testnode1'))
+    print('Attached new node %s to empty Nodepath'%(np.getName()))
 
 
   def addBox(self,name,size,pos,visual):
