@@ -57,6 +57,7 @@ class TestGame(ShowBase):
   __BACKGROUND_SCALE__ = 0.2
   
   __PLATFORM_DEPTH__ = 10
+  __PLATFORM_Y_POS = 4
   
   def __init__(self,name ='TestGame'):
     
@@ -227,7 +228,7 @@ class TestGame(ShowBase):
       ]
     for i in range(0,len(platform_details)):
       p = platform_details[i]
-      pos = Vec3(p[0],0,p[1])
+      pos = Vec3(p[0],TestGame.__PLATFORM_Y_POS,p[1])
       size = Vec3(p[2],p[3],p[4])
       
       platform = Platform('Platform' + str(i),size)

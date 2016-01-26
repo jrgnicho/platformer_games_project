@@ -23,8 +23,9 @@ class Platform(GameObject):
     self.visual_nh_.setTexture(Platform.__DEFAULT_TEXTURE__,1) 
     
     # platform_ledge members
-    self.left_ledge_ = Ledge(name + 'left-ledge',False,self) if left_side_ledge else None
-    self.right_ledge_ = Ledge(name + 'right-ledge',True,self) if right_side_ledge else None
+    ledge_size = Vec3(Platform.__LEDGE_BOX_SIDE_LENGHT,self.getSize().getY(),Platform.__LEDGE_BOX_SIDE_LENGHT)
+    self.left_ledge_ = Ledge(name + 'left-ledge',False,self,ledge_size) if left_side_ledge else None
+    self.right_ledge_ = Ledge(name + 'right-ledge',True,self,ledge_size) if right_side_ledge else None
     self.ledges_ = [] # to avoid recreating this list 
     
     # ledge placement
