@@ -431,7 +431,7 @@ class CharacterStates(object): # Class Namespace
       vel.setZ(0)
       self.character_obj_.setLinearVelocity(vel)
       self.character_obj_.applyCentralImpulse(LVector3(0,0,self.character_obj_.character_info_.airjump_force))      
-      self.character_obj_.getStatus().air_jump_count+=1
+      self.character_obj_.getStatus().air_jumps_count+=1
       AerialBaseState.enter(self) 
         
     def exit(self):
@@ -455,7 +455,7 @@ class CharacterStates(object): # Class Namespace
       logging.debug("%s state entered"%(self.getKey()))
       
       self.character_obj_.animate(self.animation_key_) 
-      self.character_obj_.getStatus().air_jump_count = 0
+      self.character_obj_.getStatus().air_jumps_count = 0
       self.character_obj_.getStatus().air_dashes_count = 0
       
     def moveNone(self,action):   
@@ -489,7 +489,8 @@ class CharacterStates(object): # Class Namespace
       transform = TransformState.makeMat(tf_world_to_ledge * tf_ghost_to_object)
       
       # placing character on ledge
-      self.character_obj_.setPos(transform.getPos())
+      pos = Vec3(transform.getPos().getX(),0,transform.getPos().getZ())
+      self.character_obj_.setPos(pos)
       self.character_obj_.setLinearVelocity(Vec3(0,0,0))        
       
       # turning off collision
@@ -608,7 +609,7 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.animate(self.animation_key_)  
       self.clampToPlatform(self.character_obj_.getStatus().platform)
       self.character_obj_.enableFriction(True)
-      self.character_obj_.getStatus().air_jump_count = 0
+      self.character_obj_.getStatus().air_jumps_count = 0
       self.character_obj_.getStatus().air_dashes_count = 0
       self.character_obj_.getStatus().momentum.setX(0)
       
@@ -649,7 +650,7 @@ class CharacterStates(object): # Class Namespace
       
       self.character_obj_.setAnimationEndCallback(self.done)
       self.character_obj_.animate(self.animation_key_)  
-      self.character_obj_.getStatus().air_jump_count = 0
+      self.character_obj_.getStatus().air_jumps_count = 0
       self.character_obj_.getStatus().air_dashes_count = 0
       
       # placing character  on platform      
