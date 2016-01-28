@@ -110,6 +110,12 @@ class CharacterBase(AnimatableObject):
     '''
     return self.character_info_
   
+  def getHeight(self):
+    return self.getTop() - self.getBottom()
+  
+  def getWidth(self):
+    return self.getRight() - self.getLeft()
+  
   def getTop(self):
     return self.getAnimatorActor().getRigidBodyBoundingBox().top + self.getZ()
     
@@ -407,6 +413,40 @@ class CharacterBase(AnimatableObject):
     self.enableFriction(self.getStatus().friction_enabled)
       
     return True 
+  
+  def doCollisionSweepTestZ(self,from_z = 0, to_z = 0):
+    '''
+    doCollisionSweepTestZ(double from_z = 0, double to_z = 0)
+    Performs a collision sweep test along z in order to determine the height 
+    at which the character's active rigid body comes into contact with an obstacle.  This is useful during 
+    landing actions.
+    
+    @param from_z: [optional] z value for the start position
+    @param to_z: [optional] z value for the end position  
+    '''
+    
+    pos = self.getPos()
+    if abs(from_z - to_z) < 1e-5:
+      height = self.getHeight()
+      from_z = pos.getZ() + 0.5* height
+      to_z = pos.getZ() - 0.5* height
+    t0 = TransformState.makePos(Vec3(pos.getX(),pos.getY(),from_z))
+    t1 = TransformState.makePos(Vec3(pos.getX(),pos.getY(),to_z))
+    
+    rigid_body = self.getRigidBody()
+    if rigid_body.node().getNumShapes() <= 0:
+      logging.warn("Rigid body contains no shapes, collision sweep test canceled")
+      return
+    
+    aabb_shape = rigid_body.node().getShape(0)
+    result = self.physics_world_.sweepTestClosest(aabb_shape,t0,t1,CollisionMasks.LEVEL_OBSTACLE,0.0)
+
+    if not result.hasHit():
+      logging.warn("No collision from collision sweep closest test from %s to %s "%(t0.getPos(),t1.getPos()))
+    else:
+      logging.debug("Found collision at point %s between p0: %s to p1 %s"%(result.getHitPos(),t0.getPos(),t1.getPos()))
+      
+    return result
     
   def faceRight(self,face_right = True):
     constraint = self.right_constraint_ if face_right else self.left_constraint_

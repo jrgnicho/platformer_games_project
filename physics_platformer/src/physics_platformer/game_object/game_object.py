@@ -97,6 +97,9 @@ class GameObject(NodePath):
       self.physics_world_ = physics_world
       self.physics_world_.attach(self.node())
       
+    def getPhysicsWorld(self):
+      return self.physics_world_
+      
     def clearPhysicsWorld(self):
       if self.physics_world_ is not None:
         self.physics_world_.remove(self.node())
