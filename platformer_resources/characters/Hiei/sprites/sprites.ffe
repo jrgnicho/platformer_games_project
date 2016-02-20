@@ -596,8 +596,8 @@ file = 7-3.png
 [SpriteDef]
 group = 8
 image = 0
-xaxis = 32
-yaxis = 51
+xaxis = 34
+yaxis = 56
 flags = 0
 file = 8-0.png
 

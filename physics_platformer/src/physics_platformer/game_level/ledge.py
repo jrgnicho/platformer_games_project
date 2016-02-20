@@ -39,6 +39,9 @@ class Ledge(GameObject):
     NodePath.__init__(self,ledge_gn)
     
   def isRightSideLedge(self):
+    '''
+    Returns true if the platform inmediate surface ends on the right, False otherwise
+    '''
     return self.is_right_side_ledge_
   
   def getParentPlatform(self):

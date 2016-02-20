@@ -89,7 +89,7 @@ class Hiei(CharacterBase):
     self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.LAND_EDGE.key, CharacterStateKeys.EDGE_LANDING)
     self.sm_.addTransition(CharacterStateKeys.FALLING, CharacterActions.JUMP.key, CharacterStateKeys.AIR_JUMPING, lambda: self.getStatus().air_jumps_count < self.getInfo().air_jumps)
     self.sm_.addTransition(CharacterStateKeys.FALLING,CharacterActions.DASH.key,CharacterStateKeys.MIDAIR_DASHING,lambda: self.getStatus().air_dashes_count < self.getInfo().air_dashes)
-    self.sm_.addTransition(CharacterStateKeys.FALLING, CollisionAction.LEDGE_COLLISION, CharacterStateKeys.CATCH_LEDGE)
+    self.sm_.addTransition(CharacterStateKeys.FALLING, CollisionAction.LEDGE_ACTION_COLLISION, CharacterStateKeys.CATCH_LEDGE)
     
     self.sm_.addTransition(CharacterStateKeys.CATCH_LEDGE, CharacterActions.JUMP.key, CharacterStateKeys.JUMPING)
     self.sm_.addTransition(CharacterStateKeys.CATCH_LEDGE, CharacterActions.MOVE_UP.key, CharacterStateKeys.CLIMBING)

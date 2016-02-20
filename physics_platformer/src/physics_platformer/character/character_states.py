@@ -152,7 +152,7 @@ class CharacterStates(object): # Class Namespace
       
       CharacterState.__init__(self, CharacterStateKeys.STANDING, character_obj, parent_state_machine, animation_key) 
       
-      self.addAction(CollisionAction.LEDGE_COLLISION,self.ledgeCollisionCallback)     
+      self.addAction(CollisionAction.LEDGE_ACTION_COLLISION,self.ledgeCollisionCallback)     
       
     def enter(self):      
       logging.debug("%s state entered"%(self.getKey()))
@@ -457,7 +457,7 @@ class CharacterStates(object): # Class Namespace
     def __init__(self,character_obj,parent_state_machine,animation_key = None):
       CharacterState.__init__(self, CharacterStateKeys.CATCH_LEDGE, character_obj, parent_state_machine, animation_key)
       
-      self.addAction(CollisionAction.LEDGE_COLLISION,self.ledgeCollisionCallback)
+      self.addAction(CollisionAction.LEDGE_ACTION_COLLISION,self.ledgeCollisionCallback)
       self.addAction(CharacterActions.MOVE_RIGHT.key,self.moveRight)
       self.addAction(CharacterActions.MOVE_LEFT.key,self.moveLeft) 
       self.addAction(CharacterActions.MOVE_NONE.key,self.moveNone) 
@@ -551,6 +551,7 @@ class CharacterStates(object): # Class Namespace
       self.forward_speed_ = self.character_obj_.character_info_.jump_fwd_speed      
       
       self.addAction(CollisionAction.SURFACE_COLLISION,self.surfaceCollisionCallback)
+      self.addAction(CollisionAction.LEDGE_BOTTOM_COLLISION,self.ledgeCollisionCallback)
       self.addAction(GeneralActions.GAME_STEP,self.capFallSpeed)      
       
     def enter(self):
@@ -568,6 +569,36 @@ class CharacterStates(object): # Class Namespace
         if vel.getZ() < self.character_obj_.character_info_.fall_max_speed:
             vel.setZ(self.character_obj_.character_info_.fall_max_speed)
             self.character_obj_.setLinearVelocity(vel)
+            
+    def ledgeCollisionCallback(self,action):
+      ledge = action.game_obj2
+      info = self.character_obj_.getInfo()
+      self.character_obj_.getStatus().platform = ledge
+      self.character_obj_.getStatus().platform = ledge.getParentPlatform()
+      
+      dist_from_ledge = 0
+      parent = self.character_obj_.getParent()
+      if ledge.isRightSideLedge():
+        dist_from_ledge = (ledge.getX(parent) - self.character_obj_.getLeft())
+      else:
+        dist_from_ledge = (self.character_obj_.getRight() - ledge.getX(parent))  
+        
+      if dist_from_ledge <= info.land_edge_min: # push out of platform
+        if ledge.isRightSideLedge():
+          self.character_obj_.clampLeft(ledge.getX(parent) + CharacterStates.EDGE_PUSH_DISTANCE)
+        else:
+          self.character_obj_.clampRight(ledge.getX(parent) - CharacterStates.EDGE_PUSH_DISTANCE)
+      
+      # barely landed on platform
+      if dist_from_ledge > info.land_edge_min and dist_from_ledge < info.land_edge_max:
+        
+        if ledge.isRightSideLedge() == self.character_obj_.isFacingRight():
+          StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND))
+        else:
+          StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND_EDGE))
+          
+      if dist_from_ledge >= info.land_edge_max:
+        StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND))
         
 
     def surfaceCollisionCallback(self,action):
@@ -577,31 +608,11 @@ class CharacterStates(object): # Class Namespace
         self.character_obj_.getStatus().platform = platform
         self.character_obj_.getStatus().contact_data = CharacterStatus.ContactData(action.contact_manifold)
         
-        near_edge = ( self.character_obj_.getLeft() < platform.getLeft() or self.character_obj_.getRight() > platform.getRight())
-        facing_away = True
-        if near_edge:
-          facing_away = self.character_obj_.getFront() < platform.getLeft() or self.character_obj_.getFront() > platform.getRight()
-        
-        if not facing_away:  
-          info = self.character_obj_.getInfo()
-          d = abs(self.character_obj_.getFront() - platform.getLeft()) if self.character_obj_.isFacingRight() else abs(self.character_obj_.getFront() - platform.getRight())
-          
-          if d > info.land_edge_min and d < info.land_edge_max:
-            StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND_EDGE))
-          
-          if d < info.land_edge_min:
-            
-            if self.character_obj_.isFacingRight():
-              # push out of platform
-              self.character_obj_.clampRight(platform.getLeft()-CharacterStates.EDGE_PUSH_DISTANCE)
-            else:
-              # pull into platform
-              self.character_obj_.clampLeft(platform.getRight()+CharacterStates.EDGE_PUSH_DISTANCE)
-          if d > info.land_edge_max:
-            StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND))
-            
-        else:
-          StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND))
+        # check if ledge is nearby
+        result = self.character_obj_.doCollisionSweepTestZ(CollisionMasks.LEDGE)
+        if not result.hasHit():
+          StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND))        
+
      
   class LandState(CharacterState):
     

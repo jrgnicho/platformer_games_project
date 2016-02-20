@@ -414,15 +414,16 @@ class CharacterBase(AnimatableObject):
       
     return True 
   
-  def doCollisionSweepTestZ(self,from_z = 0, to_z = 0):
+  def doCollisionSweepTestZ(self,col_mask = CollisionMasks.LEVEL_OBSTACLE,from_z = 0, to_z = 0):
     '''
     doCollisionSweepTestZ(double from_z = 0, double to_z = 0)
     Performs a collision sweep test along z in order to determine the height 
     at which the character's active rigid body comes into contact with an obstacle.  This is useful during 
     landing actions.
     
-    @param from_z: [optional] z value for the start position
-    @param to_z: [optional] z value for the end position  
+    @param col_mask: [optional] collision mask of the object(s) to check for collisions with.
+    @param from_z:   [optional] z value for the start position
+    @param to_z:     [optional] z value for the end position  
     '''
     
     pos = self.getPos()
@@ -439,7 +440,7 @@ class CharacterBase(AnimatableObject):
       return
     
     aabb_shape = rigid_body.node().getShape(0)
-    result = self.physics_world_.sweepTestClosest(aabb_shape,t0,t1,CollisionMasks.LEVEL_OBSTACLE,0.0)
+    result = self.physics_world_.sweepTestClosest(aabb_shape,t0,t1,col_mask,0.0)
 
     if not result.hasHit():
       logging.warn("No collision from collision sweep closest test from %s to %s "%(t0.getPos(),t1.getPos()))
