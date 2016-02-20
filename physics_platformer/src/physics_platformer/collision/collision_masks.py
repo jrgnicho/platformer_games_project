@@ -22,4 +22,5 @@ class CollisionMasks(object):
   LEDGE = BitMask32.bit(7)
   LEVEL_BOUND = BitMask32.bit(12)  
   LEVEL_PEG = BitMask32(13) # Characters can hang from it
+  LANDING_SURFACE = BitMask32(14) # Characters can land on it
   
