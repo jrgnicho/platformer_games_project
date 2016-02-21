@@ -8,7 +8,7 @@ from direct.controls.InputState import InputState
 from direct.gui.OnscreenText import OnscreenText
 
 from panda3d.core import AmbientLight, Filename, LColor, Mat4, BoundingVolume,\
-  BoundingPlane
+  BoundingPlane, BoundingBox, BoundingSphere
 from panda3d.core import DirectionalLight
 from panda3d.core import Vec3
 from panda3d.core import Vec4
@@ -23,7 +23,7 @@ from panda3d.core import loadPrcFileData
 
 # physics
 from panda3d.bullet import BulletWorld, BulletGhostNode, BulletManifoldPoint,\
-  BulletContactResult, BulletShape
+  BulletContactResult, BulletShape, BulletGenericConstraint
 from panda3d.bullet import BulletPlaneShape
 from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletSphereShape
@@ -52,7 +52,7 @@ GAME_OBJECT_BITMASK = BitMask32.bit(3)
 
 # Sector detection
 PLAYER_GHOST_DIAMETER = 0.01
-SECTOR_PLANE_POS = Vec3(0,-0.15,0)
+SECTOR_PLANE_POS = Vec3(0,-0.2,0)
 SECTOR_PLANE_SIZE = Vec3(100,0.01,40)
 SECTOR_COLLISION_MARGIN = 0.001
 
@@ -78,33 +78,88 @@ class Sector(NodePath):
     NodePath.__init__(self,name)
     self.object_nodes_ = []
     self.physics_world_ = physics_world
+    self.detection_plane_ = None
+    self.constraint_plane_ = None
+    self.box_contraints_ = []
+    self.character_constraint_ = None
     
   def __del__(self):
     self.cleanup()
     
   def setup(self):
-    self.setupBoxes()
-    self.setupPlatforms()
     
-    # setting up sector plane
-    self.detection_plane_ = self.attachNewNode(BulletRigidBodyNode(self.getName() + 'plane'))
+    # setting up sector entry plane
+    self.detection_plane_ = self.attachNewNode(BulletRigidBodyNode(self.getName() + 'entry-plane'))
+    
     box_shape =  BulletBoxShape(SECTOR_PLANE_SIZE/2)
-    box_shape.setMargin(SECTOR_COLLISION_MARGIN)
+    box_shape.setMargin(SECTOR_COLLISION_MARGIN)    
     self.detection_plane_.node().addShape(box_shape)
     self.detection_plane_.node().setMass(0)
     self.detection_plane_.setPos(self,SECTOR_PLANE_POS)
     self.detection_plane_.node().setIntoCollideMask(SECTOR_ENTERED_BITMASK)
     self.physics_world_.attach(self.detection_plane_.node())    
     self.detection_plane_.node().clearBounds()
+    self.detection_plane_.reparentTo(self.getParent())
+    
+    # sector constraint plane
+    self.constraint_plane_ = self.attachNewNode(BulletRigidBodyNode(self.getName()+ 'constraint-plane'))
+    self.constraint_plane_.node().addShape(BulletPlaneShape(Vec3(0,1,0),0))
+    self.constraint_plane_.node().setMass(0)
+    self.constraint_plane_.setPos(Vec3.zero())
+    self.constraint_plane_.setHpr(Vec3.zero())
+    self.constraint_plane_.node().setIntoCollideMask(BitMask32.allOff())
+    self.physics_world_.attach(self.constraint_plane_.node())
+    self.constraint_plane_.reparentTo(self.getParent())
+        
+    # setting up objects
+    self.setupBoxes()
+    self.setupPlatforms()
+    
     
   def getSectorPlaneNode(self):
     return self.detection_plane_
   
+  def enableDetection(self,enable):
+    if enable:
+      self.detection_plane_.node().setIntoCollideMask(SECTOR_ENTERED_BITMASK)
+    else:
+      self.detection_plane_.node().setIntoCollideMask(BitMask32.allOff())    
+      
+  def constrainCharacter(self,char_np):
+    
+    char_np.setY(self,0)
+    
+    if self.character_constraint_ is None:
+      self.character_constraint_ = BulletGenericConstraint(self.constraint_plane_.node(),char_np.node(),
+                                          TransformState.makeIdentity(),
+                                          TransformState.makeIdentity(),
+                                          False)  
+      
+      self.character_constraint_.setLinearLimit(0,-10000,10000)
+      self.character_constraint_.setLinearLimit(1,0,0)
+      self.character_constraint_.setLinearLimit(2,-10000,10000)
+      #self.character_constraint_.setAngularLimit(0,0,0)
+      #self.character_constraint_.setAngularLimit(1,-10000,10000)
+      #self.character_constraint_.setAngularLimit(2,0,0) 
+      self.character_constraint_.setDebugDrawSize(0)  
+      self.physics_world_.attach(self.character_constraint_)
+    
+    self.character_constraint_.setEnabled(True) 
+    
+  def releaseCharacter(self):
+    
+    if self.character_constraint_ is not None:
+      self.character_constraint_.setEnabled(False)
+  
   def cleanup(self):
     
+    for c in self.box_contraints_:
+      self.physics_world_.remove(c)
+    
     for obj in self.object_nodes_:
-      self.physics_world_.remove(obj.node())
-  
+      self.physics_world_.remove(obj.node())  
+      
+    self.physics_world_.remove(self.character_constraint_)
     
   def addBox(self,name,size,pos,visual):
 
@@ -113,14 +168,58 @@ class Sector(NodePath):
     box.node().setMass(1.0)
     box.node().addShape(BulletBoxShape(size))
     box.setCollideMask(GAME_OBJECT_BITMASK)
-    box.node().setLinearFactor((1,0,1))
-    box.node().setAngularFactor((0,1,0))
+    #box.node().setLinearFactor((1,0,1))
+    #box.node().setAngularFactor((0,1,0))
     visual.instanceTo(box)
-    box.reparentTo(self)    
-    box.setPos(pos)
+    box.reparentTo(self.getParent())    
+    box.setPos(self,pos)
+    box.setHpr(self,Vec3.zero())
 
     self.physics_world_.attachRigidBody(box.node())
     self.object_nodes_.append(box)
+    
+    # adding constraint
+    pos_constraint = BulletGenericConstraint(self.constraint_plane_.node(),box.node(),
+                                        TransformState.makeIdentity(),
+                                        TransformState.makeIdentity(),
+                                        False)
+    
+    rot_constraint = BulletGenericConstraint(self.constraint_plane_.node(),box.node(),
+                                        TransformState.makeIdentity(),
+                                        TransformState.makeIdentity(),
+                                        False)
+    
+
+ 
+    pos_constraint.setLinearLimit(0,-10000,10000)
+    pos_constraint.setLinearLimit(1,0,0)
+    pos_constraint.setLinearLimit(2,-10000,10000)
+    
+    # All angular constraints must be either locked or released for the simulation to be stable
+    #pos_constraint.setAngularLimit(0,-0.1,0.1) 
+    #pos_constraint.setAngularLimit(1,-1,1)
+    #pos_constraint.setAngularLimit(2,-0.1,0.1)
+    
+#     rot_constraint.setLinearLimit(0,-10000,10000)
+#     rot_constraint.setLinearLimit(1,-10000,10000)
+#     rot_constraint.setLinearLimit(2,-10000,10000)
+#     rot_constraint.setAngularLimit(0,-0.1,0.1)
+#     rot_constraint.setAngularLimit(1,-1000,1000)
+#     rot_constraint.setAngularLimit(2,-0.1,0.1)
+    
+    #pos_constraint.setBreakingThreshold(1000)
+    pos_constraint.setDebugDrawSize(0)
+    #rot_constraint.setBreakingThreshold(1000)
+    
+    for axis in range(0,6):
+      pos_constraint.setParam(BulletGenericConstraint.CP_cfm,0,axis)
+      pos_constraint.setParam(BulletGenericConstraint.CP_erp,0.4,axis)
+      #rot_constraint.setParam(BulletGenericConstraint.CP_cfm,0.8,axis)
+    
+    self.physics_world_.attach(pos_constraint)
+    #self.physics_world_.attach(rot_constraint)
+    self.box_contraints_.append(pos_constraint)
+    #self.box_contraints_.append(rot_constraint)
     
     return box
   
@@ -151,11 +250,11 @@ class Sector(NodePath):
 
     # (left, top, length ,depth(y) ,height)
     platform_details =[ 
-      (-20, 4, 20, 4, 1  ),
+      (-24, 4, 24, 4, 1  ),
       (-2, 5, 10, 4, 1  ),
       ( 4 , 2 , 16, 4, 1.4),
       (-4 , 1, 10, 4, 1),
-      ( 16, 6, 30, 4, 1)
+      ( 16, 5, 30, 4, 1)
       ]
 
     # Platform Visuals
@@ -172,22 +271,24 @@ class Sector(NodePath):
   def addPlatform(self,topleft,size,name,visual):
 
     # Box (static)
-    platform = self.attachNewNode(BulletRigidBodyNode(name))
+    platform = self.getParent().attachNewNode(BulletRigidBodyNode(name))   
     platform.node().setMass(0)
     platform.node().addShape(BulletBoxShape(size/2))
-    platform.setPos(Vec3(topleft[0] + 0.5*size.getX(),0,topleft[1]-0.5*size.getZ()))
+    platform.setPos(self,Vec3(topleft[0] + 0.5*size.getX(),0,topleft[1]-0.5*size.getZ()))
+    platform.setHpr(self,Vec3.zero())
     platform.setCollideMask(GAME_OBJECT_BITMASK)
     local_visual = visual.instanceUnderNode(platform,name + '_visual')
+    local_visual.reparentTo(platform)
     
     # Visual scaling
     bounds = local_visual.getTightBounds()
     extents = Vec3(bounds[1] - bounds[0])
     scale_factor = 1/max([extents.getX(),extents.getY(),extents.getZ()])
-    local_visual.setScale(size.getX()*scale_factor,size.getY()*scale_factor,size.getZ()*scale_factor)
-    
+    local_visual.setScale(size.getX()*scale_factor,size.getY()*scale_factor,size.getZ()*scale_factor)    
 
     self.physics_world_.attachRigidBody(platform.node())
     self.object_nodes_.append(platform)
+    
 
 class TestApplication(ShowBase):
 
@@ -326,10 +427,27 @@ class TestApplication(ShowBase):
         sector = [s for s in self.level_sectors_ if s.getSectorPlaneNode().getName() == node0.getName()]
         sector = [s for s in self.level_sectors_ if s.getSectorPlaneNode().getName() == node1.getName()] + sector
         
-        self.active_sector_ = sector[0]
+        self.switchToSector(sector[0])
         logging.info("Sector %s entered"%(self.active_sector_.getName()))
+        
+  def switchToSector(self,sector):       
     
-   
+    obj_index = self.controlled_obj_index_
+    character_obj = self.controlled_objects_[obj_index]
+    
+    if self.active_sector_ is not None:
+      self.active_sector_.releaseCharacter()
+    
+    character_obj.setY(sector,0)
+    character_obj.setH(sector,0)
+    self.active_sector_ = sector
+    
+    self.active_sector_.constrainCharacter(character_obj)
+    
+    self.active_sector_.enableDetection(False)
+    sectors = [s for s in self.level_sectors_ if s != self.active_sector_]
+    for s in sectors:
+      s.enableDetection(True)
 
   def setupPhysics(self):
 
@@ -377,19 +495,20 @@ class TestApplication(ShowBase):
     sphere = NodePath(BulletRigidBodyNode('Sphere'))
     sphere.node().addShape(BulletSphereShape(0.5*diameter))
     sphere.node().setMass(1.0)
-    sphere.node().setLinearFactor((1,0,1))
-    sphere.node().setAngularFactor((0,1,0))
+    #sphere.node().setLinearFactor((1,0,1))
+    #sphere.node().setAngularFactor((0,1,0))
     sphere.setCollideMask(GAME_OBJECT_BITMASK)
     sphere_visual.instanceTo(sphere)
     
     self.physics_world_.attachRigidBody(sphere.node())
-    self.controlled_objects_.append(sphere)
-    sphere.reparentTo(self.level_sectors_[0])    
-    sphere.setPos(Vec3(0,0,diameter+10))
+    self.controlled_objects_.append(sphere) 
+    sphere.reparentTo(self.world_node_)
+    sphere.setPos(self.level_sectors_[0],Vec3(0,0,diameter+10))
+    sphere.setHpr(self.level_sectors_[0],Vec3(0,0,0))
     
     # creating bullet ghost for detecting entry into other sectors
     player_ghost = sphere.attachNewNode(BulletGhostNode('player-ghost-node'))
-    ghost_box_shape = BulletBoxShape(Vec3(PLAYER_GHOST_DIAMETER,PLAYER_GHOST_DIAMETER,PLAYER_GHOST_DIAMETER)/2)
+    ghost_box_shape = BulletSphereShape(PLAYER_GHOST_DIAMETER/2)
     ghost_box_shape.setMargin(SECTOR_COLLISION_MARGIN)
     ghost_sphere_shape = BulletSphereShape(PLAYER_GHOST_DIAMETER*0.5)
     ghost_sphere_shape.setMargin(SECTOR_COLLISION_MARGIN)
@@ -417,6 +536,9 @@ class TestApplication(ShowBase):
     self.controlled_objects_.append(mbox)
     mbox.reparentTo(self.level_sectors_[0])    
     mbox.setPos(Vec3(1,0,size.getZ()+1))
+    
+    # switching to sector 1
+    self.switchToSector(self.level_sectors_[0])
 
 
   def setupLevelSectors(self):
@@ -428,12 +550,11 @@ class TestApplication(ShowBase):
       sector = Sector('sector' + str(i),self.physics_world_)
       sector.reparentTo(self.world_node_)
       
+      #sector.setHpr(Vec3(60*(i+1),0,0))
       sector.setHpr(Vec3(90*i,0,0))
       sector.setPos(sector,Vec3(0,-20,i*4))
       self.level_sectors_.append(sector)
-      sector.setup()
-      
-    self.active_sector_ = self.level_sectors_[0]
+      sector.setup()      
 
   def update(self, task):
 
@@ -457,8 +578,11 @@ class TestApplication(ShowBase):
     else:
       obj.node().setKinematic(False)
 
-    vel = obj.node().getLinearVelocity()
-    w = obj.node().getAngularVelocity()
+    vel = self.active_sector_.getRelativeVector(self.world_node_,obj.node().getLinearVelocity())
+    w = self.active_sector_.getRelativeVector(self.world_node_, obj.node().getAngularVelocity())
+    vel.setY(0)
+    #w.setX(0)
+    #w.setZ(0)
 
   
     if self.input_state_.isSet('right'): 
@@ -488,15 +612,20 @@ class TestApplication(ShowBase):
       w.setY(0)
 
     if activate : obj.node().setActive(True,True)
+    vel = self.world_node_.getRelativeVector(self.active_sector_,vel)
+    w = self.world_node_.getRelativeVector(self.active_sector_,w)
     obj.node().setLinearVelocity(vel)
     obj.node().setAngularVelocity(w)
+    
+    #logging.info("Linear Velocity: %s"%(str(vel)))
 
   def updateCamera(self):
-
+ 
     if len(self.controlled_objects_) > 0:
       obj = self.controlled_objects_[self.controlled_obj_index_]
-      self.cam.setPos(obj,0, -CAM_DISTANCE, 0)
-      self.cam.lookAt(obj.getPos())
+      self.cam.setPos(self.active_sector_,obj.getPos(self.active_sector_))
+      self.cam.setY(self.active_sector_,-CAM_DISTANCE/1)
+      self.cam.lookAt(obj.getParent(),obj.getPos())
 
   def cleanup(self):
     
