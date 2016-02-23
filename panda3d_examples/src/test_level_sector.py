@@ -179,7 +179,7 @@ class Sector(NodePath):
     self.object_nodes_.append(box)
     
     # adding constraint
-    pos_constraint = BulletGenericConstraint(self.constraint_plane_.node(),box.node(),
+    motion2d_constraint = BulletGenericConstraint(self.constraint_plane_.node(),box.node(),
                                         TransformState.makeIdentity(),
                                         TransformState.makeIdentity(),
                                         False)
@@ -191,35 +191,24 @@ class Sector(NodePath):
     
 
  
-    pos_constraint.setLinearLimit(0,-10000,10000)
-    pos_constraint.setLinearLimit(1,0,0)
-    pos_constraint.setLinearLimit(2,-10000,10000)
+    motion2d_constraint.setLinearLimit(0,-10000,10000)
+    motion2d_constraint.setLinearLimit(1,0,0)
+    motion2d_constraint.setLinearLimit(2,-10000,10000)
     
     # All angular constraints must be either locked or released for the simulation to be stable
-    #pos_constraint.setAngularLimit(0,-0.1,0.1) 
-    #pos_constraint.setAngularLimit(1,-1,1)
-    #pos_constraint.setAngularLimit(2,-0.1,0.1)
+    #motion2d_constraint.setAngularLimit(0,-0.1,0.1) 
+    #motion2d_constraint.setAngularLimit(1,-100,100)
+    #motion2d_constraint.setAngularLimit(2,-0.1,0.1)
     
-#     rot_constraint.setLinearLimit(0,-10000,10000)
-#     rot_constraint.setLinearLimit(1,-10000,10000)
-#     rot_constraint.setLinearLimit(2,-10000,10000)
-#     rot_constraint.setAngularLimit(0,-0.1,0.1)
-#     rot_constraint.setAngularLimit(1,-1000,1000)
-#     rot_constraint.setAngularLimit(2,-0.1,0.1)
+    #motion2d_constraint.setBreakingThreshold(1000)
+    motion2d_constraint.setDebugDrawSize(0)
     
-    #pos_constraint.setBreakingThreshold(1000)
-    pos_constraint.setDebugDrawSize(0)
-    #rot_constraint.setBreakingThreshold(1000)
+#     for axis in range(0,6):
+#       motion2d_constraint.setParam(BulletGenericConstraint.CP_cfm,0,axis)
+#       motion2d_constraint.setParam(BulletGenericConstraint.CP_erp,0.4,axis)
     
-    for axis in range(0,6):
-      pos_constraint.setParam(BulletGenericConstraint.CP_cfm,0,axis)
-      pos_constraint.setParam(BulletGenericConstraint.CP_erp,0.4,axis)
-      #rot_constraint.setParam(BulletGenericConstraint.CP_cfm,0.8,axis)
-    
-    self.physics_world_.attach(pos_constraint)
-    #self.physics_world_.attach(rot_constraint)
-    self.box_contraints_.append(pos_constraint)
-    #self.box_contraints_.append(rot_constraint)
+    self.physics_world_.attach(motion2d_constraint)
+    self.box_contraints_.append(motion2d_constraint)
     
     return box
   
@@ -528,8 +517,8 @@ class TestApplication(ShowBase):
     mbox = NodePath(BulletRigidBodyNode('MobileBox'))
     mbox.node().addShape(BulletBoxShape(size/2))
     mbox.node().setMass(1.0)
-    mbox.node().setLinearFactor((1,0,1))
-    mbox.node().setAngularFactor((0,1,0))
+    #mbox.node().setLinearFactor((1,0,1))
+    #mbox.node().setAngularFactor((0,1,0))
     mbox.setCollideMask(GAME_OBJECT_BITMASK)
     mbox_visual.instanceTo(mbox)    
     self.physics_world_.attachRigidBody(mbox.node())
