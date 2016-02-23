@@ -636,36 +636,7 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.getStatus().air_jumps_count = 0
       self.character_obj_.getStatus().air_dashes_count = 0
       self.character_obj_.getStatus().momentum.setX(0)
-      
-    def surfaceCollisionCallback(self,action):
-      '''
-      Performs a collision sweep in order to determine the height at which the character comes into contact
-      with the landing surface
-      '''
-      
-      physics_world = self.character_obj_.getPhysicsWorld()
-      rigid_body = self.character_obj_.getRigidBody()
-      if rigid_body.node().getNumShapes() <= 0:
-        logging.warn("Rigid body contains no shapes, sweep collision test canceled")
-        return
-      
-      aabb_shape = rigid_body.node().getShape(0)
-      pos = self.character_obj_.getPos()
-      height = self.character_obj_.getHeight()
-      t0 = TransformState.makePos(Vec3(pos.getX(),0,pos.getZ() + 0.5* height))
-      t1 = TransformState.makePos(Vec3(pos.getX(),0,pos.getZ() - 0.5* height))
-      
-      result = physics_world.sweepTestClosest(aabb_shape,t0,t1,CollisionMasks.LEVEL_OBSTACLE,0.0)
-      
-      logging.debug("Bottom at z pos %f"%(self.character_obj_.getBottom()))
-      if not result.hasHit():
-        logging.debug("No collision from collision sweep closest test from %s to %s "%(t0.getPos(),t1.getPos()))
-      else:
-        logging.debug("Found collision at point %s between p0: %s to p1 %s"%(result.getHitPos(),t0.getPos(),t1.getPos()))
         
-      pos_at_hit = result.getHitPos()
-      self.character_obj_.clampBottom(pos_at_hit.getZ())   
-  
     def turnNone(self,action):
       self.character_obj_.getStatus().momentum.setX(0)
       
