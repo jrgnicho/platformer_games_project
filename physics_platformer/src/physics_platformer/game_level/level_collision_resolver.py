@@ -15,10 +15,8 @@ import logging
 
 class LevelCollisionResolver(CollisionResolver):
   
-  def __init__(self,physics_world):
-    LevelCollisionResolver.__init__(self)
-    
-    self.free_falling_objects_ = {}
+  def __init__(self):
+    CollisionResolver.__init__(self)
     
   def setupCollisionRules(self,physics_world):
     
@@ -44,10 +42,10 @@ class LevelCollisionResolver(CollisionResolver):
   
     logging.debug(str(self.collision_action_matrix_))
     
-  def processCollisions(self,contact_manifolds, game_objects_dict, mobile_objects_names):
+  def processCollisions(self,contact_manifolds, game_objects_dict, mobile_object_ids ):
     
     # reset free falling dictionary
-    self.free_falling_objects_ = dict.fromkeys(mobile_objects_names,True)
+    free_falling_dict = dict.fromkeys(mobile_object_ids,True)
     
     for cm in contact_manifolds:
       
@@ -71,8 +69,8 @@ class LevelCollisionResolver(CollisionResolver):
         obj1.execute(action)
                 
         # check for free falling
-        if self.free_falling_objects_.has_key(key1) and col_mask1 == CollisionMasks.GAME_OBJECT_BOTTOM:
-          self.free_falling_objects_[key1] = False
+        if free_falling_dict.has_key(key1) and col_mask1 == CollisionMasks.GAME_OBJECT_BOTTOM:
+          free_falling_dict[key1] = False
         
       if (obj2 is not None) and self.collision_action_matrix_.hasEntry(
                                                                        col_mask2.getLowestOnBit() ,
@@ -83,13 +81,15 @@ class LevelCollisionResolver(CollisionResolver):
         obj2.execute(action)
         
         # check for free falling
-        if self.free_falling_objects_.has_key(key2) and col_mask2 == CollisionMasks.GAME_OBJECT_BOTTOM:
-          self.free_falling_objects_[key2] = False
+        if free_falling_dict.has_key(key2) and col_mask2 == CollisionMasks.GAME_OBJECT_BOTTOM:
+          free_falling_dict[key2] = False
     
     
     # objects in free fall      
-    for id,free_fall in self.free_falling_objects_.items():      
-      if free_fall:
-        obj = game_objects_dict[id]
-        action = CollisionAction(CollisionAction.FREE_FALL,obj,None,None)
-        obj.execute(action)
+    falling_objs_ids = [t[0] for t in free_falling_dict.items() if t[1]]
+    for id in falling_objs_ids:
+      obj = game_objects_dict[id]
+      action = CollisionAction(CollisionAction.FREE_FALL,obj,None,None)
+      obj.execute(action)
+      
+    

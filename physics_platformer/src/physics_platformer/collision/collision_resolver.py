@@ -31,7 +31,7 @@ class CollisionResolver(object):
     pass
 
   @abc.abstractmethod
-  def processCollisions(self,contact_manifolds, game_objects_dict, mobile_objects_names):
+  def processCollisions(self,contact_manifolds, game_objects_dict, mobile_objects_ids):
     """
     Processes the relevant contact manifolds
     processCollisions(ContactManifolds contact_manifolds, Dict{tring,GameObjects} game_objects_dict, String[] mobile_object_names)
