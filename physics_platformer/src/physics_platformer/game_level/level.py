@@ -175,8 +175,9 @@ class Level(NodePath):
     # processing contacts
     contact_manifolds = self.physics_world_.getManifolds()
     
+    unprocessed_contacts = []
     for r in self.collision_resolvers_:
-      r.processCollisions(contact_manifolds,self.game_object_map_,self.mobile_object_ids_)
+      unprocessed_contacts = r.processCollisions(contact_manifolds,self.game_object_map_,self.mobile_object_ids_)
         
       
       

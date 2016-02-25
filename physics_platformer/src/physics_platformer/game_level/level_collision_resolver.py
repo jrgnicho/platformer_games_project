@@ -32,13 +32,20 @@ class LevelCollisionResolver(CollisionResolver):
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.ACTION_BODY.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),True)
     
     # populating collision action matrix
-    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_BOTTOM.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),CollisionAction.SURFACE_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_BOTTOM.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),CollisionAction.LEDGE_BOTTOM_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_TOP.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),CollisionAction.CEILING_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_LEFT.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),CollisionAction.LEFT_WALL_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_RIGHT.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),CollisionAction.RIGHT_WALL_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.ACTION_BODY.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),CollisionAction.LEDGE_ACTION_COLLISION)
-    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_AABB.getLowestOnBit(),CollisionMasks.LEVEL_BOUND.getLowestOnBit(),CollisionAction.COLLIDE_LEVEL_BOUND)
+    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_BOTTOM.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),
+                                           CollisionAction.SURFACE_COLLISION,CollisionAction.NONE)
+    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_BOTTOM.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),
+                                           CollisionAction.LEDGE_BOTTOM_COLLISION,CollisionAction.NONE)
+    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_TOP.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),
+                                           CollisionAction.CEILING_COLLISION,CollisionAction.NONE)
+    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_LEFT.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),
+                                           CollisionAction.LEFT_WALL_COLLISION,CollisionAction.NONE)
+    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_RIGHT.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),
+                                           CollisionAction.RIGHT_WALL_COLLISION,CollisionAction.NONE)
+    self.collision_action_matrix_.addEntry(CollisionMasks.ACTION_BODY.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),
+                                           CollisionAction.LEDGE_ACTION_COLLISION,CollisionAction.NONE)
+    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_AABB.getLowestOnBit(),CollisionMasks.LEVEL_BOUND.getLowestOnBit(),
+                                           CollisionAction.COLLIDE_LEVEL_BOUND,CollisionAction.NONE)
   
     logging.debug(str(self.collision_action_matrix_))
     
@@ -46,9 +53,12 @@ class LevelCollisionResolver(CollisionResolver):
     
     # reset free falling dictionary
     free_falling_dict = dict.fromkeys(mobile_object_ids,True)
+    processed_contacts = []
     
-    for cm in contact_manifolds:
+    num_contacts = len(contact_manifolds)
+    for i in range(0,num_contacts):
       
+      cm = contact_manifolds[i]
       node0 = cm.getNode0()
       node1 = cm.getNode1()
       col_mask1 = node0.getIntoCollideMask()
@@ -58,32 +68,32 @@ class LevelCollisionResolver(CollisionResolver):
       key2 = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
             
       obj1 = game_objects_dict[key1] if (key1 is not None and game_objects_dict.has_key(key1)) else None
-      obj2 = game_objects_dict[key2] if (key2 is not None and game_objects_dict.has_key(key2)) else None      
+      obj2 = game_objects_dict[key2] if (key2 is not None and game_objects_dict.has_key(key2)) else None   
       
-      if (obj1 is not None) and self.collision_action_matrix_.hasEntry(
-                                                                       col_mask1.getLowestOnBit() , 
-                                                                       col_mask2.getLowestOnBit()):
+      if (obj1 is None) or (obj2 is None):
+        logging.warn("Found None objects while resolving collisions")
+        continue
+      
+      if self.collision_action_matrix_.hasEntry(col_mask1.getLowestOnBit() , col_mask2.getLowestOnBit()):  
+        action_key1 , action_key2 = self.collision_action_matrix_.getActions(col_mask1.getLowestOnBit() , col_mask2.getLowestOnBit())
         
-        action_key = self.collision_action_matrix_.getAction(col_mask1.getLowestOnBit() , col_mask2.getLowestOnBit())
-        action = CollisionAction(action_key,obj1,obj2,cm)            
-        obj1.execute(action)
-                
+        processed_contacts.append(i)
+        
+        if action_key1 != CollisionAction.NONE:
+          action = CollisionAction(action_key1,obj1,obj2,cm)            
+          obj1.execute(action)
+          
         # check for free falling
         if free_falling_dict.has_key(key1) and col_mask1 == CollisionMasks.GAME_OBJECT_BOTTOM:
           free_falling_dict[key1] = False
-        
-      if (obj2 is not None) and self.collision_action_matrix_.hasEntry(
-                                                                       col_mask2.getLowestOnBit() ,
-                                                                       col_mask1.getLowestOnBit()):
-        
-        action_key = self.collision_action_matrix_.getAction(col_mask2.getLowestOnBit() , col_mask1.getLowestOnBit())
-        action = CollisionAction(action_key,obj2,obj1,cm)
-        obj2.execute(action)
-        
+          
+        if  action_key2 != CollisionAction.NONE:
+          action = CollisionAction(action_key2,obj2,obj1,cm)            
+          obj2.execute(action)
+          
         # check for free falling
         if free_falling_dict.has_key(key2) and col_mask2 == CollisionMasks.GAME_OBJECT_BOTTOM:
           free_falling_dict[key2] = False
-    
     
     # objects in free fall      
     falling_objs_ids = [t[0] for t in free_falling_dict.items() if t[1]]
@@ -91,5 +101,9 @@ class LevelCollisionResolver(CollisionResolver):
       obj = game_objects_dict[id]
       action = CollisionAction(CollisionAction.FREE_FALL,obj,None,None)
       obj.execute(action)
+      
+    # removing processed contacts
+    unprocessed_contacts = [contact_manifolds[i] for i in range(0,num_contacts) if processed_contacts.count(i) == 0]
+    return unprocessed_contacts
       
     

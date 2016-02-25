@@ -2,7 +2,7 @@ from physics_platformer.state_machine import Action
 
 class CollisionAction(Action):
   
-  
+  NONE = 'NONE'
   DELIVER_HIT = 'DELIVER_HIT'
   TAKE_HIT = 'TAKE_HIT'
   ACTION_BODY_COLLISION = 'ACTION_BODY_COLLISION'

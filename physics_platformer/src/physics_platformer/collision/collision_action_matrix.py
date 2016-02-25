@@ -7,10 +7,13 @@ class CollisionActionMatrix(object):
     
     self.entries_ = {}
     
-  def addEntry(self,col_mask1, col_mask2 , action_key):
+  def addEntry(self,col_mask1, col_mask2 , action_key1, action_key2):
     """
-    addEntry(CollisionMask col_mask1,CollisionMask col_mask2, action action)
-    Adds a collision entry pair along with its corresponding action
+    void addEntry(CollisionMask col_mask1,CollisionMask col_mask2, String action_key1, String action_key2)
+    
+      Adds a collision entry pair along with its corresponding action tuple.  The
+      action_key1 will be applied to the first object while action_key2 will be
+      applied to the second
     """
     col_mask_entry_map = None
     if self.entries_.has_key(col_mask1):
@@ -19,14 +22,14 @@ class CollisionActionMatrix(object):
       col_mask_entry_map = {} 
     
     
-    col_mask_entry_map[col_mask2] = action_key
+    col_mask_entry_map[col_mask2] = (action_key1,action_key2)
     self.entries_[col_mask1] = col_mask_entry_map
     
   
   def hasEntry(self,col_mask1,col_mask2):    
     """
-    hasEntry(CollisionMask col_mask1, CollisionMask col_mask2)
-    Returns True or False.  Checks that the requested entry pair has been added.
+    Bool hasEntry(CollisionMask col_mask1, CollisionMask col_mask2)
+      Returns True or False.  Checks that the requested entry pair has been added.
     """
     try:
       if self.entries_.has_key(col_mask1):
@@ -39,7 +42,11 @@ class CollisionActionMatrix(object):
     return False
   
   
-  def getAction(self,col_mask1,col_mask2):
+  def getActions(self,col_mask1,col_mask2):
+    """
+    (String,String) getActions(CollisionMask col_mask1, CollisionMask col_mask2)
+      Returns a tuple with the actions keys corresponding to this combination entry
+    """
     
     if self.entries_.has_key(col_mask1):
       map = self.entries_[col_mask1]
