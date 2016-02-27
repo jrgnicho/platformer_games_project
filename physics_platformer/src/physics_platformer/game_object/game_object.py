@@ -32,11 +32,13 @@ Game Object class
 
 """
 class GameObject(NodePath):
+  
     DEFAULT_RESOURCES_DIRECTORY = rospkg.RosPack().get_path('physics_platformer') + '/resources'        
     DEFAULT_TEXTURE = TexturePool.loadTexture(DEFAULT_RESOURCES_DIRECTORY +'/models/limba.jpg')
     DEFAULT_BOX_MODEL = NodePath(ModelPool.loadModel( DEFAULT_RESOURCES_DIRECTORY + '/models/box.egg'))
     
     ID_PYTHON_TAG = "ObjectID"
+    ORIGIN_SPHERE_RADIUS = 0.1
     
     
     def __init__(self,name,size,mass = 0,setup_visual = True):   
