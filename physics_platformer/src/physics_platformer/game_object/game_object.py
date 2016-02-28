@@ -73,6 +73,9 @@ class GameObject(NodePath):
         self.node().setBoundsType(BoundingVolume.BT_box)    
         self.node().setBounds(BoundingBox(min_point ,max_point ))
         
+        # Frame of reference
+        self.sector_np_ = None
+        
         # visual properties
         if setup_visual:     
                    
@@ -116,7 +119,9 @@ class GameObject(NodePath):
         
     def getObjectID(self):      
       return self.getPythonTag(GameObject.ID_PYTHON_TAG)
-            
+    
+    def setSectorNodePath(self,sector_np):
+      self.sector_np_ = sector_np       
        
     def getSize(self):
       '''

@@ -135,9 +135,9 @@ class Sector(NodePath):
                                           TransformState.makeIdentity(),
                                           False)  
       
-      self.character_constraint_.setLinearLimit(0,-10000,10000)
+      self.character_constraint_.setLinearLimit(0,-sys.float_info.max,sys.float_info.max)
       self.character_constraint_.setLinearLimit(1,0,0)
-      self.character_constraint_.setLinearLimit(2,-10000,10000)
+      self.character_constraint_.setLinearLimit(2,-sys.float_info.max,sys.float_info.max)
       #self.character_constraint_.setAngularLimit(0,0,0)
       #self.character_constraint_.setAngularLimit(1,-10000,10000)
       #self.character_constraint_.setAngularLimit(2,0,0) 
@@ -191,9 +191,9 @@ class Sector(NodePath):
     
 
  
-    motion2d_constraint.setLinearLimit(0,-10000,10000)
+    motion2d_constraint.setLinearLimit(0,-sys.float_info.max,sys.float_info.max)
     motion2d_constraint.setLinearLimit(1,0,0)
-    motion2d_constraint.setLinearLimit(2,-10000,10000)
+    motion2d_constraint.setLinearLimit(2,-sys.float_info.max,sys.float_info.max)
     
     # All angular constraints must be either locked or released for the simulation to be stable
     #motion2d_constraint.setAngularLimit(0,-0.1,0.1) 

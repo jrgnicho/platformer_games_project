@@ -1,10 +1,13 @@
 from panda3d.core import NodePath, TransformState, PandaNode
 from panda3d.bullet import BulletRigidBodyNode, BulletPlaneShape,\
-  BulletGhostNode, BulletBoxShape
+  BulletGhostNode, BulletBoxShape, BulletGenericConstraint
 from physics_platformer.collision import CollisionMask
 from physics_platformer.game_object import GameObject
 
 class SectorTransition(NodePath):
+  
+  SOURCE_SECTOR_NAME = 'SOURCE_SECTOR'
+  DESTINATION_SECTOR_NAME = 'DESTINATION_SECTOR'
   
   def __init__(self,name,size,src_sector_name,destination_sector_name):
     
@@ -13,12 +16,17 @@ class SectorTransition(NodePath):
     self.destination_sector_name_ = destination_sector_name    
     self.node().addShape(BulletBoxShape(size/2))
     self.node().setIntoCollisionMask(CollisionMask.SECTOR_TRANSITION)
+    self.setPythonTag(SectorTransition.SOURCE_SECTOR_NAME, self.src_sector_name_)
+    self.setPythonTag(SectorTransition.DESTINATION_SECTOR_NAME, self.destination_sector_name_)
     
   def getDestinationSectionName(self):
     return self.destination_sector_name_
   
   def getSourceSectorName(self):
     return self.src_sector_name
+  
+  def setEnabled(self,enable):    
+    self.node().setIntoCollisionMask(CollisionMask.SECTOR_TRANSITION if enable else CollisionMask.NONE)
 
 class Sector(NodePath):
   
@@ -49,17 +57,33 @@ class Sector(NodePath):
     self.physics_world_.attach(self.motion_plane_np_.node())
     
     # sector transitions
+    for s in self.sector_transitions_:
+      self.physics_world_.remove(s.node())
     self.sector_transitions_ =[]
     self.destination_sector_dict_ = {}
     
-  def addAdjacentSector(self,destination_sector,pos, size = None):
+    # game objects
+    self.object_constraints_dict_ = {} # stores tuples of the form (String,BulletConstraint)
+    
+  def __del__(self):
+    
+    for k,c in self.object_constraints_dict_:
+      self.physics_world_.remove(c)
+      
+    self.physics_world_.remove(self.motion_plane_np_.node())
+      
+    self.object_constraints_dict_.clear()
+    self.sector_transitions_.clear()
+    
+  def addTransition(self,destination_sector,pos, on_right_side ,size = None):
     """
     addAdjacentSector(Sector sector, Vec3 pos, Vec3 size = None)
-      Creates a transition node that connects this sector to Sdestination_sector
+      Creates a transition that connects this sector to a destination_sector
       
-      @param destination_sector: Destination sector object
-      @param pos: Position of transition relative to this sector
-      @param size: Size of the transition detector region
+      @param destination_sector: Destination sector object.
+      @param pos: Position of transition point relative to this sector.
+      @param on_right_side:  Whether the transition node box is placed to the right or left side of the transition point.
+      @param size: Size of the transition detector region.
     """
     
     size = Sector.SECTOR_TRANSITION_SIZE if size is None else size
@@ -70,24 +94,60 @@ class Sector(NodePath):
                           destination_sector.getName())
     
     width = size[0]
-    direction = 1 if pos.getX() > 0 else -1
+    direction = 1 if on_right_side else -1
     
     st.reparentTo(self)
-    st_pos = Vec3(pos.getX()+ direction*(width/2 + 2*GameObject.ORIGIN_SPHERE_RADIUS),0,pos.getZ())
+    st_pos = Vec3(pos.getX()+ on_right_side*(width/2 + 2*GameObject.ORIGIN_SPHERE_RADIUS),0,pos.getZ())
     st.setPos(self,st_pos)
+    self.physics_world_.attach(st.node())
     
     self.sector_transitions_.append(st)
     self.destination_sector_dict_[st.getName()] = destination_sector
     
     
+  def enableTransitions(self,enable):
+    for st in self.sector_transitions_:
+      st.setEnabled(enable)
+    
+  def getAdjacentSector(self,transition_np_name):
+    """
+    getAdjacentSector(String transition_np_name)
+      returns the Sector corresponding to the transition nodepath.
+    """
+    return self.destination_sector_dict_.get(transition_np_name,None)
+    
+    
   def attach(self,obj):
-    pass
+    
+    constraint = self.__create2DConstraint__(obj)
+    self.physics_world_.attach(constraint)
+    constraint.setEnabled(True)
+    self.object_constraints_dict_[obj.getName()] = constraint
+    obj.setSectorNodePath(self)
   
   def remove(self,obj):
-    pass
+    
+    if not self.object_constraints_dict_.has_key(obj.getName()):
+      return
+    
+    constraint = self.object_constraints_dict_[obj.getName()]
+    constraint.setEnabled(False)
+    self.physics_world_.remove(constraint)
+    obj.setSectorNodePath(None)
+    del self.object_constraints_dict_[obj.getName()]
   
   def __create2DConstraint__(self,obj):
-    pass
+    
+    obj.setY(self,0)
+    constraint = BulletGenericConstraint(self.motion_plane_np_.node(),obj.node(),
+                                         TransformState.makeIdentity(),TransformState.makeIdentity(),False)
+    max_float = sys.float_info.max
+    constraint.setLinearLimit(0,-max_float,max_float)
+    constraint.setLinearLimit(1,0,0)
+    constraint.setLinearLimit(2,-max_float,max_float)
+    constraint.setDebugDrawSize(0)
+    return constraint
+    
     
     
     

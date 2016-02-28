@@ -64,6 +64,9 @@ class LevelCollisionResolver(CollisionResolver):
       col_mask1 = node0.getIntoCollideMask()
       col_mask2 = node1.getIntoCollideMask()
       
+      if not self.collision_action_matrix_.hasEntry(col_mask1.getLowestOnBit() , col_mask2.getLowestOnBit()): 
+        continue
+      
       key1 = node0.getPythonTag(GameObject.ID_PYTHON_TAG)
       key2 = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
             
@@ -73,27 +76,25 @@ class LevelCollisionResolver(CollisionResolver):
       if (obj1 is None) or (obj2 is None):
         logging.warn("Found None objects while resolving collisions")
         continue
+       
+      action_key1 , action_key2 = self.collision_action_matrix_.getActions(col_mask1.getLowestOnBit() , col_mask2.getLowestOnBit())      
+      processed_contacts.append(i)
       
-      if self.collision_action_matrix_.hasEntry(col_mask1.getLowestOnBit() , col_mask2.getLowestOnBit()):  
-        action_key1 , action_key2 = self.collision_action_matrix_.getActions(col_mask1.getLowestOnBit() , col_mask2.getLowestOnBit())
+      if action_key1 != CollisionAction.NONE:
+        action = CollisionAction(action_key1,obj1,obj2,cm)            
+        obj1.execute(action)
         
-        processed_contacts.append(i)
+      # check for free falling
+      if free_falling_dict.has_key(key1) and col_mask1 == CollisionMasks.GAME_OBJECT_BOTTOM:
+        free_falling_dict[key1] = False
         
-        if action_key1 != CollisionAction.NONE:
-          action = CollisionAction(action_key1,obj1,obj2,cm)            
-          obj1.execute(action)
-          
-        # check for free falling
-        if free_falling_dict.has_key(key1) and col_mask1 == CollisionMasks.GAME_OBJECT_BOTTOM:
-          free_falling_dict[key1] = False
-          
-        if  action_key2 != CollisionAction.NONE:
-          action = CollisionAction(action_key2,obj2,obj1,cm)            
-          obj2.execute(action)
-          
-        # check for free falling
-        if free_falling_dict.has_key(key2) and col_mask2 == CollisionMasks.GAME_OBJECT_BOTTOM:
-          free_falling_dict[key2] = False
+      if  action_key2 != CollisionAction.NONE:
+        action = CollisionAction(action_key2,obj2,obj1,cm)            
+        obj2.execute(action)
+        
+      # check for free falling
+      if free_falling_dict.has_key(key2) and col_mask2 == CollisionMasks.GAME_OBJECT_BOTTOM:
+        free_falling_dict[key2] = False
     
     # objects in free fall      
     falling_objs_ids = [t[0] for t in free_falling_dict.items() if t[1]]
