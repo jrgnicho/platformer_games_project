@@ -11,6 +11,7 @@ from physics_platformer.collision import CollisionActionMatrix
 from physics_platformer.game_actions import CollisionAction
 from physics_platformer.game_object import GameObject
 from physics_platformer.game_level import Platform
+from physics_platformer.game_level import Sector
 from physics_platformer.game_level import LevelCollisionResolver
 import logging
 
@@ -22,16 +23,24 @@ class Level(NodePath):
   __PHYSICS_SIM_SUBSTEPS__ = 5
   __PHYSICS_SIM_STEPSIZE__ = 1.0/180.0
   
-  def __init__(self,name,size):
+  def __init__(self,name,min_point, max_point):
     """
-    Level(string name, Vec3 size)
-    Creates a Level object.
+    Level(string name, Vec3 min_point, Vec3 max_point)
+      Creates a Level object.
+      
+      @param name: The level name
+      @param min_point: Level bounding box minimum point
+      @param max_point: Level bounding box maximum point
     """
     
     NodePath.__init__(self,name)
     self.physics_world_ = BulletWorld()
     self.physics_world_.setGravity(Level.__GRAVITY__)
-    self.size_ = size   
+    
+    # level bounds
+    self.min_point_ = min_point
+    self.max_point_ = max_point    
+    self.size_ = max_point - min_point   
     self.bound_boxes_ = [] # node paths to rigid bodies 
     self.game_object_map_ = {}  # game objects in the world including static and mobile
     self.mobile_object_ids_ = [] # list of object ids far all mobile objects
@@ -41,6 +50,10 @@ class Level(NodePath):
     
     # collision handling
     self.collision_resolvers_ = []
+    
+    # sectors
+    self.sectors_dict_ = {}
+    self.active_sector_ = None
     
     self.__createLevelBounds__()
     self.__setupCollisionRules__()
@@ -96,6 +109,16 @@ class Level(NodePath):
     self.game_object_map_ = {}
     self.platforms_ = {}
     
+  def addSector(self,transform, name = ''):
+    
+    name = name if len(name) > 0 else self.getName() + '-sector-' + str(len(self.sectors_dict_))    
+    sector = Sector(name,self,self.physics_world_,transform)
+    self.sectors_dict_[sector.getName()] = sector
+    return sector
+    
+  def getSectors(self):
+    return self.sectors_dict_.values()
+    
   def addCollisionResolver(self,resolver):
     """
     Adds a collision resolver which will be invoked on every update in order to resolve collisions between 
@@ -149,10 +172,11 @@ class Level(NodePath):
                   Vec3(0.5*self.size_.getX(), half_depth, half_thickness),
                   Vec3(half_thickness, half_depth, 0.5*self.size_.getZ())]
     
-    poses = [TransformState.makePos(Vec3(0,0,0.5*self.size_.getZ())),
-             TransformState.makePos(Vec3(0.5*self.size_.getX(),0,0)),
-             TransformState.makePos(Vec3(0,0,-0.5*self.size_.getZ())),
-             TransformState.makePos(Vec3(-0.5*self.size_.getX(),0,0))]
+    offset = self.min_point_ + self.size_*0.5
+    poses = [TransformState.makePos(Vec3(0,0,0.5*self.size_.getZ()) + offset),
+             TransformState.makePos(Vec3(0.5*self.size_.getX(),0,0) + offset),
+             TransformState.makePos(Vec3(0,0,-0.5*self.size_.getZ()) + offset),
+             TransformState.makePos(Vec3(-0.5*self.size_.getX(),0,0) + offset)]
     
     for i in range(0,4):
       
@@ -167,17 +191,55 @@ class Level(NodePath):
       
   def __setupCollisionRules__(self):
     
-    resolver = LevelCollisionResolver()
-    self.addCollisionResolver(resolver)      
+    level_coll_resolver = LevelCollisionResolver()
+    self.addCollisionResolver(resolver)   
+    
+    # enabling sector detection
+    self.physics_world_.setGroupCollisionFlag(CollisionMasks.SECTOR_TRANSITION.getLowestOnBit(),CollisionMasks.GAME_OBJECT_ORIGIN.getLowestOnBit(),True)
+    
+  def __processSectorTransitions__(self,contact_manifolds):  
+    processed_contacts = []
+    
+    num_contacts = len(contact_manifolds)
+    for i in range(0,num_contacts):
+      
+      cm = contact_manifolds[i]
+      sector_transition_node = cm.getNode0()
+      node1 = cm.getNode1()
+      col_mask1 = sector_transition_node.getIntoCollideMask().getLowestOnBit()
+      col_mask2 = node1.getIntoCollideMask().getLowestOnBit()
+      
+      if (not col_mask1 != CollisionMasks.SECTOR_TRANSITION) or (not col_mask2 != CollisionMasks.GAME_OBJECT_ORIGIN):
+        continue
+      
+      processed_contacts.append(i)
+      
+      src_sector  = self.sectors_dict_[sector_transition_node.getPythonTag(SectorTransition.SOURCE_SECTOR_NAME)]
+      dest_sector = self.sectors_dict_[sector_transition_node.getPythonTag(SectorTransition.DESTINATION_SECTOR_NAME)]
+      id = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
+      obj = self.game_object_map_.get(id,None)
+      
+      if obj is None:
+        logging.warn('Object with game id %s was not found')
+        continue
+      
+      src_sector.remove(obj)
+      dest_sector.attach(obj) 
+      
+    unprocessed_contacts = [contact_manifolds[i] for i in range(0,num_contacts) if processed_contacts.count(i) == 0]
+    return unprocessed_contacts
     
   def __processCollisions__(self):
         
     # processing contacts
     contact_manifolds = self.physics_world_.getManifolds()
     
-    unprocessed_contacts = []
+    unprocessed_contacts = self.__processSectorTransitions__(contact_manifolds)
+    
     for r in self.collision_resolvers_:
-      unprocessed_contacts = r.processCollisions(contact_manifolds,self.game_object_map_,self.mobile_object_ids_)
+      unprocessed_contacts = r.processCollisions(unprocessed_contacts,self.game_object_map_,self.mobile_object_ids_)
+      
+      
         
       
       

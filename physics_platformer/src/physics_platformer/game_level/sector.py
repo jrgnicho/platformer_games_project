@@ -1,4 +1,4 @@
-from panda3d.core import NodePath, TransformState, PandaNode
+from panda3d.core import NodePath, TransformState, PandaNode, LQuaternion
 from panda3d.bullet import BulletRigidBodyNode, BulletPlaneShape,\
   BulletGhostNode, BulletBoxShape, BulletGenericConstraint
 from physics_platformer.collision import CollisionMask
@@ -122,22 +122,23 @@ class Sector(NodePath):
     constraint = self.__create2DConstraint__(obj)
     self.physics_world_.attach(constraint)
     constraint.setEnabled(True)
-    self.object_constraints_dict_[obj.getName()] = constraint
+    self.object_constraints_dict_[obj.getObjectID()] = constraint
     obj.setSectorNodePath(self)
   
   def remove(self,obj):
     
-    if not self.object_constraints_dict_.has_key(obj.getName()):
+    if not self.object_constraints_dict_.has_key(obj.getObjectID()):
       return
     
-    constraint = self.object_constraints_dict_[obj.getName()]
+    constraint = self.object_constraints_dict_[obj.getObjectID()]
     constraint.setEnabled(False)
     self.physics_world_.remove(constraint)
     obj.setSectorNodePath(None)
-    del self.object_constraints_dict_[obj.getName()]
+    del self.object_constraints_dict_[obj.getObjectID()]
   
   def __create2DConstraint__(self,obj):
     
+    obj.setQuat(self,LQuaternion.identQuat())
     obj.setY(self,0)
     constraint = BulletGenericConstraint(self.motion_plane_np_.node(),obj.node(),
                                          TransformState.makeIdentity(),TransformState.makeIdentity(),False)

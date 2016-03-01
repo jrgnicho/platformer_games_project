@@ -43,6 +43,16 @@ from physics_platformer.input import KeyboardController
 from physics_platformer.game_object import GameObject
 from physics_platformer.camera import CameraController
 
+class TestLevel(Level):
+  
+  def __init__(self,name,min_point,max_point):
+    Level.__init__(self,name,min_point, max_point)
+    self.setup()
+    
+  def setup(self):
+    
+    pass
+
 class TestGame(ShowBase):
   
   __CAM_ZOOM__ =  1
