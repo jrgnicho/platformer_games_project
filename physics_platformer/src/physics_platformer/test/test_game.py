@@ -51,7 +51,55 @@ class TestLevel(Level):
     
   def setup(self):
     
-    pass
+    num_sectors = 6
+    sector_lenght = 100
+    
+    
+    
+  def __createPlatforms__(self,sector):
+    # Adding platforms
+    platform_details =[ 
+      (-20, 4, 20, TestGame.__PLATFORM_DEPTH__, 1  ),
+      (-2, 5, 10, TestGame.__PLATFORM_DEPTH__, 1  ),
+      ( 4 , 1 , 16, TestGame.__PLATFORM_DEPTH__, 2),
+      (-4 , 1, 10, TestGame.__PLATFORM_DEPTH__, 1),
+      ( 16, 6, 30, TestGame.__PLATFORM_DEPTH__, 1),
+      ( 0, -0.5, 30, TestGame.__PLATFORM_DEPTH__, 1),
+      ]
+    
+    # Platforms Schematic X, Z (Each new line measures 2 units and each character 2 units)
+    
+    '''                               
+      30                                   _______
+                                          |___18__|        ______
+                                          | |  ___________|      |
+                                          | | |_____26____|      |
+                            _________     | |___          |  16  |
+      20   ________        |         |    | |10_|   ______|______|
+          |___20___|       |____22___|    |6|__    |__18___|
+                 __________|_14__|        | |8_|   _____
+                |_____28_____|     _______|_|___  |_14__|     __
+                                  |_____32______|            |8_|
+      10    ||           ___________    ____________       
+            ||          |_____26____|  |            |
+            |6|                        |_____28_____|
+                                                                                    
+                                                                                           
+      0                                                                                      
+          0   10   20   30   40   50   60   70   80   90   100
+    '''
+    
+    # Platform Details [ (float left, float top, Vec3 size),... ]
+    platform_details = []
+    
+    for i in range(0,len(platform_details)):
+      p = platform_details[i]
+      pos = Vec3(p[0],TestGame.__PLATFORM_Y_POS,p[1])
+      size = Vec3(p[2],p[3],p[4])
+      
+      platform = Platform('Platform' + str(i),size)
+      self.level_.addPlatform(platform)
+      platform.setPos(sector,pos)
 
 class TestGame(ShowBase):
   
