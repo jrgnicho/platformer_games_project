@@ -21,6 +21,7 @@ class Platform(GameObject):
     GameObject.__init__(self,name,size,0)
     self.setCollideMask(CollisionMasks.LEVEL_OBSTACLE)
     self.visual_nh_.setTexture(Platform.__DEFAULT_TEXTURE__,1) 
+    #self.visual_nh_.reparentTo(self)
     
     # platform_ledge members
     ledge_size = Vec3(Platform.__LEDGE_BOX_SIDE_LENGHT,self.getSize().getY(),Platform.__LEDGE_BOX_SIDE_LENGHT)
@@ -42,6 +43,22 @@ class Platform(GameObject):
       self.right_ledge_.reparentTo(self)
       self.right_ledge_.setPos(Vec3(half_width ,0,half_height))
       self.ledges_.append(self.right_ledge_)
+      
+  def setPos(self,*args):
+    
+    ref_np = None
+    pos = Vec3(0,0,0)
+    if len(args) == 1:
+      pos = args[0]
+      
+    if len(args) >= 2:
+      ref_np = args[0]
+      pos = args[1]
+      
+    self.node().setMass(1)  
+    NodePath.setPos(self,ref_np,pos)
+    self.visual_nh_.setPosHpr(self,Vec3.zero(),Vec3.zero())
+    self.node().setMass(0)
           
   def setPhysicsWorld(self,physics_world): 
     GameObject.setPhysicsWorld(self,physics_world)    

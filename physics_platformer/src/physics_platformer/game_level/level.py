@@ -11,7 +11,7 @@ from physics_platformer.collision import CollisionActionMatrix
 from physics_platformer.game_actions import CollisionAction
 from physics_platformer.game_object import GameObject
 from physics_platformer.game_level import Platform
-from physics_platformer.game_level import Sector
+from physics_platformer.game_level import Sector, SectorTransition
 from physics_platformer.game_level import LevelCollisionResolver
 import logging
 
@@ -53,9 +53,10 @@ class Level(NodePath):
     
     # sectors
     self.sectors_dict_ = {}
+    self.sectors_list_ = []
     self.active_sector_ = None
     
-    self.__createLevelBounds__()
+    #self.__createLevelBounds__()
     self.__setupCollisionRules__()
     
   def detachNode(self):
@@ -114,10 +115,11 @@ class Level(NodePath):
     name = name if len(name) > 0 else self.getName() + '-sector-' + str(len(self.sectors_dict_))    
     sector = Sector(name,self,self.physics_world_,transform)
     self.sectors_dict_[sector.getName()] = sector
+    self.sectors_list_.append(sector)
     return sector
     
   def getSectors(self):
-    return self.sectors_dict_.values()
+    return self.sectors_list_
     
   def addCollisionResolver(self,resolver):
     """
@@ -192,7 +194,7 @@ class Level(NodePath):
   def __setupCollisionRules__(self):
     
     level_coll_resolver = LevelCollisionResolver()
-    self.addCollisionResolver(resolver)   
+    self.addCollisionResolver(level_coll_resolver)   
     
     # enabling sector detection
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.SECTOR_TRANSITION.getLowestOnBit(),CollisionMasks.GAME_OBJECT_ORIGIN.getLowestOnBit(),True)
@@ -209,7 +211,7 @@ class Level(NodePath):
       col_mask1 = sector_transition_node.getIntoCollideMask().getLowestOnBit()
       col_mask2 = node1.getIntoCollideMask().getLowestOnBit()
       
-      if (not col_mask1 != CollisionMasks.SECTOR_TRANSITION) or (not col_mask2 != CollisionMasks.GAME_OBJECT_ORIGIN):
+      if (col_mask1 != CollisionMasks.SECTOR_TRANSITION) or (col_mask2 != CollisionMasks.GAME_OBJECT_ORIGIN):
         continue
       
       processed_contacts.append(i)

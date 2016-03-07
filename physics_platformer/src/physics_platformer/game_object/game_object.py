@@ -63,8 +63,8 @@ class GameObject(NodePath):
         collision_shape = BulletBoxShape(self.size_/2) 
         self.node().addShape(collision_shape)
         self.node().setMass(mass)
-        self.node().setLinearFactor((1,0,1))   
-        self.node().setAngularFactor((0,1,0))   
+        #self.node().setLinearFactor((1,0,1))   
+        #self.node().setAngularFactor((0,1,0))   
         self.setCollideMask(CollisionMasks.GAME_OBJECT_AABB)
         
         #  setting bounding volume
@@ -81,7 +81,7 @@ class GameObject(NodePath):
                    
             visual_nh = GameObject.DEFAULT_BOX_MODEL 
             visual_nh.clearModelNodes()            
-            self.visual_nh_ = visual_nh.instanceUnderNode(self,name + '-visual');    
+            self.visual_nh_ = visual_nh.instanceUnderNode(self,name + '-visual');  
             self.visual_nh_.setTexture(GameObject.DEFAULT_TEXTURE,1)   
             
             if GameObject.DEFAULT_TEXTURE == None:

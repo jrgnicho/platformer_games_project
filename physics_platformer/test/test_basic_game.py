@@ -190,9 +190,12 @@ class TestBasicGame(TestGame):
     if not self.character_.setup():
       logging.error("Character setup failed")
       sys.exit()
-      
-    self.level_.addGameObject(self.character_)      
-    self.character_.setPos(Vec3(5,0,self.character_.getSize().getZ()+8))     
+    
+    # placing character in world
+    sector  = self.level_.getSectors()[0]
+    self.level_.addGameObject(self.character_)          
+    self.character_.setPos(sector,Vec3(20,0,26))  
+    #sector.attach(self.character_)   
     self.character_.pose(ANIMATIONS[4])    
     
     # create character keyboard controller

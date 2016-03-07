@@ -1,7 +1,10 @@
-from panda3d.core import NodePath, TransformState, PandaNode, LQuaternion
+import sys
+import logging
+
+from panda3d.core import NodePath, TransformState, PandaNode, LQuaternion, Vec3
 from panda3d.bullet import BulletRigidBodyNode, BulletPlaneShape,\
   BulletGhostNode, BulletBoxShape, BulletGenericConstraint
-from physics_platformer.collision import CollisionMask
+from physics_platformer.collision import CollisionMasks
 from physics_platformer.game_object import GameObject
 
 class SectorTransition(NodePath):
@@ -26,7 +29,7 @@ class SectorTransition(NodePath):
     return self.src_sector_name
   
   def setEnabled(self,enable):    
-    self.node().setIntoCollisionMask(CollisionMask.SECTOR_TRANSITION if enable else CollisionMask.NONE)
+    self.node().setIntoCollisionMask(CollisionMask.SECTOR_TRANSITION if enable else CollisionMask.NO_COLLISION)
 
 class Sector(NodePath):
   
@@ -52,28 +55,32 @@ class Sector(NodePath):
     # creating 2d motion plane
     self.motion_plane_np_ = self.attachNewNode(BulletRigidBodyNode())
     self.motion_plane_np_.node().setMass(0)
-    self.motion_plane_np_.node().setIntoCollideMask(CollisionMask.NONE)
+    self.motion_plane_np_.node().setIntoCollideMask(CollisionMasks.NO_COLLISION)
     self.motion_plane_np_.node().addShape(BulletPlaneShape(Vec3(0,1,0),0))
     self.physics_world_.attach(self.motion_plane_np_.node())
-    
-    # sector transitions
-    for s in self.sector_transitions_:
-      self.physics_world_.remove(s.node())
-    self.sector_transitions_ =[]
-    self.destination_sector_dict_ = {}
+    self.motion_plane_np_.reparentTo(parent_np)
     
     # game objects
     self.object_constraints_dict_ = {} # stores tuples of the form (String,BulletConstraint)
+    
+    # sector transitions
+    self.sector_transitions_ = []
+    self.destination_sector_dict_ = []
     
   def __del__(self):
     
     for k,c in self.object_constraints_dict_:
       self.physics_world_.remove(c)
+    self.object_constraints_dict_.clear()
+      
+    # sector transitions
+    for s in self.sector_transitions_:
+      self.physics_world_.remove(s.node())
+    self.sector_transitions_ =[]
+    self.destination_sector_dict_ = {}
       
     self.physics_world_.remove(self.motion_plane_np_.node())
-      
-    self.object_constraints_dict_.clear()
-    self.sector_transitions_.clear()
+         
     
   def addTransition(self,destination_sector,pos, on_right_side ,size = None):
     """
@@ -119,11 +126,17 @@ class Sector(NodePath):
     
   def attach(self,obj):
     
+    self.motion_plane_np_.setTransform(self,TransformState.makeIdentity())
+    
     constraint = self.__create2DConstraint__(obj)
     self.physics_world_.attach(constraint)
     constraint.setEnabled(True)
     self.object_constraints_dict_[obj.getObjectID()] = constraint
     obj.setSectorNodePath(self)
+    
+    logging.info("%s Plane Pos: %s Hpr: %s"%(self.getName(),
+                                             self.motion_plane_np_.getPos(self.getParent()),
+                                             self.motion_plane_np_.getHpr(self.getParent())))
   
   def remove(self,obj):
     
