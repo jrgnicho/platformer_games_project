@@ -54,7 +54,6 @@ class CharacterBase(AnimatableObject):
     box_shape = BulletBoxShape(self.size_/2) 
     self.node().addShape(box_shape,TransformState.makePos(Vec3(0,0,0.5*size.getZ()))) # box bottom center coincident with the origin
     self.node().setMass(self.character_info_.mass)
-    #self.node().setLinearFactor((1,0,1))   
     self.node().setAngularFactor((0,0,0)) 
     self.setCollideMask(CollisionMasks.NO_COLLISION)    
     
@@ -221,7 +220,7 @@ class CharacterBase(AnimatableObject):
     setPos(Vec3 pos)
     '''
     
-    ref_np = self.getParent()
+    ref_np = self.movement_ref_np_
     pos = Vec3.zero()
     if len(args) == 2:
       ref_np = args[0]
@@ -232,7 +231,7 @@ class CharacterBase(AnimatableObject):
     # setting position   
     NodePath.setPos(self,ref_np,pos)    
     if self.getAnimatorActor() is not None:
-      self.getAnimatorActor().getRigidBody().setPos(self,ref_np,pos)   
+      self.getAnimatorActor().getRigidBody().setPos(ref_np,pos)   
     
   def setStatic(self,static):
     '''

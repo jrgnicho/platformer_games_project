@@ -63,8 +63,6 @@ class GameObject(NodePath):
         collision_shape = BulletBoxShape(self.size_/2) 
         self.node().addShape(collision_shape)
         self.node().setMass(mass)
-        #self.node().setLinearFactor((1,0,1))   
-        #self.node().setAngularFactor((0,1,0))   
         self.setCollideMask(CollisionMasks.GAME_OBJECT_AABB)
         
         #  setting bounding volume
@@ -74,7 +72,7 @@ class GameObject(NodePath):
         self.node().setBounds(BoundingBox(min_point ,max_point ))
         
         # Frame of reference
-        self.sector_np_ = None
+        self.movement_ref_np_ = None
         
         # visual properties
         if setup_visual:     
@@ -120,8 +118,13 @@ class GameObject(NodePath):
     def getObjectID(self):      
       return self.getPythonTag(GameObject.ID_PYTHON_TAG)
     
-    def setSectorNodePath(self,sector_np):
-      self.sector_np_ = sector_np       
+    def setMovementReference(self,ref_np):
+      '''
+      setMovementReference(Nodepath ref_np)
+      
+        Movement and Transform changes will be done relative to the ref_np Nodepath
+      '''
+      self.movement_ref_np_ = ref_np       
        
     def getSize(self):
       '''

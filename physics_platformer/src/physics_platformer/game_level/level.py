@@ -56,7 +56,7 @@ class Level(NodePath):
     self.sectors_list_ = []
     self.active_sector_ = None
     
-    #self.__createLevelBounds__()
+    self.__createLevelBounds__()
     self.__setupCollisionRules__()
     
   def detachNode(self):
@@ -164,6 +164,9 @@ class Level(NodePath):
     self.__processCollisions__()    
     
   def __createLevelBounds__(self): 
+    
+    logging.warn("The Level.__createLevelBounds__() method is currently disabled")
+    return
     
     bound_names = ['top', 'right', 'bottom','left'] # clockwise order
     

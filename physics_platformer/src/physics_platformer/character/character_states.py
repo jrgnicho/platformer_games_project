@@ -498,9 +498,11 @@ class CharacterStates(object): # Class Namespace
       tf_ghost_to_object.invertInPlace()
       tf_world_to_ledge = ledge.getMat(self.character_obj_.getParent())      
       transform = TransformState.makeMat(tf_world_to_ledge * tf_ghost_to_object)
+      pos = transform.getPos()
+      py = (self.character_obj_.getY(self.character_obj_.getParent()))
+      pos = Vec3(pos.getX(),py,pos.getZ())
       
       # placing character on ledge
-      pos = Vec3(transform.getPos().getX(),0,transform.getPos().getZ())
       self.character_obj_.setPos(self.character_obj_.getParent(),pos)
       self.character_obj_.setLinearVelocity(Vec3(0,0,0))        
       

@@ -59,6 +59,7 @@ class Sector(NodePath):
     self.motion_plane_np_.node().addShape(BulletPlaneShape(Vec3(0,1,0),0))
     self.physics_world_.attach(self.motion_plane_np_.node())
     self.motion_plane_np_.reparentTo(parent_np)
+    self.motion_plane_np_.setTransform(self,TransformState.makeIdentity())
     
     # game objects
     self.object_constraints_dict_ = {} # stores tuples of the form (String,BulletConstraint)
@@ -126,13 +127,14 @@ class Sector(NodePath):
     
   def attach(self,obj):
     
-    self.motion_plane_np_.setTransform(self,TransformState.makeIdentity())
+    if not self.motion_plane_np_.getTransform(self).isIdentity():
+      self.motion_plane_np_.setTransform(self,TransformState.makeIdentity())
     
     constraint = self.__create2DConstraint__(obj)
     self.physics_world_.attach(constraint)
     constraint.setEnabled(True)
     self.object_constraints_dict_[obj.getObjectID()] = constraint
-    obj.setSectorNodePath(self)
+    obj.setMovementReference(self)
     
     logging.info("%s Plane Pos: %s Hpr: %s"%(self.getName(),
                                              self.motion_plane_np_.getPos(self.getParent()),

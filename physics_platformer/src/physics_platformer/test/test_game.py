@@ -9,7 +9,7 @@ from direct.showbase.ShowBase import ShowBase
 from direct.controls.InputState import InputState
 from direct.gui.OnscreenText import OnscreenText
 
-from panda3d.core import loadPrcFileData, deg_2_rad
+from panda3d.core import loadPrcFileData
 from panda3d.core import AmbientLight
 from panda3d.core import DirectionalLight
 from panda3d.core import LColor
@@ -58,6 +58,7 @@ class TestLevel(Level):
   Z_INCR = 0.8
   START_POS = Vec3(24,0,28)
   PLATFORM_DEPTH = 10
+  PLATFORM_Y = 2
     
   def __init__(self,name,min_point = Vec3(-150,-150,-50),max_point = Vec3(150,150,100)):
     Level.__init__(self,name,min_point, max_point)
@@ -75,17 +76,27 @@ class TestLevel(Level):
     z_incr = 8
     logging.info("radius = " + str(radius))
     
+    dummy_node = NodePath('dummy-node')
+    dummy_node.reparentTo(self)
     for i in range(0,num_sectors):
       
-      tr = TransformState.makeIdentity()
-      sector = self.addSector(tr,'sector' + str(i))
+      # updating z value
       z = i*z_incr
-      sector.setZ(self,z)      
-      sector.setHpr(self,i*angle_incr,0,0)
-      sector.setY(sector,-radius)
-      sector.setX(sector,-0.5*sector_length)
+      
+      # placing dummy node
+      dummy_node.clearTransform(self)
+      dummy_node.setZ(self,z)
+      dummy_node.setHpr(self,i*angle_incr,0,0)
+      dummy_node.setY(dummy_node,-radius)
+      dummy_node.setX(dummy_node,-0.5*sector_length)      
+      
+      # creating sector
+      tf = dummy_node.getTransform(self)
+      sector = self.addSector(tf,'sector' + str(i))
       self.__createPlatforms__(sector) 
       self.__createBoxes__(sector)   
+      
+    dummy_node.removeNode()
       
   def __createBoxes__(self,sector):
     
@@ -117,8 +128,8 @@ class TestLevel(Level):
                  __________|_12__|        | |6_|   _____
                 |_____26_____|     _______|_|___  |_12__|     __________
                                   |_____30______|            |____22____|
-      10    ||           ___________    ____________       
-            ||          |_____24____|  |            |
+      10    ||          ____________    ____________       
+            ||         |_____26_____|  |            |
             |4|                        |_____28_____|
                                                                                     
                                                                                            
@@ -135,7 +146,7 @@ class TestLevel(Level):
                         (12,16,Vec3(26,depth,2)),
                         (34,22,Vec3(22,depth,4)),
                         (34,18,Vec3(12,depth,2)),
-                        (28,10,Vec3(24,depth,2)),
+                        (26,10,Vec3(26,depth,2)),
                         (48,14,Vec3(30,depth,2)),
                         (58,10,Vec3(28,depth,4)),
                         (64,28,Vec3(4,depth,14)),
@@ -151,7 +162,7 @@ class TestLevel(Level):
     for i in range(0,len(platform_details)):
       p = platform_details[i]
       size = p[2]
-      pos = Vec3(p[0] + size.getX()*0.5, 0 , p[1] - size.getZ()*0.5)
+      pos = Vec3(p[0] + size.getX()*0.5, TestLevel.PLATFORM_Y , p[1] - size.getZ()*0.5)
       
       platform = Platform(sector.getName() + '-' + 'platform' + str(i),size)
       self.addPlatform(platform)
