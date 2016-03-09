@@ -499,11 +499,12 @@ class CharacterStates(object): # Class Namespace
       tf_world_to_ledge = ledge.getMat(self.character_obj_.getParent())      
       transform = TransformState.makeMat(tf_world_to_ledge * tf_ghost_to_object)
       pos = transform.getPos()
-      py = (self.character_obj_.getY(self.character_obj_.getParent()))
-      pos = Vec3(pos.getX(),py,pos.getZ())
+      #py = (self.character_obj_.getY(self.character_obj_.getParent()))
+      #pos = Vec3(pos.getX(),py,pos.getZ())
       
       # placing character on ledge
-      self.character_obj_.setPos(self.character_obj_.getParent(),pos)
+      self.character_obj_.setX(self.character_obj_.getParent(),pos.getX())
+      self.character_obj_.setZ(self.character_obj_.getParent(),pos.getZ())
       self.character_obj_.setLinearVelocity(Vec3(0,0,0))        
       
       # turning off collision
@@ -534,8 +535,9 @@ class CharacterStates(object): # Class Namespace
       platform = self.character_obj_.getStatus().platform
       ledge = self.character_obj_.getStatus().ledge
 
-      self.character_obj_.clampBottom(ledge.getZ(self.character_obj_.getParent()))
-      self.character_obj_.clampBack(ledge.getX(self.character_obj_.getParent()))
+      ref = self.character_obj_.getMovementReference()
+      self.character_obj_.clampBottom(ledge.getZ(ref))
+      self.character_obj_.clampBack(ledge.getX(ref))
       self.character_obj_.setLinearVelocity(Vec3(0,0,0))   
       
     def exit(self):

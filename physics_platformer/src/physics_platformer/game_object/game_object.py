@@ -124,7 +124,10 @@ class GameObject(NodePath):
       
         Movement and Transform changes will be done relative to the ref_np Nodepath
       '''
-      self.movement_ref_np_ = ref_np       
+      self.movement_ref_np_ = ref_np     
+      
+    def getMovementReference(self):  
+      return self.movement_ref_np_
        
     def getSize(self):
       '''

@@ -194,7 +194,7 @@ class TestBasicGame(TestGame):
     # placing character in world
     sector  = self.level_.getSectors()[0]
     self.level_.addGameObject(self.character_)          
-    self.character_.setPos(sector,Vec3(20,0,26))  
+    self.character_.setPos(sector,Vec3(18,0,26))  
     #sector.attach(self.character_)   
     self.character_.setMovementReference(sector)
     self.character_.pose(ANIMATIONS[4])    
