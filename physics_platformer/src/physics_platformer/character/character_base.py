@@ -115,35 +115,55 @@ class CharacterBase(AnimatableObject):
   def getWidth(self):
     return self.getRight() - self.getLeft()
   
-  def getTop(self,ref_np = None):
-    ref_np = self.getParent() if ref_np is None else ref_np
+  def getTop(self):
+    '''
+    getTop()
+      Returns the z value of the top side relative the the movement reference node
+    '''
+    ref_np = self.reference_np_
     return self.getAnimatorActor().getRigidBodyBoundingBox().top + self.getZ(ref_np)
     
-  def getBottom(self,ref_np = None):
-    ref_np = self.getParent() if ref_np is None else ref_np
+  def getBottom(self):
+    '''
+    getBottom()
+      Returns the z value of the bottom side relative the the movement reference node
+    '''
+    ref_np = self.reference_np_
     return  self.getAnimatorActor().getRigidBodyBoundingBox().bottom + self.getZ(ref_np)
   
-  def getLeft(self,ref_np = None):
-    ref_np = self.getParent() if ref_np is None else ref_np
-    return self.getBack(ref_np) if self.isFacingRight() else self.getFront(ref_np)
+  def getLeft(self):
+    '''
+    getLeft()
+      Returns the x value of the left side relative the the movement reference node
+    '''
+    return self.getBack() if self.isFacingRight() else self.getFront()
   
-  def getRight(self,ref_np = None):
-    ref_np = self.getParent() if ref_np is None else ref_np
-    return self.getFront(ref_np) if self.isFacingRight() else self.getBack(ref_np)
+  def getRight(self):
+    '''
+    getRight()
+      Returns the x value of the right side relative the the movement reference node
+    '''
+    return self.getFront() if self.isFacingRight() else self.getBack()
     
-  def getFront(self,ref_np = None):
-    ref_np = self.getParent() if ref_np is None else ref_np
+  def getFront(self):
+    '''
+    getFront()
+      Returns the x value of the front side relative the the movement reference node
+    '''
+    ref_np = self.reference_np_
     dx = (1.0 if self.isFacingRight() else -1.0)*self.getAnimatorActor().getRigidBodyBoundingBox().right
     rel_pos = ref_np.getRelativePoint(self,Vec3(dx,0,0))
     return rel_pos.getX()
-    #return (1.0 if self.isFacingRight() else -1.0)*self.getAnimatorActor().getRigidBodyBoundingBox().right + self.getX(ref_np)
     
-  def getBack(self,ref_np = None):
-    ref_np = self.getParent() if ref_np is None else ref_np
+  def getBack(self):
+    '''
+    getBack()
+      Returns the x value of the back side relative the the movement reference node
+    '''
+    ref_np = self.reference_np_
     dx = (1.0 if self.isFacingRight() else -1.0)*self.getAnimatorActor().getRigidBodyBoundingBox().left
     rel_pos = ref_np.getRelativePoint(self,Vec3(dx,0,0))
     return rel_pos.getX()
-    #return (1.0 if self.isFacingRight() else -1.0)*self.getAnimatorActor().getRigidBodyBoundingBox().left + self.getX(ref_np)
   
   def clampLeft(self,x):
     
@@ -151,8 +171,8 @@ class CharacterBase(AnimatableObject):
     vel.setX(0)
     self.node().setLinearVelocity(vel)
     
-    ref = self.movement_ref_np_
-    local_offset = self.getBack(ref) if self.isFacingRight() else self.getFront(ref)
+    ref = self.reference_np_
+    local_offset = self.getBack() if self.isFacingRight() else self.getFront()
     local_offset = self.getX(ref) - local_offset
     
     self.setX(ref,x + local_offset)
@@ -164,7 +184,7 @@ class CharacterBase(AnimatableObject):
     vel.setX(0)
     self.node().setLinearVelocity(vel)  
     
-    ref = self.movement_ref_np_   
+    ref = self.reference_np_   
     self.setX(ref,x)
     if self.getAnimatorActor() is not None:
       self.getAnimatorActor().getRigidBody().setX(ref,x)
@@ -175,8 +195,8 @@ class CharacterBase(AnimatableObject):
     vel.setX(0)
     self.node().setLinearVelocity(vel)
     
-    ref = self.movement_ref_np_
-    local_offset = self.getFront(ref) if self.isFacingRight() else self.getBack(ref)
+    ref = self.reference_np_
+    local_offset = self.getFront() if self.isFacingRight() else self.getBack()
     local_offset = self.getX(ref) - local_offset    
     
     self.setX(ref,x + local_offset) 
@@ -207,7 +227,7 @@ class CharacterBase(AnimatableObject):
     self.node().setLinearVelocity(vel)
     
     # placing bottom at z value
-    ref = self.movement_ref_np_
+    ref = self.reference_np_
     bbox = self.getAnimatorActor().getRigidBodyBoundingBox()  
     self.setZ(ref,z - bbox.bottom) 
     if self.getAnimatorActor() is not None:
@@ -225,7 +245,7 @@ class CharacterBase(AnimatableObject):
     self.node().setLinearVelocity(vel)
     
     # placing top at z value
-    ref = self.movement_ref_np_
+    ref = self.reference_np_
     bbox = self.getAnimatorActor().getRigidBodyBoundingBox()       
     self.setZ(ref,z - bbox.top) 
     if self.getAnimatorActor() is not None:
@@ -237,15 +257,13 @@ class CharacterBase(AnimatableObject):
     setPos(Vec3 pos)
     '''
     
-    #ref_np = self.getParent()
-    ref_np = ref_np = self.movement_ref_np_
-    pos = Vec3.zero()
+    ref_np , pos = self.__parseTransformArgs__(args)
     if len(args) == 2:
       ref_np = args[0]
       pos = args[1]
     if len(args) == 1:
       pos = args[0]    
-    
+      
     # setting position   
     NodePath.setPos(self,ref_np,pos)    
     if self.getAnimatorActor() is not None:
@@ -253,9 +271,7 @@ class CharacterBase(AnimatableObject):
       
   def setX(self, *args):
     
-    #ref_np = self.getParent()
-    ref_np = ref_np = self.movement_ref_np_
-    val = 0.0
+    ref_np , pos = self.__parseTransformArgs__(args)
     if len(args) == 2:
       ref_np = args[0]
       val = args[1]
@@ -268,9 +284,7 @@ class CharacterBase(AnimatableObject):
       
   def setY(self, *args):
     
-    #ref_np = self.getParent()
-    ref_np = self.movement_ref_np_
-    val = 0.0
+    ref_np , pos = self.__parseTransformArgs__(args)
     if len(args) == 2:
       ref_np = args[0]
       val = args[1]
@@ -283,9 +297,7 @@ class CharacterBase(AnimatableObject):
       
   def setZ(self, *args):
     
-    #ref_np = self.getParent()
-    ref_np = self.movement_ref_np_
-    val = 0.0
+    ref_np , pos = self.__parseTransformArgs__(args)
     if len(args) == 2:
       ref_np = args[0]
       val = args[1]
@@ -321,13 +333,26 @@ class CharacterBase(AnimatableObject):
     self.sm_.execute(GeneralActions.GameStep(dt))
     
   # =========== Rigid Body Methods =========== #
-  def setLinearVelocity(self,vel,apply_all = False):
-    if apply_all and self.getAnimatorActor() is not None:
+  def setLinearVelocity(self,vel,clear_all = False):
+    '''
+    setLinearVelocity(Vec3 vel,Bool clear_all = False)
+      Applies a velocity vector to the Character.  The vector is assumed to 
+      be relative the the Character's reference node
+    '''
+    
+    # converting to world coordinates
+    vel = self.getParent().getRelativeVector(self.reference_np_,vel)
+    
+    if clear_all and self.getAnimatorActor() is not None:
       self.getAnimatorActor().getRigidBody().node().setLinearVelocity(Vec3(0,0,0))        
     self.node().setLinearVelocity(vel) 
     
   def getLinearVelocity(self):
-    return self.node().getLinearVelocity() 
+    '''
+    getLinearVelocity() -> Vec3
+      Returns the velocity vecor expressed in the Character's Reference NodePath
+    '''
+    return self.reference_np_.getRelativeVector(self.getParent(), self.node().getLinearVelocity())
     
   def clearForces(self):
     self.node().clearForces()    
@@ -336,11 +361,12 @@ class CharacterBase(AnimatableObject):
       attached_rb.node().clearForces()
       
   def applyCentralImpulse(self,impls):
+    impls = self.getParent().getRelativeVector(self.reference_np_,impls)
     self.node().applyCentralImpulse(impls)
     
   # ============== Private Methods ====================== #
   def __parseTransformArgs__(self,*args):
-    ref_np = self.getParent()
+    ref_np = self.reference_np_
     val = None
     if len(args) == 2:
       ref_np = args[0]

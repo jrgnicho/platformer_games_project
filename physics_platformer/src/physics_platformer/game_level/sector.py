@@ -134,12 +134,8 @@ class Sector(NodePath):
     self.physics_world_.attach(constraint)
     constraint.setEnabled(True)
     self.object_constraints_dict_[obj.getObjectID()] = constraint
-    obj.setMovementReference(self)
-    
-    logging.info("%s Plane Pos: %s Hpr: %s"%(self.getName(),
-                                             self.motion_plane_np_.getPos(self.getParent()),
-                                             self.motion_plane_np_.getHpr(self.getParent())))
-  
+    obj.setReferenceNodePath(self)
+      
   def remove(self,obj):
     
     if not self.object_constraints_dict_.has_key(obj.getObjectID()):

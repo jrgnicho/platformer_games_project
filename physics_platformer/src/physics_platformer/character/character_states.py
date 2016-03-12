@@ -55,13 +55,18 @@ class CharacterState(State):
   def clampToPlatform(self):
     
     result = self.character_obj_.doCollisionSweepTestZ()
+    parent = self.character_obj_.getParent()
+    ref_node = self.character_obj_.getReferenceNodePath()
+     
     if result.hasHit():
-      self.character_obj_.clampBottom(result.getHitPos().getZ())
-    else:  
-      platform = self.character_obj_.getStatus().platform
-      self.character_obj_.clampBottom(platform.getMax().getZ())      
+      ref_pos = ref_node.getRelativePoint(parent,result.getHitPos())
+      self.character_obj_.clampBottom(ref_pos.getZ())      
+      self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
+      
+#       platform = self.character_obj_.getStatus().platform
+#       self.character_obj_.clampBottom(platform.getMax().getZ())      
     
-    self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
+    return result.hasHit()
   
   def done(self):
     '''
@@ -110,7 +115,7 @@ class AerialBaseState(CharacterState):
     
   def moveForwardCallback(self):
     
-    self.forward_direction_ = self.character_obj_.node().getLinearVelocity()
+    self.forward_direction_ = self.character_obj_.getLinearVelocity()
     self.forward_direction_.setX(self.current_speed_)
     self.character_obj_.setLinearVelocity(self.forward_direction_)
     
@@ -138,7 +143,7 @@ class AerialBaseState(CharacterState):
       
   def checkAscendFinished(self,action):
     
-    vel = self.character_obj_.node().getLinearVelocity()
+    vel = self.character_obj_.getLinearVelocity()
     if vel.getZ() < 0.01:
       StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))  
           
@@ -171,18 +176,17 @@ class CharacterStates(object): # Class Namespace
       ledge  = collision_action.game_obj2
       recovery_min = self.character_obj_.getInfo().fall_recovery_min
       recovery_max = self.character_obj_.getInfo().fall_recovery_max
+      ref_np = self.character_obj_.getReferenceNodePath()
       
-      d = abs(self.character_obj_.getFront() - ledge.getX(self.character_obj_.getParent()))
-
-        
+      d = abs(self.character_obj_.getFront() - ledge.getX(ref_np))        
       if self.character_obj_.isFacingRight() == ledge.isRightSideLedge():        
         # push from the platform  
         if d >= recovery_max:        
           logging.debug("Pushing character out of platform")
           if self.character_obj_.isFacingRight():
-            self.character_obj_.clampLeft(ledge.getX(self.character_obj_.getParent()) + CharacterStates.EDGE_PUSH_DISTANCE)
+            self.character_obj_.clampLeft(ledge.getX(ref_np) + CharacterStates.EDGE_PUSH_DISTANCE)
           else:
-            self.character_obj_.clampRight(ledge.getX(self.character_obj_.getParent()) - CharacterStates.EDGE_PUSH_DISTANCE)
+            self.character_obj_.clampRight(ledge.getX(ref_np) - CharacterStates.EDGE_PUSH_DISTANCE)
   
         if d > recovery_min and d < recovery_max :      
             StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.EDGE_RECOVERY)) 
@@ -206,6 +210,7 @@ class CharacterStates(object): # Class Namespace
       
       # determining x position of ghost body
       xoffset = 0
+      ref_np = self.character_obj_.getReferenceNodePath()
       facing_right = self.character_obj_.isFacingRight() 
       if self.character_obj_.getAnimatorActor().getActionGhostBody() is not None:
         node = self.character_obj_.getAnimatorActor().getActionGhostBody().node()
@@ -213,8 +218,8 @@ class CharacterStates(object): # Class Namespace
         xoffset = xoffset if facing_right else -xoffset
         
       ledge =  self.character_obj_.getStatus().ledge       
-      self.character_obj_.clampOriginX(ledge.getX(self.character_obj_.getParent()) - xoffset)
-      self.character_obj_.clampBottom(ledge.getZ(self.character_obj_.getParent()) )
+      self.character_obj_.clampOriginX(ledge.getX(ref_np) - xoffset)
+      self.character_obj_.clampBottom(ledge.getZ(ref_np) )
       self.character_obj_.animate(self.animation_key_)  
       
     def exit(self):
@@ -230,20 +235,16 @@ class CharacterStates(object): # Class Namespace
       logging.debug("%s state entered"%(self.getKey()))      
       self.character_obj_.pose(self.animation_key_)      
       
-      # determining x position
-      xoffset = 0
-      facing_right = self.character_obj_.isFacingRight() 
-      if self.character_obj_.getAnimatorActor().getActionGhostBody() is not None:
-        node = self.character_obj_.getAnimatorActor().getActionGhostBody().node()
-        xoffset = node.getShapePos(0).getX()
-        xoffset = xoffset if facing_right else -xoffset
-      
-      platform  = self.character_obj_.getStatus().platform  
-      last_contact = self.character_obj_.getStatus().contact_data
-      pos_x = platform.getRight() if facing_right else platform.getLeft()
-      pos_x -= xoffset
-      self.character_obj_.clampOriginX(pos_x)   
+      self.clampToLedge(self.character_obj_.getStatus().ledge)  
       self.character_obj_.animate(self.animation_key_)
+      
+    def clampToLedge(self,ledge):
+      ref = self.character_obj_.getReferenceNodePath()
+      self.character_obj_.clampBottom(ledge.getZ(ref))
+      self.character_obj_.clampFront(ledge.getX(ref))
+      self.character_obj_.setLinearVelocity(Vec3(0,0,0))        
+          
+      self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
       
     def exit(self):
       self.character_obj_.stop()
@@ -278,7 +279,7 @@ class CharacterStates(object): # Class Namespace
       
     def moveForwardCallback(self):
       
-      self.forward_direction_ = self.character_obj_.node().getLinearVelocity()
+      self.forward_direction_ = self.character_obj_.getLinearVelocity()
       self.forward_direction_.setX(self.forward_speed_)
       self.character_obj_.setLinearVelocity(self.forward_direction_)
       
@@ -345,7 +346,7 @@ class CharacterStates(object): # Class Namespace
       
     def moveForwardCallback(self):
       
-      self.forward_direction_ = self.character_obj_.node().getLinearVelocity()
+      self.forward_direction_ = self.character_obj_.getLinearVelocity()
       self.forward_direction_.setX(self.forward_speed_)
       self.character_obj_.setLinearVelocity(self.forward_direction_)     
       
@@ -385,7 +386,7 @@ class CharacterStates(object): # Class Namespace
       
     def moveForwardCallback(self):
       
-      self.forward_direction_ = self.character_obj_.node().getLinearVelocity()
+      self.forward_direction_ = self.character_obj_.getLinearVelocity()
       self.forward_direction_.setX(self.forward_speed_)
       self.forward_direction_.setZ(0)
       self.character_obj_.setLinearVelocity(self.forward_direction_)           
@@ -493,18 +494,18 @@ class CharacterStates(object): # Class Namespace
         pos.setX(-pos.getX())
       
       # creating transform  for placement of character relative to ledge
+      ref_np = self.character_obj_.getReferenceNodePath()
       tf_obj_to_ghost = LMatrix4.translateMat(pos)        
       tf_ghost_to_object = LMatrix4(tf_obj_to_ghost)
       tf_ghost_to_object.invertInPlace()
-      tf_world_to_ledge = ledge.getMat(self.character_obj_.getParent())      
-      transform = TransformState.makeMat(tf_world_to_ledge * tf_ghost_to_object)
-      pos = transform.getPos()
-      #py = (self.character_obj_.getY(self.character_obj_.getParent()))
-      #pos = Vec3(pos.getX(),py,pos.getZ())
+      
+      tf_ref_to_ledge = ledge.getMat(ref_np)      
+      tf_ref_to_obj = TransformState.makeMat(tf_ref_to_ledge * tf_ghost_to_object)
+      pos = tf_ref_to_obj.getPos()
       
       # placing character on ledge
-      self.character_obj_.setX(self.character_obj_.getParent(),pos.getX())
-      self.character_obj_.setZ(self.character_obj_.getParent(),pos.getZ())
+      self.character_obj_.setX(ref_np,pos.getX())
+      self.character_obj_.setZ(ref_np,pos.getZ())
       self.character_obj_.setLinearVelocity(Vec3(0,0,0))        
       
       # turning off collision
@@ -532,10 +533,9 @@ class CharacterStates(object): # Class Namespace
       self.clampToPlatformEdge()
       
     def clampToPlatformEdge(self):
-      platform = self.character_obj_.getStatus().platform
       ledge = self.character_obj_.getStatus().ledge
 
-      ref = self.character_obj_.getMovementReference()
+      ref = self.character_obj_.getReferenceNodePath()
       self.character_obj_.clampBottom(ledge.getZ(ref))
       self.character_obj_.clampBack(ledge.getX(ref))
       self.character_obj_.setLinearVelocity(Vec3(0,0,0))   
@@ -544,10 +544,7 @@ class CharacterStates(object): # Class Namespace
       
       self.character_obj_.stop()      
       self.character_obj_.setAnimationEndCallback(None)
-      
-    def climb(self):
-      pass
-        
+         
   class FallState(AerialBaseState):
     
     def __init__(self,character_obj,parent_state_machine, animation_key = None):
@@ -577,21 +574,24 @@ class CharacterStates(object): # Class Namespace
     def ledgeCollisionCallback(self,action):
       ledge = action.game_obj2
       info = self.character_obj_.getInfo()
-      self.character_obj_.getStatus().platform = ledge
+      self.character_obj_.getStatus().ledge = ledge
       self.character_obj_.getStatus().platform = ledge.getParentPlatform()
       
       dist_from_ledge = 0
-      parent = self.character_obj_.getParent()
+      parent = self.character_obj_.getParent()      
+      ref_node = self.character_obj_.getReferenceNodePath()  
       if ledge.isRightSideLedge():
-        dist_from_ledge = (ledge.getX(parent) - self.character_obj_.getLeft())
+        dist_from_ledge = (ledge.getX(ref_node) - self.character_obj_.getLeft())
       else:
-        dist_from_ledge = (self.character_obj_.getRight() - ledge.getX(parent))  
-        
+        dist_from_ledge = (self.character_obj_.getRight() - ledge.getX(ref_node))  
+      
       if dist_from_ledge <= info.land_edge_min: # push out of platform
+        
+        x = ledge.getX(ref_node) 
         if ledge.isRightSideLedge():
-          self.character_obj_.clampLeft(ledge.getX(parent) + CharacterStates.EDGE_PUSH_DISTANCE)
+          self.character_obj_.clampLeft(x + CharacterStates.EDGE_PUSH_DISTANCE)
         else:
-          self.character_obj_.clampRight(ledge.getX(parent) - CharacterStates.EDGE_PUSH_DISTANCE)
+          self.character_obj_.clampRight(x - CharacterStates.EDGE_PUSH_DISTANCE)
       
       # barely landed on platform
       if dist_from_ledge > info.land_edge_min and dist_from_ledge < info.land_edge_max:
@@ -634,7 +634,8 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.setAnimationEndCallback(self.done)
       self.character_obj_.animate(self.animation_key_)  
       
-      self.clampToPlatform()   
+      if not self.clampToPlatform() :
+        logging.warn("Missed Landing")  
       
       self.character_obj_.enableFriction(True)
       self.character_obj_.getStatus().air_jumps_count = 0
@@ -678,17 +679,18 @@ class CharacterStates(object): # Class Namespace
       
       # placing character  on platform      
       platform = self.character_obj_.getStatus().platform
-      self.clampToPlatform(platform)      
-      if self.character_obj_.isFacingRight():
-        self.character_obj_.clampLeft(platform.getLeft())
-      else:
-        self.character_obj_.clampRight(platform.getRight())        
-      
+      self.clampToPlatformEdge(platform) 
       self.character_obj_.enableFriction(True) 
       
-    def clampToPlatform(self,platform):
+    def clampToPlatformEdge(self,platform):
       
-      self.character_obj_.clampBottom(platform.getMax().getZ())      
+      ledge = self.character_obj_.getStatus().ledge
+
+      ref = self.character_obj_.getReferenceNodePath()
+      self.character_obj_.clampBottom(ledge.getZ(ref))
+      self.character_obj_.clampBack(ledge.getX(ref))
+      self.character_obj_.setLinearVelocity(Vec3(0,0,0))        
+          
       self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
       
     def exit(self):      

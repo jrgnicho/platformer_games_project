@@ -72,7 +72,7 @@ class GameObject(NodePath):
         self.node().setBounds(BoundingBox(min_point ,max_point ))
         
         # Frame of reference
-        self.movement_ref_np_ = None
+        self.reference_np_ = None
         
         # visual properties
         if setup_visual:     
@@ -118,16 +118,16 @@ class GameObject(NodePath):
     def getObjectID(self):      
       return self.getPythonTag(GameObject.ID_PYTHON_TAG)
     
-    def setMovementReference(self,ref_np):
+    def setReferenceNodePath(self,ref_np):
       '''
-      setMovementReference(Nodepath ref_np)
+      setReferenceNodePath(Nodepath ref_np)
       
         Movement and Transform changes will be done relative to the ref_np Nodepath
       '''
-      self.movement_ref_np_ = ref_np     
+      self.reference_np_ = ref_np     
       
-    def getMovementReference(self):  
-      return self.movement_ref_np_
+    def getReferenceNodePath(self):  
+      return self.reference_np_
        
     def getSize(self):
       '''

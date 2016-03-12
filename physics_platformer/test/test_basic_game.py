@@ -196,7 +196,7 @@ class TestBasicGame(TestGame):
     self.level_.addGameObject(self.character_)          
     self.character_.setPos(sector,Vec3(18,0,26))  
     #sector.attach(self.character_)   
-    self.character_.setMovementReference(sector)
+    self.character_.setReferenceNodePath(sector)
     self.character_.pose(ANIMATIONS[4])    
     
     # create character keyboard controller
