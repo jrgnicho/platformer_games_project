@@ -32,6 +32,7 @@ class Ledge(GameObject):
     
     ledge_gn = BulletGhostNode(name)
     ledge_gn.addShape(BulletBoxShape(Vec3(half_width,half_depth,half_height)) )
+    #ledge_gn.getShape(0).setMargin(GameObject.DEFAULT_COLLISION_MARGIN)
     ledge_gn.setIntoCollideMask(CollisionMasks.LEDGE)  
     
     # This is hackish but don't know of a different way to replace the BulletRigidBody with a BulletGhostNode

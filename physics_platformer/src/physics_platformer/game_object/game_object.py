@@ -39,6 +39,7 @@ class GameObject(NodePath):
     
     ID_PYTHON_TAG = "ObjectID"
     ORIGIN_SPHERE_RADIUS = 0.1
+    DEFAULT_COLLISION_MARGIN = 0.01
     
     
     def __init__(self,name,size,mass = 0,setup_visual = True):   
@@ -61,6 +62,7 @@ class GameObject(NodePath):
         
         # set collision shape
         collision_shape = BulletBoxShape(self.size_/2) 
+        collision_shape.setMargin(GameObject.DEFAULT_COLLISION_MARGIN)
         self.node().addShape(collision_shape)
         self.node().setMass(mass)
         self.setCollideMask(CollisionMasks.GAME_OBJECT_AABB)

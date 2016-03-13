@@ -70,7 +70,7 @@ class Sector(NodePath):
     
   def __del__(self):
     
-    for k,c in self.object_constraints_dict_:
+    for k,c in self.object_constraints_dict_.items():
       self.physics_world_.remove(c)
     self.object_constraints_dict_.clear()
       
