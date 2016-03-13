@@ -119,52 +119,56 @@ class TestLevel(Level):
     
     '''                               
       30                                   _______
-                                          |___16__|        _______
-                                          | |  ___________|       |
-                                          | | |_____26____|       |
-                            __________    | |___          | 16X8  |
-      20   _________       |          |   | |_8_|   ______|_______|
-          |___20____|      |____22____|   |4|__    |__16___|
-                 __________|_12__|        | |6_|   _____
-                |_____26_____|     _______|_|___  |_12__|     __________
-                                  |_____30______|            |____22____|
-      10    ||          ____________    ____________       
-            ||         |_____26_____|  |            |
-            |4|                        |_____28_____|
-                                                                                    
-                                                                                           
+                                          | |_16__|      ___________
+                                          | |  _________|           |
+                                          | | |___22____|____24_____|
+                            __________    | |___        |  |
+      20   _________       |     |    |   | |_8_|   ____|8_|  
+          |___20____|      |  12 |_10_|   |4|__    |__16___|
+          | |    __________|_____|        | |6_|   _____
+          |4|   |_____26_____|     _______|_|___  |_12__|     __________
+          |_|                     |_____30______|            |____22____|
+      10    ||              ________    ____________       
+            ||             |___16___|  |            |
+            ||  |4|                    |_____28_____|
+            ||                                                                        
+            ||                                                                               
       0                                                                                      
           0   10   20   30   40   50   60   70   80   90   100
     '''
     
-    # Platform Details [ (float left, float top, Vec3 size),... ]
+    # Platform Details [ (float left, float top, Vec3 size, Bool right_ledge, Bool left_ledge ),... ]
     depth = TestLevel.PLATFORM_DEPTH
     platform_details = [
-                        (0,20,Vec3(20,depth,2)),
-                        (4,12,Vec3(2,depth,4)),
-                        (4,8,Vec3(4,depth,2)),
-                        (12,16,Vec3(26,depth,2)),
-                        (34,22,Vec3(22,depth,4)),
-                        (34,18,Vec3(12,depth,2)),
-                        (26,10,Vec3(26,depth,2)),
-                        (48,14,Vec3(30,depth,2)),
-                        (58,10,Vec3(28,depth,4)),
-                        (64,28,Vec3(4,depth,14)),
-                        (64,30,Vec3(16,depth,2)),
-                        (68,22,Vec3(8,depth,2)),
-                        (68,18,Vec3(6,depth,2)),
-                        (72,26,Vec3(26,depth,2)),
-                        (82,20,Vec3(16,depth,2)),
-                        (80,16,Vec3(12,depth,2)),
-                        (96,28,Vec3(16,2*depth,8)),
-                        (102,14,Vec3(22,depth,2))]
+                        (0,20,Vec3(20,depth,2),True,True),
+                        (0,18,Vec3(4,depth,6),False,False),
+                        (4,12,Vec3(2,depth,10),True,True),
+                        (12,8,Vec3(4,depth,2),True,True),
+                        (12,16,Vec3(26,depth,2),False,True),
+                        (46,22,Vec3(10,depth,4),True,False),
+                        (34,22,Vec3(12,depth,6),False,True),
+                        (34,10,Vec3(18,depth,2),True,True),
+                        (48,14,Vec3(30,depth,2),True,True),
+                        (58,10,Vec3(28,depth,4),True,True),
+                        (64,30,Vec3(4,depth,16),False,True),
+                        (68,30,Vec3(12,depth,2),True,False),
+                        (68,22,Vec3(8,depth,2),True,False),
+                        (68,18,Vec3(6,depth,2),True,False),
+                        (72,26,Vec3(22,depth,2),False,True),
+                        (82,20,Vec3(16,depth,2),False,True),
+                        (80,16,Vec3(12,depth,2),True,True),
+                        (92,28,Vec3(24,depth,4),True,True),
+                        (92,24,Vec3( 8,depth,4),False,False),
+                        (102,14,Vec3(22,depth,2),True,True)]
     
     for i in range(0,len(platform_details)):
       p = platform_details[i]
       size = p[2]
       pos = Vec3(p[0] + size.getX()*0.5, TestLevel.PLATFORM_Y , p[1] - size.getZ()*0.5)
+      right_ledge_enable = p[3]
+      left_ledge_enable = p[4]
       
-      platform = Platform(sector.getName() + '-' + 'platform' + str(i),size)
+      platform = Platform(sector.getName() + '-' + 'platform' + str(i),size,right_ledge_enable,left_ledge_enable)
       self.addPlatform(platform)
       platform.setPos(sector,pos)
       platform.setHpr(sector,0,0,0)
@@ -334,38 +338,6 @@ class TestGame(ShowBase):
     
     return task.cont
     
-#   def __setupLevel__(self):
-# 
-#     self.level_ = Level("Level1",Vec3(60,1,60))
-#     self.level_.reparentTo(self.render)
-# 
-#     # Adding platforms
-#     platform_details =[ 
-#       (-20, 4, 20, TestGame.PLATFORM_DEPTH, 1  ),
-#       (-2, 5, 10, TestGame.PLATFORM_DEPTH, 1  ),
-#       ( 4 , 1 , 16, TestGame.PLATFORM_DEPTH, 2),
-#       (-4 , 1, 10, TestGame.PLATFORM_DEPTH, 1),
-#       ( 16, 6, 30, TestGame.PLATFORM_DEPTH, 1),
-#       ( 0, -0.5, 30, TestGame.PLATFORM_DEPTH, 1),
-#       ]
-#     for i in range(0,len(platform_details)):
-#       p = platform_details[i]
-#       pos = Vec3(p[0],TestGame.__PLATFORM_Y_POS,p[1])
-#       size = Vec3(p[2],p[3],p[4])
-#       
-#       platform = Platform('Platform' + str(i),size)
-#       self.level_.addPlatform(platform)
-#       platform.setPos(pos)
-#       
-#   def __setupGameObjects__(self):
-#     
-#     box_size = Vec3(TestGame.__BOX_SIDE_LENGTH__,TestGame.__BOX_SIDE_LENGTH__,TestGame.__BOX_SIDE_LENGTH__)
-#     start_pos = Vec3(-TestGame.__NUM_BOXES__*TestGame.__BOX_SIDE_LENGTH__*0.5,0,6)
-#     for i in range(0,TestGame.__NUM_BOXES__):            
-#         obj = GameObject("obj"+str(i),box_size,True)
-#         self.level_.addGameObject(obj)
-#         obj.setPos(start_pos + Vec3(i*TestGame.__BOX_SIDE_LENGTH__*0.5,0,i*TestGame.__BOX_SIDE_LENGTH__*1.2))    
-        
   # __ CAM_METHODS __
   def moveCamUp(self):
       self.cam.setPos(self.cam.getPos() + Vec3(0, 0,TestGame.__CAM_STEP__))
