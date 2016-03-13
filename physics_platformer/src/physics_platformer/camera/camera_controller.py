@@ -35,6 +35,7 @@ class CameraController(NodePath):
   def setTargetNode(self, target_np):    
     self.target_np_ = target_np  
     self.target_tracker_np_.setFluidPos(target_np.getPos())
+    self.target_tracker_np_.setHpr(target_np,Vec3(0,0,0))
     
     if self.enabled_:
       self.__activate__()
