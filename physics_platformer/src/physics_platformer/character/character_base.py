@@ -19,7 +19,7 @@ from physics_platformer.character.character_states import CharacterStates
 from physics_platformer.character.character_status import *
 from physics_platformer.collision import CollisionMasks
 from physics_platformer.game_actions import *
-from physics_platformer.game_object import AnimatableObject
+from physics_platformer.game_object import GameObject, AnimatableObject
 from physics_platformer.game_object import AnimationSpriteAlignment
 from physics_platformer.sprite import SpriteAnimator
 from physics_platformer.state_machine import Action
@@ -52,8 +52,10 @@ class CharacterBase(AnimatableObject):
       self.node().removeShape(shape)
       
     box_shape = BulletBoxShape(self.size_/2) 
+    box_shape.setMargin(GameObject.DEFAULT_COLLISION_MARGIN)
     self.node().addShape(box_shape,TransformState.makePos(Vec3(0,0,0.5*size.getZ()))) # box bottom center coincident with the origin
     self.node().setMass(self.character_info_.mass)
+    self.node().setLinearFactor((1,1,1)) 
     self.node().setAngularFactor((0,0,0)) 
     self.setCollideMask(CollisionMasks.NO_COLLISION)    
     
@@ -167,9 +169,9 @@ class CharacterBase(AnimatableObject):
   
   def clampLeft(self,x):
     
-    vel = self.node().getLinearVelocity()
+    vel = self.getLinearVelocity()
     vel.setX(0)
-    self.node().setLinearVelocity(vel)
+    self.setLinearVelocity(vel)
     
     ref = self.reference_np_
     local_offset = self.getBack() if self.isFacingRight() else self.getFront()
@@ -180,9 +182,9 @@ class CharacterBase(AnimatableObject):
       self.getAnimatorActor().getRigidBody().setX(ref,x + local_offset)
     
   def clampOriginX(self,x):
-    vel = self.node().getLinearVelocity()
+    vel = self.getLinearVelocity()
     vel.setX(0)
-    self.node().setLinearVelocity(vel)  
+    self.setLinearVelocity(vel)  
     
     ref = self.reference_np_   
     self.setX(ref,x)
@@ -191,9 +193,9 @@ class CharacterBase(AnimatableObject):
     
   def clampRight(self,x):
     
-    vel = self.node().getLinearVelocity()
+    vel = self.getLinearVelocity()
     vel.setX(0)
-    self.node().setLinearVelocity(vel)
+    self.setLinearVelocity(vel)
     
     ref = self.reference_np_
     local_offset = self.getFront() if self.isFacingRight() else self.getBack()

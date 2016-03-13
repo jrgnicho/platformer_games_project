@@ -61,7 +61,7 @@ class CharacterState(State):
     if result.hasHit():
       ref_pos = ref_node.getRelativePoint(parent,result.getHitPos())
       self.character_obj_.clampBottom(ref_pos.getZ())      
-      self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
+      self.character_obj_.node().setLinearFactor(LVector3(1,1,0)) # disable movement in z
       
 #       platform = self.character_obj_.getStatus().platform
 #       self.character_obj_.clampBottom(platform.getMax().getZ())      
@@ -162,13 +162,13 @@ class CharacterStates(object): # Class Namespace
     def enter(self):      
       logging.debug("%s state entered"%(self.getKey()))
       self.character_obj_.animate(self.animation_key_)    
-      self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
+      self.character_obj_.node().setLinearFactor(LVector3(1,1,0)) # disable movement in z
       self.character_obj_.setLinearVelocity(LVector3(0,0,0))
       self.character_obj_.clearForces()      
       
     def exit(self):
       self.character_obj_.stop()
-      self.character_obj_.node().setLinearFactor(LVector3(1,0,1))
+      self.character_obj_.node().setLinearFactor(LVector3(1,1,1))
       self.character_obj_.getStatus().momentum.setX(0)
       
     def ledgeCollisionCallback(self,collision_action):
@@ -182,11 +182,14 @@ class CharacterStates(object): # Class Namespace
       if self.character_obj_.isFacingRight() == ledge.isRightSideLedge():        
         # push from the platform  
         if d >= recovery_max:        
-          logging.debug("Pushing character out of platform")
+          logging.debug("Pushing character out of platform now")
           if self.character_obj_.isFacingRight():
             self.character_obj_.clampLeft(ledge.getX(ref_np) + CharacterStates.EDGE_PUSH_DISTANCE)
           else:
-            self.character_obj_.clampRight(ledge.getX(ref_np) - CharacterStates.EDGE_PUSH_DISTANCE)
+            self.character_obj_.clampRight(ledge.getX(ref_np) - CharacterStates.EDGE_PUSH_DISTANCE)     
+            
+          StateMachine.postEvent(StateEvent(self.parent_state_machine_,CharacterActions.FALL))  
+          
   
         if d > recovery_min and d < recovery_max :      
             StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.EDGE_RECOVERY)) 
@@ -244,7 +247,7 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.clampFront(ledge.getX(ref))
       self.character_obj_.setLinearVelocity(Vec3(0,0,0))        
           
-      self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
+      self.character_obj_.node().setLinearFactor(LVector3(1,1,0)) # disable movement in z
       
     def exit(self):
       self.character_obj_.stop()
@@ -608,14 +611,21 @@ class CharacterStates(object): # Class Namespace
     def surfaceCollisionCallback(self,action):
       
       platform  = action.game_obj2
-      if abs(self.character_obj_.getBottom() - platform.getTop()) < AerialBaseState.LANDING_THRESHOLD :
-        self.character_obj_.getStatus().platform = platform
-        self.character_obj_.getStatus().contact_data = CharacterStatus.ContactData(action.contact_manifold)
+      manifold_points = action.contact_manifold.getManifoldPoints()
+      ref_np = self.character_obj_.getReferenceNodePath()
+      for point in manifold_points:
+        contact_point = ref_np.getRelativePoint(self.character_obj_.getParent(),point.getPositionWorldOnB())
+        if abs(self.character_obj_.getBottom()  - contact_point.getZ()) < AerialBaseState.LANDING_THRESHOLD :            
         
-        # check if ledge is nearby
-        result = self.character_obj_.doCollisionSweepTestZ(CollisionMasks.LEDGE)
-        if not result.hasHit():
-          StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND))        
+          self.character_obj_.getStatus().platform = platform
+          self.character_obj_.getStatus().contact_data = CharacterStatus.ContactData(self.character_obj_.getObjectID(),
+                                                                                     action.contact_manifold)          
+          # check if ledge is nearby
+          result = self.character_obj_.doCollisionSweepTestZ(CollisionMasks.LEDGE)
+          if not result.hasHit():
+            StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.LAND)) 
+            
+          break;       
 
      
   class LandState(CharacterState):
@@ -657,7 +667,7 @@ class CharacterStates(object): # Class Namespace
 
       
     def exit(self):      
-      self.character_obj_.node().setLinearFactor(LVector3(1,0,1)) # re-enable movement in z
+      self.character_obj_.node().setLinearFactor(LVector3(1,1,1)) # re-enable movement in z
       self.character_obj_.stop()
       self.character_obj_.setAnimationEndCallback(None)
       
@@ -691,10 +701,10 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.clampBack(ledge.getX(ref))
       self.character_obj_.setLinearVelocity(Vec3(0,0,0))        
           
-      self.character_obj_.node().setLinearFactor(LVector3(1,0,0)) # disable movement in z
+      self.character_obj_.node().setLinearFactor(LVector3(1,1,0)) # disable movement in z
       
     def exit(self):      
-      self.character_obj_.node().setLinearFactor(LVector3(1,0,1)) # re-enable movement in z
+      self.character_obj_.node().setLinearFactor(LVector3(1,1,1)) # re-enable movement in z
       self.character_obj_.stop()
       self.character_obj_.setAnimationEndCallback(None)
       
