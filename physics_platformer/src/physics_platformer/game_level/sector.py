@@ -14,11 +14,11 @@ class SectorTransition(NodePath):
   
   def __init__(self,name,size,src_sector_name,destination_sector_name):
     
-    NodePath.__init__(BulletGhostNode(name))
+    NodePath.__init__(self,BulletGhostNode(name))
     self.src_sector_name_ = src_sector_name
     self.destination_sector_name_ = destination_sector_name    
     self.node().addShape(BulletBoxShape(size/2))
-    self.node().setIntoCollisionMask(CollisionMask.SECTOR_TRANSITION)
+    self.node().setIntoCollideMask(CollisionMasks.SECTOR_TRANSITION)
     self.setPythonTag(SectorTransition.SOURCE_SECTOR_NAME, self.src_sector_name_)
     self.setPythonTag(SectorTransition.DESTINATION_SECTOR_NAME, self.destination_sector_name_)
     
@@ -29,11 +29,11 @@ class SectorTransition(NodePath):
     return self.src_sector_name
   
   def setEnabled(self,enable):    
-    self.node().setIntoCollisionMask(CollisionMask.SECTOR_TRANSITION if enable else CollisionMask.NO_COLLISION)
+    self.node().setIntoCollideMask(CollisionMasks.SECTOR_TRANSITION if enable else CollisionMasks.NO_COLLISION)
 
 class Sector(NodePath):
   
-  SECTOR_TRANSITION_SIZE = Vec3(1,1,2)
+  SECTOR_TRANSITION_SIZE = Vec3(1,2,4)
   
   def __init__(self,name,parent_np , physics_world, tr = TransformState.makeIdentity()):
     """
@@ -66,7 +66,7 @@ class Sector(NodePath):
     
     # sector transitions
     self.sector_transitions_ = []
-    self.destination_sector_dict_ = []
+    self.destination_sector_dict_ = {}
     
   def __del__(self):
     
@@ -105,7 +105,7 @@ class Sector(NodePath):
     direction = 1 if on_right_side else -1
     
     st.reparentTo(self)
-    st_pos = Vec3(pos.getX()+ on_right_side*(width/2 + 2*GameObject.ORIGIN_SPHERE_RADIUS),0,pos.getZ())
+    st_pos = Vec3(pos.getX()+ direction*(width/2 + 2*GameObject.ORIGIN_SPHERE_RADIUS),0,pos.getZ())
     st.setPos(self,st_pos)
     self.physics_world_.attach(st.node())
     
@@ -144,7 +144,7 @@ class Sector(NodePath):
     constraint = self.object_constraints_dict_[obj.getObjectID()]
     constraint.setEnabled(False)
     self.physics_world_.remove(constraint)
-    obj.setSectorNodePath(None)
+    obj.setReferenceNodePath(None)
     del self.object_constraints_dict_[obj.getObjectID()]
   
   def __create2DConstraint__(self,obj):

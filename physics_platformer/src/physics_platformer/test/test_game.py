@@ -96,6 +96,31 @@ class TestLevel(Level):
       self.__createPlatforms__(sector) 
       self.__createBoxes__(sector)   
       
+    # adding sector transitions
+    sector = None
+    dest_sector = None
+    for i in range(0,num_sectors-1):
+      
+      sector = self.getSectors()[i]
+      if i == 0:        
+        # following sector
+        dest_sector = self.getSectors()[i+1]
+        sector.addTransition(dest_sector,Vec3(100,0,28),True)
+        
+      elif i > 0 and i < num_sectors - 2:
+        # following sector
+        dest_sector = self.getSectors()[i+1]
+        sector.addTransition(dest_sector,Vec3(100,0,28),True)
+        
+        # preceeding sector
+        dest_sector = self.getSectors()[i-1]
+        sector.addTransition(dest_sector,Vec3(0,0,20),False)
+        
+      else:
+        # preceeding sector
+        dest_sector = self.getSectors()[i-1]
+        sector.addTransition(dest_sector,Vec3(0,0,20),False)
+      
     dummy_node.removeNode()
       
   def __createBoxes__(self,sector):

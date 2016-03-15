@@ -63,15 +63,17 @@ class CameraController(NodePath):
     
     if self.sequence_ is None:
       
-      tracker_pos = self.target_tracker_np_.getPos()
-      target_pos= self.target_np_.getPos()
+      ref_np = self.target_np_.getReferenceNodePath()
+      tracker_pos = self.target_tracker_np_.getPos(ref_np)
+      target_pos= self.target_np_.getPos(ref_np)
       distance = (target_pos - tracker_pos).length()
       
       # check if target is inside traking radious
+      self.target_tracker_np_.setHpr(ref_np,Vec3.zero())
       if distance > CameraController.__TRACKING_RADIUS__:
         self.__startMotionInterpolation__()
       else:
-         self.target_tracker_np_.setFluidPos(target_pos)
+         self.target_tracker_np_.setFluidPos(ref_np,target_pos)
     
     
   def __startMotionInterpolation__(self):

@@ -200,6 +200,7 @@ class TestBasicGame(TestGame):
     #self.character_.setHpr(sector,Vec3.zero())
     #self.character_.setReferenceNodePath(sector)
     sector.attach(self.character_)   
+    sector.enableTransitions(True)
     self.character_.pose(ANIMATIONS[4])    
     
     # create character keyboard controller
@@ -284,11 +285,11 @@ class TestBasicGame(TestGame):
       self.camera_controller_.setTargetNode(self.character_)
     else:
       ref_np = self.character_.getReferenceNodePath()
-      self.input_manager_ = self.camera_input_manager_      
+      self.input_manager_ = self.camera_input_manager_         
       tr = self.cam.getTransform(ref_np)
       self.camera_controller_.setEnabled(False)
       self.cam.reparentTo(ref_np)
-      self.cam.setTransform(tr)
+      self.cam.setTransform(ref_np,tr)
       
     self.follow_player_ = not self.follow_player_
     

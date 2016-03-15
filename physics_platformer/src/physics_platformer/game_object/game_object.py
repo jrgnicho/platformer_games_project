@@ -38,8 +38,8 @@ class GameObject(NodePath):
     DEFAULT_BOX_MODEL = NodePath(ModelPool.loadModel( DEFAULT_RESOURCES_DIRECTORY + '/models/box.egg'))
     
     ID_PYTHON_TAG = "ObjectID"
-    ORIGIN_SPHERE_RADIUS = 0.1
     DEFAULT_COLLISION_MARGIN = 0.01
+    ORIGIN_SPHERE_RADIUS = 0.05
     
     
     def __init__(self,name,size,mass = 0,setup_visual = True):   

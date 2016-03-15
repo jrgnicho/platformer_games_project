@@ -1,6 +1,6 @@
 from docutils import TransformSpec
 import logging
-from panda3d.bullet import BulletBoxShape
+from panda3d.bullet import BulletBoxShape, BulletGhostNode, BulletSphereShape
 from panda3d.bullet import BulletGenericConstraint
 from panda3d.bullet import BulletWorld
 from panda3d.core import BoundingBox
@@ -31,7 +31,7 @@ from physics_platformer.state_machine import StateMachineActions
 
 class CharacterBase(AnimatableObject):
   
-  ANIMATOR_MASS_RATIO = 0.1 # The animator mass will be 10% the mass of the rigid body
+  ANIMATOR_MASS_RATIO = 0.1 # The animator mass will be 10% the mass of the rigid body    
   
   def  __init__(self,info):
     
@@ -64,6 +64,12 @@ class CharacterBase(AnimatableObject):
     max = LPoint3(0.5*size.getX(),0.5*size.getY(),size.getZ())
     self.node().setBoundsType(BoundingVolume.BT_box)    
     self.node().setBounds(BoundingBox(min,max))
+    
+    # setting origin ghosht node
+    rel_pos = Vec3(0,0,info.height/2)
+    self.origin_gn_ = self.attachNewNode(BulletGhostNode(self.getName() + '-origin'))
+    self.origin_gn_.node().addShape(BulletSphereShape(GameObject.ORIGIN_SPHERE_RADIUS),TransformState.makePosHpr(rel_pos,Vec3.zero()))
+    self.origin_gn_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_ORIGIN)
     
     # character status
     self.status_ = CharacterStatus()
@@ -98,7 +104,11 @@ class CharacterBase(AnimatableObject):
       self.getAnimatorActor().getRigidBody().node().setFriction(0)
       
     self.status_.friction_enabled = enable
-  
+    
+  def setPhysicsWorld(self,physics_world):
+    GameObject.setPhysicsWorld(self,physics_world)
+    self.physics_world_.attach(self.origin_gn_.node())
+    
   def getStatus(self):
     '''
     Returns a CharacterStatus instance

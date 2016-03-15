@@ -11,6 +11,9 @@
 - [ ] Do not trigger Land action after short jumps
 - [x] **Fix odd bouncing behaviour when landing near walls.  The solution to this is likely to be placing ghost nodes with WALL bitmask on each side of the platforms to prevent triggering SURFACE_LANDING type collisions**
 
+## GameObject
+- [ ] Modified all positional methods in order to handle transform data relative to the Reference NodePath.
+
 ## Level
 - [ ] **Implement Sector transition through the use of BulletGhostNodes associated with a sector.**
 - [ ] **Create Skybox.**

@@ -208,15 +208,16 @@ class Level(NodePath):
     num_contacts = len(contact_manifolds)
     for i in range(0,num_contacts):
       
-      cm = contact_manifolds[i]
-      sector_transition_node = cm.getNode0()
-      node1 = cm.getNode1()
-      col_mask1 = sector_transition_node.getIntoCollideMask().getLowestOnBit()
-      col_mask2 = node1.getIntoCollideMask().getLowestOnBit()
+      cm = contact_manifolds[i]      
+      node1 = cm.getNode0()
+      sector_transition_node = cm.getNode1()      
+      col_mask1 = node1.getIntoCollideMask().getLowestOnBit()
+      col_mask2 = sector_transition_node.getIntoCollideMask().getLowestOnBit()
       
-      if (col_mask1 != CollisionMasks.SECTOR_TRANSITION) or (col_mask2 != CollisionMasks.GAME_OBJECT_ORIGIN):
+      if (col_mask2 != CollisionMasks.SECTOR_TRANSITION.getLowestOnBit()) or (col_mask1 != CollisionMasks.GAME_OBJECT_ORIGIN.getLowestOnBit()):
         continue
       
+      logging.warn("-->Transition Collision Detected")
       processed_contacts.append(i)
       
       src_sector  = self.sectors_dict_[sector_transition_node.getPythonTag(SectorTransition.SOURCE_SECTOR_NAME)]
@@ -230,6 +231,8 @@ class Level(NodePath):
       
       src_sector.remove(obj)
       dest_sector.attach(obj) 
+      src_sector.enableTransitions(False)
+      dest_sector.enableTransitions(True)
       
     unprocessed_contacts = [contact_manifolds[i] for i in range(0,num_contacts) if processed_contacts.count(i) == 0]
     return unprocessed_contacts
