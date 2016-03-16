@@ -217,22 +217,25 @@ class Level(NodePath):
       if (col_mask2 != CollisionMasks.SECTOR_TRANSITION.getLowestOnBit()) or (col_mask1 != CollisionMasks.GAME_OBJECT_ORIGIN.getLowestOnBit()):
         continue
       
-      logging.warn("-->Transition Collision Detected")
+      
       processed_contacts.append(i)
       
       src_sector  = self.sectors_dict_[sector_transition_node.getPythonTag(SectorTransition.SOURCE_SECTOR_NAME)]
       dest_sector = self.sectors_dict_[sector_transition_node.getPythonTag(SectorTransition.DESTINATION_SECTOR_NAME)]
       id = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
       obj = self.game_object_map_.get(id,None)
-      
+            
       if obj is None:
         logging.warn('Object with game id %s was not found')
         continue
+      
+      logging.debug("Transition Collision Detected from src: %s to dest: %s"%(src_sector.getName(),dest_sector.getName()))
       
       src_sector.remove(obj)
       dest_sector.attach(obj) 
       src_sector.enableTransitions(False)
       dest_sector.enableTransitions(True)
+      break
       
     unprocessed_contacts = [contact_manifolds[i] for i in range(0,num_contacts) if processed_contacts.count(i) == 0]
     return unprocessed_contacts

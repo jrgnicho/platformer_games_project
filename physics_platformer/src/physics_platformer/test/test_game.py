@@ -72,9 +72,10 @@ class TestLevel(Level):
     sector_length = 100    
     angle_incr = 360.0/num_sectors    
     angle_offset = -180
-    radius = 0.5*sector_length/(asin(deg2Rad(0.5*angle_incr)))
+    radius = 0.5*sector_length/sin(deg2Rad(0.5*angle_incr))
+    y_offset = radius*cos(deg2Rad(0.5*angle_incr))
     z_incr = 8
-    logging.info("radius = " + str(radius))
+    logging.info("radius = " + str(radius) + ' sector length = ' + str(2*radius*sin(deg2Rad(angle_incr))) )
     
     dummy_node = NodePath('dummy-node')
     dummy_node.reparentTo(self)
@@ -87,19 +88,19 @@ class TestLevel(Level):
       dummy_node.clearTransform(self)
       dummy_node.setZ(self,z)
       dummy_node.setHpr(self,i*angle_incr,0,0)
-      dummy_node.setY(dummy_node,-radius)
+      dummy_node.setY(dummy_node,-y_offset)
       dummy_node.setX(dummy_node,-0.5*sector_length)      
       
       # creating sector
       tf = dummy_node.getTransform(self)
       sector = self.addSector(tf,'sector' + str(i))
-      self.__createPlatforms__(sector) 
+      self.__createPlatforms__(sector,i == 0) 
       self.__createBoxes__(sector)   
       
     # adding sector transitions
     sector = None
     dest_sector = None
-    for i in range(0,num_sectors-1):
+    for i in range(0,num_sectors):
       
       sector = self.getSectors()[i]
       if i == 0:        
@@ -107,7 +108,7 @@ class TestLevel(Level):
         dest_sector = self.getSectors()[i+1]
         sector.addTransition(dest_sector,Vec3(100,0,28),True)
         
-      elif i > 0 and i < num_sectors - 2:
+      elif i > 0 and i < num_sectors - 1:
         # following sector
         dest_sector = self.getSectors()[i+1]
         sector.addTransition(dest_sector,Vec3(100,0,28),True)
@@ -138,34 +139,34 @@ class TestLevel(Level):
         sector.attach(obj) 
     
     
-  def __createPlatforms__(self,sector):
+  def __createPlatforms__(self,sector,use_first_ledge = False):
     
     # Platforms Schematic X, Z (Each new line measures 2 units and each character 2 units)
     
     '''                               
-      30                                   _______
-                                          | |_16__|      ___________
-                                          | |  _________|           |
-                                          | | |___22____|____24_____|
-                            __________    | |___        |  |
-      20   _________       |     |    |   | |_8_|   ____|8_|  
-          |___20____|      |  12 |_10_|   |4|__    |__16___|
-          | |    __________|_____|        | |6_|   _____
-          |4|   |_____26_____|     _______|_|___  |_12__|     __________
-          |_|                     |_____30______|            |____22____|
-      10    ||              ________    ____________       
-            ||             |___16___|  |            |
-            ||  |4|                    |_____28_____|
-            ||                                                                        
-            ||                                                                               
-      0                                                                                      
-          0   10   20   30   40   50   60   70   80   90   100
+           30                                          _______
+                                                      | |_16__|      ______
+                                                      | |  _________|      |
+                                                      | | |___22____|___14_|
+                                        __________    | |___        |  |
+           20        ___________       |     |    |   | |_8_|   ____|8_|  
+                    |___24______|      |  12 |_10_|   |4|__    |__16___|
+                      | |    __________|_____|        | |6_|   _____
+                      |4|   |_____26_____|     _______|_|___  |_12__|     __________
+                      |_|                     |_____30______|            |____22____|
+           10           ||              ________    ____________       
+                        ||             |___16___|  |            |
+                        ||  |4|                    |_____28_____|
+                        ||                                                                        
+                        ||                                                                               
+            0                                                                                            
+          -20  -10    0   10   20   30   40   50   60   70   80   90   100
     '''
     
     # Platform Details [ (float left, float top, Vec3 size, Bool right_ledge, Bool left_ledge ),... ]
     depth = TestLevel.PLATFORM_DEPTH
     platform_details = [
-                        (0,20,Vec3(20,depth,2),True,True),
+                        (-4,20,Vec3(24,depth,2),True,use_first_ledge),
                         (0,18,Vec3(4,depth,6),False,False),
                         (4,12,Vec3(2,depth,10),True,True),
                         (12,8,Vec3(4,depth,2),True,True),
@@ -182,7 +183,7 @@ class TestLevel(Level):
                         (72,26,Vec3(22,depth,2),False,True),
                         (82,20,Vec3(16,depth,2),False,True),
                         (80,16,Vec3(12,depth,2),True,True),
-                        (92,28,Vec3(24,depth,4),True,True),
+                        (92,28,Vec3(14,depth,4),True,True),
                         (92,24,Vec3( 8,depth,4),False,False),
                         (102,14,Vec3(22,depth,2),True,True)]
     

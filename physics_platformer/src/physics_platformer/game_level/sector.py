@@ -33,7 +33,7 @@ class SectorTransition(NodePath):
 
 class Sector(NodePath):
   
-  SECTOR_TRANSITION_SIZE = Vec3(1,2,4)
+  SECTOR_TRANSITION_SIZE = Vec3(1,2,10)
   
   def __init__(self,name,parent_np , physics_world, tr = TransformState.makeIdentity()):
     """
@@ -102,15 +102,21 @@ class Sector(NodePath):
                           destination_sector.getName())
     
     width = size[0]
+    height = size[2]
     direction = 1 if on_right_side else -1
     
     st.reparentTo(self)
-    st_pos = Vec3(pos.getX()+ direction*(width/2 + 2*GameObject.ORIGIN_SPHERE_RADIUS),0,pos.getZ())
+    st_pos = Vec3(pos.getX()+ direction*(width/2 + 10*GameObject.ORIGIN_SPHERE_RADIUS),0,pos.getZ()+ 0.5*height)
     st.setPos(self,st_pos)
     self.physics_world_.attach(st.node())
     
     self.sector_transitions_.append(st)
     self.destination_sector_dict_[st.getName()] = destination_sector
+    st.setEnabled(False)
+    
+    logging.debug('Sector Transition added from %s to %s at position %s to the %s'%(self.getName(),
+                                                                                   destination_sector.getName(),str(pos),'right' if on_right_side else 'left'))
+    
     
     
   def enableTransitions(self,enable):
