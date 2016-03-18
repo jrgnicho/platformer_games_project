@@ -229,7 +229,7 @@ class Level(NodePath):
         logging.warn('Object with game id %s was not found')
         continue
       
-      logging.debug("Transition Collision Detected from src: %s to dest: %s"%(src_sector.getName(),dest_sector.getName()))
+      logging.debug("Sector Transition detected from src: %s to dest: %s"%(src_sector.getName(),dest_sector.getName()))
       
       src_sector.remove(obj)
       dest_sector.attach(obj) 

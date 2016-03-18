@@ -4,13 +4,12 @@ from direct.interval.LerpInterval import LerpPosInterval, LerpHprInterval
 from panda3d.core import Vec3, NodePath
 import logging
 
-
-
 class CameraController(NodePath):
   
   __TRACKING_SPEED__ = 4.0 # meters/second
   __TRACKING_RADIUS__ = 1.0
-  __MAX_INTERPOLATION_TIME__ = 0.5
+  __MAX_POS_INTERPOLATION_TIME__ = 0.5
+  __ROTATION_INTERPOLATION_TIME__ = 0.6
   __CAMERA_POS_OFFSET__ = Vec3(0,-24,4)
   __CAMERA_ORIENT_OFFSET__ = Vec3(0,-5,0)
   
@@ -27,7 +26,7 @@ class CameraController(NodePath):
     
     # rotation tracking
     self.rot_target_hpr_ = Vec3.zero()
-    self.rot_interpolation_sequence_ = None
+    self.rot_interpolation_sequence_ = Sequence()
     
   def setEnabled(self,enable):
     self.enabled_ = enable
@@ -65,16 +64,15 @@ class CameraController(NodePath):
     if self.target_np_ is None:
       return
     
+    self.__checkRotationTarget__()
     
     if self.pos_interpolation_sequence_ is None:
       
       ref_np = self.target_np_.getReferenceNodePath()
       tracker_pos = self.target_tracker_np_.getPos(ref_np)
       target_pos= self.target_np_.getPos(ref_np)
-      distance = (target_pos - tracker_pos).length()
-      
-      
-      self.target_tracker_np_.setHpr(ref_np,Vec3.zero())
+      distance = (target_pos - tracker_pos).length()     
+
       
       # check if target is inside traking radious
       if distance > CameraController.__TRACKING_RADIUS__:
@@ -87,8 +85,8 @@ class CameraController(NodePath):
     
     start_pos = self.target_tracker_np_.getPos()
     end_pos= self.target_np_.getPos()
-    time_ = 0.5 #(end_pos - start_pos).length()/CameraController.__TRACKING_SPEED__
-    time_ = time_ if time_ < CameraController.__MAX_INTERPOLATION_TIME__ else CameraController.__MAX_INTERPOLATION_TIME__
+    time_ = (end_pos - start_pos).length()/CameraController.__TRACKING_SPEED__
+    time_ = time_ if time_ < CameraController.__MAX_POS_INTERPOLATION_TIME__ else CameraController.__MAX_POS_INTERPOLATION_TIME__
     
     pos_interval = LerpPosInterval(self.target_tracker_np_, time_, end_pos, startPos=start_pos,
                                    other=None,
@@ -118,35 +116,41 @@ class CameraController(NodePath):
     
     ref_np = self.target_np_.getReferenceNodePath()
     start_hpr = self.target_tracker_np_.getHpr(ref_np)
-    end_hpr = self.target_np_.getPos(ref_np)
-    time = 0.5
-    
-    # saving target
-    self.rot_target_hpr_ = end_hpr
+    end_hpr = self.target_np_.getHpr(ref_np)
+    time = CameraController.__ROTATION_INTERPOLATION_TIME__
+      
     
     rot_interval = LerpHprInterval(self.target_tracker_np_, time, end_hpr, startHpr = start_hpr,
                                    startQuat = None,
                                    other=ref_np,
-                                   blendType='easeOut',
+                                   blendType='easeIn',
                                    bakeInStart=1,
-                                   fluid=1)
-    
+                                   fluid=0)
+
+      # saving target
+    self.rot_target_hpr_ = self.target_np_.getHpr(self.target_np_.getParent())
+    current_hpr = self.target_tracker_np_.getHpr(self.target_np_.getParent())
+    logging.debug("Camera Interpolated Rotation from %s to %s "%(str(current_hpr),str(self.rot_target_hpr_)))    
+        
     # creating sequence
     self.rot_interpolation_sequence_ = Sequence()
     self.rot_interpolation_sequence_.append(rot_interval)
-    self.rot_interpolation_sequence_.append(Func(self.__checkRotationTarget__))
+    self.rot_interpolation_sequence_.start()
+    
     
   def __checkRotationTarget__(self):
-    ref_np = self.target_np_.getReferenceNodePath()
-    current_hpr = self.target_tracker_np_.getHpr(ref_np = self.target_np_.getReferenceNodePath())
-    if current_hpr.getZ() - self.rot_target_hpr_.getZ() > 1e-4:
+    ref_np = self.target_np_.getParent()
+    current_hpr = self.target_np_.getHpr(ref_np)
+    diff = abs(current_hpr.getX() - self.rot_target_hpr_.getX())
+    if diff > 1e-4 and diff < 360:
       # target changed
       self.__stopRotationInterpolation__()
-      self.__startPositionInterpolation__()
+      self.__startRotationInterpolation__()
       
   def __stopRotationInterpolation__(self):
-    self.rot_interpolation_sequence_.finish()
-    self.rot_interpolation_sequence_ = None
+    if self.rot_interpolation_sequence_ is not None:
+      self.rot_interpolation_sequence_.finish()
+      self.rot_interpolation_sequence_ = None
     
   
     
