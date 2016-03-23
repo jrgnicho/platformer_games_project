@@ -225,9 +225,9 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.clampBottom(ledge.getZ(ref_np) )
       self.character_obj_.animate(self.animation_key_)  
       
-    def exit(self):
-      self.character_obj_.setAnimationEndCallback(None)
+    def exit(self):      
       self.character_obj_.stop()
+      self.character_obj_.setAnimationEndCallback(None)
       self.character_obj_.getStatus().momentum.setX(0)
         
   class StandingNearEdge(CharacterState):

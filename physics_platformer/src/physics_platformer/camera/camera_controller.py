@@ -3,11 +3,12 @@ from direct.interval.FunctionInterval import PosInterval, Func, Wait
 from direct.interval.LerpInterval import LerpPosInterval, LerpHprInterval
 from panda3d.core import Vec3, NodePath
 import logging
+from math import sin,cos, atan2
 
 class CameraController(NodePath):
   
   __TRACKING_SPEED__ = 4.0 # meters/second
-  __TRACKING_RADIUS__ = 1.0
+  __TRACKING_RADIUS__ = 0.2
   __MAX_POS_INTERPOLATION_TIME__ = 0.5
   __ROTATION_INTERPOLATION_TIME__ = 0.6
   __CAMERA_POS_OFFSET__ = Vec3(0,-24,4)
@@ -16,17 +17,22 @@ class CameraController(NodePath):
   def __init__(self,camera_np, name = "CameraController"):
     NodePath.__init__(self,name)
     
-    self.target_np_ = None
-    self.pos_interpolation_sequence_ = None
+    self.target_np_ = None    
     self.camera_np_ = camera_np
     self.target_tracker_np_ = self.attachNewNode("TargetTrackerNode") 
     self.enabled_ = True  
     self.smoothing_ = False
     self.target_ref_np_ = None
     
+    # position tracking
+    self.target_inside_window_ = True
+    
     # rotation tracking
-    self.rot_target_hpr_ = Vec3.zero()
+    self.rot_pr_target_ = Vec3.zero()
     self.rot_interpolation_sequence_ = Sequence()
+    
+    # time checks
+    self.elapsed_time_ = 0 # elapsed time since last update
     
   def setEnabled(self,enable):
     self.enabled_ = enable
@@ -38,8 +44,9 @@ class CameraController(NodePath):
       
   def setTargetNode(self, target_np):    
     self.target_np_ = target_np  
-    self.target_tracker_np_.setFluidPos(target_np.getPos())
+    self.target_tracker_np_.setPos(target_np.getPos())
     self.target_tracker_np_.setHpr(target_np,Vec3(0,0,0))
+    self.target_inside_window_ = True
     
     if self.enabled_:
       self.__activate__()
@@ -48,6 +55,7 @@ class CameraController(NodePath):
     self.camera_np_.reparentTo(self.target_tracker_np_)
     self.camera_np_.setPos(CameraController.__CAMERA_POS_OFFSET__)
     self.camera_np_.setHpr(CameraController.__CAMERA_ORIENT_OFFSET__)
+    self.elapsed_time_ = 0.0
     
     logging.debug("Activated Camera Controller for cam %s with local pos %s and hpr %s"%(str(self.camera_np_),
                                                                                          str(self.camera_np_.getPos()),
@@ -64,53 +72,60 @@ class CameraController(NodePath):
     if self.target_np_ is None:
       return
     
-    self.__checkRotationTarget__()
+    self.__checkRotationTarget__(dt)
+    self.__checkPositionTarget__(dt)
     
-    if self.pos_interpolation_sequence_ is None:
+  def __checkPositionTarget__(self,dt):
+    
+    escape_radius = 0.4
+    min_settle_speed = 1.5
+    min_chase_speed = 2.5 # units per second
+    chase_time = 0.4
+    
+    # computing distances and directions
+    ref_np = self.target_np_.getReferenceNodePath()
+    target_pos = self.target_np_.getPos(ref_np)
+    tracker_pos= self.target_tracker_np_.getPos(ref_np) 
+    direction = target_pos - tracker_pos 
+    distance = direction.length()   
+    norm_direction = direction/distance  
+    
+    if distance < 1e-1:
+      return 
+    
+    if self.target_inside_window_:  
       
-      ref_np = self.target_np_.getReferenceNodePath()
-      tracker_pos = self.target_tracker_np_.getPos(ref_np)
-      target_pos= self.target_np_.getPos(ref_np)
-      distance = (target_pos - tracker_pos).length()     
-
+      if distance > CameraController.__TRACKING_RADIUS__ and distance < escape_radius:       
+                    
+        r = CameraController.__TRACKING_RADIUS__   
+            
+        delta_pos = (norm_direction)*(distance - r)
+        self.target_tracker_np_.setPos(ref_np,tracker_pos + delta_pos)
+        
+      elif distance <= CameraController.__TRACKING_RADIUS__:
+        delta_pos = norm_direction*(dt*min_settle_speed)
+        self.target_tracker_np_.setPos(ref_np,tracker_pos + delta_pos)
       
-      # check if target is inside traking radious
-      if distance > CameraController.__TRACKING_RADIUS__:
-        self.__startPositionInterpolation__()
+      elif distance >= escape_radius:
+        self.target_inside_window_ = False
+        
+    
+    if not self.target_inside_window_:  
+      if distance > escape_radius : 
+        
+        speed = distance/chase_time
+        speed = speed if speed > min_chase_speed else min_chase_speed
+        delta_pos = norm_direction*(dt*speed)
+        self.target_tracker_np_.setPos(ref_np,tracker_pos + delta_pos)
+        
       else:
-         self.target_tracker_np_.setFluidPos(ref_np,target_pos)
-    
-    
-  def __startPositionInterpolation__(self):
-    
-    start_pos = self.target_tracker_np_.getPos()
-    end_pos= self.target_np_.getPos()
-    time_ = (end_pos - start_pos).length()/CameraController.__TRACKING_SPEED__
-    time_ = time_ if time_ < CameraController.__MAX_POS_INTERPOLATION_TIME__ else CameraController.__MAX_POS_INTERPOLATION_TIME__
-    
-    pos_interval = LerpPosInterval(self.target_tracker_np_, time_, end_pos, startPos=start_pos,
-                                   other=None,
-                                   blendType='easeOut',
-                                   bakeInStart=1,
-                                   fluid=1) 
-    self.pos_interpolation_sequence_ = Sequence()
-    self.pos_interpolation_sequence_.append(pos_interval)
-    self.pos_interpolation_sequence_.append(Func(self.__checkTargetPosition__))
-    self.pos_interpolation_sequence_.start()
-    logging.info("Started Camera motion Interpolation with time %f",time_)
-    
-  def __checkTargetPosition__(self):
-    distance = (self.target_np_.getPos() - self.target_tracker_np_.getPos()).length()
-    
-    if distance < 0.001:
-      self.__stopPositionInterpolation__()
-    else:
-      self.__startPositionInterpolation__()
-    
-  def __stopPositionInterpolation__(self):
-    self.pos_interpolation_sequence_.finish()
-    self.pos_interpolation_sequence_ = None
-    logging.info("Finished Camera motion Interpolation")
+        speed = distance/chase_time
+        speed = speed if speed > min_settle_speed else min_settle_speed
+        delta_pos = norm_direction*(dt*speed)
+        self.target_tracker_np_.setPos(ref_np,tracker_pos + delta_pos)
+        
+      if distance <= CameraController.__TRACKING_RADIUS__ :
+        self.target_inside_window_ = True
     
   def __startRotationInterpolation__(self):
     
@@ -128,9 +143,9 @@ class CameraController(NodePath):
                                    fluid=0)
 
       # saving target
-    self.rot_target_hpr_ = self.target_np_.getHpr(self.target_np_.getParent())
+    self.rot_pr_target_ = self.target_np_.getHpr(self.target_np_.getParent())
     current_hpr = self.target_tracker_np_.getHpr(self.target_np_.getParent())
-    logging.debug("Camera Interpolated Rotation from %s to %s "%(str(current_hpr),str(self.rot_target_hpr_)))    
+    logging.debug("Camera Interpolated Rotation from %s to %s "%(str(current_hpr),str(self.rot_pr_target_)))    
         
     # creating sequence
     self.rot_interpolation_sequence_ = Sequence()
@@ -138,10 +153,10 @@ class CameraController(NodePath):
     self.rot_interpolation_sequence_.start()
     
     
-  def __checkRotationTarget__(self):
+  def __checkRotationTarget__(self,dt):
     ref_np = self.target_np_.getParent()
     current_hpr = self.target_np_.getHpr(ref_np)
-    diff = abs(current_hpr.getX() - self.rot_target_hpr_.getX())
+    diff = abs(current_hpr.getX() - self.rot_pr_target_.getX())
     if diff > 1e-4 and diff < 360:
       # target changed
       self.__stopRotationInterpolation__()
