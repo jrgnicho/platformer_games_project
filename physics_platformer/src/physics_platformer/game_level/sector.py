@@ -106,7 +106,7 @@ class Sector(NodePath):
     direction = 1 if on_right_side else -1
     
     st.reparentTo(self)
-    st_pos = Vec3(pos.getX()+ direction*(width/2 + 10*GameObject.ORIGIN_SPHERE_RADIUS),0,pos.getZ()+ 0.5*height)
+    st_pos = Vec3(pos.getX()+ direction*(width/2 + 4*GameObject.ORIGIN_SPHERE_RADIUS),0,pos.getZ()+ 0.5*height)
     st.setPos(self,st_pos)
     self.physics_world_.attach(st.node())
     

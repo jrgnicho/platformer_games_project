@@ -10,7 +10,7 @@ from physics_platformer.collision import *
 class Platform(GameObject):
   
   __PERIMETER_THICKNESS__ = 0.1
-  __LEDGE_BOX_SIDE_LENGHT__ = 0.1
+  __LEDGE_BOX_SIDE_LENGHT__ = 0.2
   #__PADDING__ = 0.1
   __DEFAULT_TEXTURE__ = TexturePool.loadTexture(GameObject.DEFAULT_RESOURCES_DIRECTORY +'/models/iron.jpg')
   

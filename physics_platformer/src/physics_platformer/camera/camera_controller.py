@@ -7,9 +7,13 @@ from math import sin,cos, atan2
 
 class CameraController(NodePath):
   
-  __TRACKING_SPEED__ = 4.0 # meters/second
-  __TRACKING_RADIUS__ = 0.2
-  __MAX_POS_INTERPOLATION_TIME__ = 0.5
+  __TRACKING_SPEED__ = 4.0      # meters/second
+  __TRACKING_RADIUS_MIN__ = 0.2
+  __TRACKING_RADIUS_MAX__ = 0.5
+  __CHASE_TARGET_TIME__ = 0.4
+  __MIN_LOCKING_SPEED__ = 1.0   # unist/second
+  __MIN_CHASE_SPEED__ = 2.5     # units/second
+  
   __ROTATION_INTERPOLATION_TIME__ = 0.6
   __CAMERA_POS_OFFSET__ = Vec3(0,-24,4)
   __CAMERA_ORIENT_OFFSET__ = Vec3(0,-5,0)
@@ -25,7 +29,7 @@ class CameraController(NodePath):
     self.target_ref_np_ = None
     
     # position tracking
-    self.target_inside_window_ = True
+    self.target_locked_ = True
     
     # rotation tracking
     self.rot_pr_target_ = Vec3.zero()
@@ -46,7 +50,7 @@ class CameraController(NodePath):
     self.target_np_ = target_np  
     self.target_tracker_np_.setPos(target_np.getPos())
     self.target_tracker_np_.setHpr(target_np,Vec3(0,0,0))
-    self.target_inside_window_ = True
+    self.target_locked_ = True
     
     if self.enabled_:
       self.__activate__()
@@ -77,10 +81,6 @@ class CameraController(NodePath):
     
   def __checkPositionTarget__(self,dt):
     
-    escape_radius = 0.4
-    min_settle_speed = 1.5
-    min_chase_speed = 2.5 # units per second
-    chase_time = 0.4
     
     # computing distances and directions
     ref_np = self.target_np_.getReferenceNodePath()
@@ -90,42 +90,47 @@ class CameraController(NodePath):
     distance = direction.length()   
     norm_direction = direction/distance  
     
-    if distance < 1e-1:
+    if distance < 1e-6:
       return 
     
-    if self.target_inside_window_:  
+    if self.target_locked_:  
       
-      if distance > CameraController.__TRACKING_RADIUS__ and distance < escape_radius:       
+      if distance > CameraController.__TRACKING_RADIUS_MIN__ and distance < CameraController.__TRACKING_RADIUS_MAX__:       
                     
-        r = CameraController.__TRACKING_RADIUS__   
+        r = CameraController.__TRACKING_RADIUS_MIN__   
             
         delta_pos = (norm_direction)*(distance - r)
         self.target_tracker_np_.setPos(ref_np,tracker_pos + delta_pos)
         
-      elif distance <= CameraController.__TRACKING_RADIUS__:
-        delta_pos = norm_direction*(dt*min_settle_speed)
-        self.target_tracker_np_.setPos(ref_np,tracker_pos + delta_pos)
+      elif distance <= CameraController.__TRACKING_RADIUS_MIN__:
+        # smoothly move to target pos
+        delta = dt*CameraController.__MIN_LOCKING_SPEED__/2
+        delta = delta if delta < distance else distance 
+        
+        self.target_tracker_np_.setPos(ref_np,tracker_pos + (norm_direction * delta))
       
-      elif distance >= escape_radius:
-        self.target_inside_window_ = False
+      elif distance >= CameraController.__TRACKING_RADIUS_MAX__:
+        self.target_locked_ = False
         
     
-    if not self.target_inside_window_:  
-      if distance > escape_radius : 
+    if not self.target_locked_:  
+      if distance > CameraController.__TRACKING_RADIUS_MAX__ : 
         
-        speed = distance/chase_time
-        speed = speed if speed > min_chase_speed else min_chase_speed
+        speed = distance/CameraController.__CHASE_TARGET_TIME__
+        speed = speed if speed > CameraController.__MIN_CHASE_SPEED__ else CameraController.__MIN_CHASE_SPEED__
         delta_pos = norm_direction*(dt*speed)
         self.target_tracker_np_.setPos(ref_np,tracker_pos + delta_pos)
         
       else:
-        speed = distance/chase_time
-        speed = speed if speed > min_settle_speed else min_settle_speed
-        delta_pos = norm_direction*(dt*speed)
-        self.target_tracker_np_.setPos(ref_np,tracker_pos + delta_pos)
+        # smoothly move to target pos
+        speed = distance/CameraController.__CHASE_TARGET_TIME__
+        speed = speed if speed > CameraController.__MIN_LOCKING_SPEED__ else CameraController.__MIN_LOCKING_SPEED__
+        delta = dt*speed
+        delta = delta if delta < distance else distance
+        self.target_tracker_np_.setPos(ref_np,tracker_pos + (norm_direction * delta))
         
-      if distance <= CameraController.__TRACKING_RADIUS__ :
-        self.target_inside_window_ = True
+      if distance <= CameraController.__TRACKING_RADIUS_MIN__ :
+        self.target_locked_ = True
     
   def __startRotationInterpolation__(self):
     
