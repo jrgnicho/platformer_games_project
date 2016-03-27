@@ -1,5 +1,7 @@
-import sys
 import time
+import logging
+import sys
+
 
 from rospkg import rospack
 
@@ -33,6 +35,7 @@ from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletSphereShape
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletDebugNode
+from panda3d.core import deg2Rad
 
 from physics_platformer.state_machine import StateMachine
 from physics_platformer.game_level import Level
@@ -42,22 +45,176 @@ from physics_platformer.input import KeyboardButtons
 from physics_platformer.input import KeyboardController
 from physics_platformer.game_object import GameObject
 from physics_platformer.camera import CameraController
+from math import cos, asin, sin, acos
+
+
+class TestLevel(Level):
+  
+  
+  NUM_BOXES_ROWS = 10
+  NUM_BOXES_COLUMNS = 2  
+  BOX_SIDE_LENGTH = 0.4
+  X_INCR = 0.6
+  Z_INCR = 0.8
+  START_POS = Vec3(24,0,28)
+  PLATFORM_DEPTH = 10
+  PLATFORM_Y = 2
+    
+  def __init__(self,name,min_point = Vec3(-150,-150,-50),max_point = Vec3(150,150,100)):
+    Level.__init__(self,name,min_point, max_point)
+    
+    self.num_boxes_ = 0    
+    self.setup()
+    
+  def setup(self):
+    
+    num_sectors = 6
+    sector_length = 100    
+    angle_incr = 360.0/num_sectors    
+    angle_offset = -180
+    radius = 0.5*sector_length/sin(deg2Rad(0.5*angle_incr))
+    y_offset = radius*cos(deg2Rad(0.5*angle_incr))
+    z_incr = 8
+    logging.info("radius = " + str(radius) + ' sector length = ' + str(2*radius*sin(deg2Rad(angle_incr))) )
+    
+    dummy_node = NodePath('dummy-node')
+    dummy_node.reparentTo(self)
+    for i in range(0,num_sectors):
+      
+      # updating z value
+      z = i*z_incr
+      
+      # placing dummy node
+      dummy_node.clearTransform(self)
+      dummy_node.setZ(self,z)
+      dummy_node.setHpr(self,i*angle_incr,0,0)
+      dummy_node.setY(dummy_node,-y_offset)
+      dummy_node.setX(dummy_node,-0.5*sector_length)      
+      
+      # creating sector
+      tf = dummy_node.getTransform(self)
+      sector = self.addSector(tf,'sector' + str(i))
+      self.__createPlatforms__(sector,i == 0) 
+      self.__createBoxes__(sector)   
+      
+    # adding sector transitions
+    sector = None
+    dest_sector = None
+    for i in range(0,num_sectors-1):
+      
+      sector = self.getSectors()[i]
+      dest_sector = self.getSectors()[i+1]
+      sector.connect(dest_sector,Vec3(100,0,28),True)
+       
+      continue
+    
+      if i == 0:        
+        # following sector
+        dest_sector = self.getSectors()[i+1]
+        sector.addTransition(dest_sector,Vec3(100,0,28),True)
+        
+      elif i > 0 and i < num_sectors - 1:
+        # following sector
+        dest_sector = self.getSectors()[i+1]
+        sector.addTransition(dest_sector,Vec3(100,0,28),True)
+        
+        # preceeding sector
+        dest_sector = self.getSectors()[i-1]
+        sector.addTransition(dest_sector,Vec3(0,0,20),False)
+        
+      else:
+        # preceeding sector
+        dest_sector = self.getSectors()[i-1]
+        sector.addTransition(dest_sector,Vec3(0,0,20),False)
+      
+    dummy_node.removeNode()
+      
+  def __createBoxes__(self,sector):
+    
+    box_size = Vec3(TestLevel.BOX_SIDE_LENGTH,TestLevel.BOX_SIDE_LENGTH,TestLevel.BOX_SIDE_LENGTH)
+    
+    for c in range(0,TestLevel.NUM_BOXES_COLUMNS):    
+      for r in range(0,TestLevel.NUM_BOXES_ROWS):     
+        current_pos = TestLevel.START_POS + Vec3(r*TestLevel.X_INCR,0,c*TestLevel.Z_INCR)
+           
+        obj = GameObject("box"+str(self.num_boxes_),box_size,True)
+        self.addGameObject(obj)
+        obj.setPos(sector,current_pos) 
+        obj.setHpr(sector,0,0,0)
+        sector.attach(obj) 
+    
+    
+  def __createPlatforms__(self,sector,use_first_ledge = False):
+    
+    # Platforms Schematic X, Z (Each new line measures 2 units and each character 2 units)
+    
+    '''                               
+           30                                          _______
+                                                      | |_16__|      ______
+                                                      | |  _________|      |
+                                                      | | |___22____|___14_|
+                                        __________    | |___        |  |
+           20        ___________       |     |    |   | |_8_|   ____|8_|  
+                    |___24______|      |  12 |_10_|   |4|__    |__16___|
+                      | |    __________|_____|        | |6_|   _____
+                      |4|   |_____26_____|     _______|_|___  |_12__|     __________
+                      |_|                     |_____30______|            |____22____|
+           10           ||              ________    ____________       
+                        ||             |___16___|  |            |
+                        ||  |4|                    |_____28_____|
+                        ||                                                                        
+                        ||                                                                               
+            0                                                                                            
+          -20  -10    0   10   20   30   40   50   60   70   80   90   100
+    '''
+    
+    # Platform Details [ (float left, float top, Vec3 size, Bool right_ledge, Bool left_ledge ),... ]
+    depth = TestLevel.PLATFORM_DEPTH
+    platform_details = [
+                        (-4,20,Vec3(24,depth,2),True,use_first_ledge),
+                        (0,18,Vec3(4,depth,6),False,False),
+                        (4,12,Vec3(2,depth,10),True,True),
+                        (12,8,Vec3(4,depth,2),True,True),
+                        (12,16,Vec3(26,depth,2),False,True),
+                        (46,22,Vec3(10,depth,4),True,False),
+                        (34,22,Vec3(12,depth,6),False,True),
+                        (34,10,Vec3(18,depth,2),True,True),
+                        (48,14,Vec3(30,depth,2),True,True),
+                        (58,10,Vec3(28,depth,4),True,True),
+                        (64,30,Vec3(4,depth,16),False,True),
+                        (68,30,Vec3(12,depth,2),True,False),
+                        (68,22,Vec3(8,depth,2),True,False),
+                        (68,18,Vec3(6,depth,2),True,False),
+                        (72,26,Vec3(22,depth,2),False,True),
+                        (82,20,Vec3(16,depth,2),False,True),
+                        (80,16,Vec3(12,depth,2),True,True),
+                        (92,28,Vec3(14,depth,4),True,True),
+                        (92,24,Vec3( 8,depth,4),False,False),
+                        (102,14,Vec3(22,depth,2),True,True)]
+    
+    for i in range(0,len(platform_details)):
+      p = platform_details[i]
+      size = p[2]
+      pos = Vec3(p[0] + size.getX()*0.5, TestLevel.PLATFORM_Y , p[1] - size.getZ()*0.5)
+      right_ledge_enable = p[3]
+      left_ledge_enable = p[4]
+      
+      platform = Platform(sector.getName() + '-' + 'platform' + str(i),size,right_ledge_enable,left_ledge_enable)
+      self.addPlatform(platform)
+      platform.setPos(sector,pos)
+      platform.setHpr(sector,0,0,0)
 
 class TestGame(ShowBase):
   
   __CAM_ZOOM__ =  1
   __CAM_STEP__ = 0.2
   __CAM_ORIENT_STEP__ = 4.0
-  __NUM_BOXES__ = 10
-  __BOX_SIDE_LENGTH__ = 0.4
   
   __BACKGROUND_IMAGE_PACKAGE__ = 'physics_platformer'
   __BACKGROUND_IMAGE_PATH__ = rospack.RosPack().get_path(__BACKGROUND_IMAGE_PACKAGE__) + '/resources/backgrounds/' + 'sky02.png'
   __BACKGROUND_POSITION__ = Vec3(0,100,0)
-  __BACKGROUND_SCALE__ = 0.2
-  
-  __PLATFORM_DEPTH__ = 10
-  __PLATFORM_Y_POS = 4
+  __BACKGROUND_SCALE__ = 0.2 
+
   
   def __init__(self,name ='TestGame'):
     
@@ -177,8 +334,8 @@ class TestGame(ShowBase):
   
   def setupScene(self):
     
-    self.__setupLevel__()
-    self.__setupGameObjects__()
+    self.level_ = TestLevel('ground-zero')
+    self.level_.reparentTo(self.render)
     
     # enable debug visuals
     self.debug_node_ = self.level_.attachNewNode(BulletDebugNode('Debug'))
@@ -212,38 +369,6 @@ class TestGame(ShowBase):
     
     return task.cont
     
-  def __setupLevel__(self):
-
-    self.level_ = Level("Level1",Vec3(60,1,60))
-    self.level_.reparentTo(self.render)
-
-    # Adding platforms
-    platform_details =[ 
-      (-20, 4, 20, TestGame.__PLATFORM_DEPTH__, 1  ),
-      (-2, 5, 10, TestGame.__PLATFORM_DEPTH__, 1  ),
-      ( 4 , 1 , 16, TestGame.__PLATFORM_DEPTH__, 2),
-      (-4 , 1, 10, TestGame.__PLATFORM_DEPTH__, 1),
-      ( 16, 6, 30, TestGame.__PLATFORM_DEPTH__, 1),
-      ( 0, -0.5, 30, TestGame.__PLATFORM_DEPTH__, 1),
-      ]
-    for i in range(0,len(platform_details)):
-      p = platform_details[i]
-      pos = Vec3(p[0],TestGame.__PLATFORM_Y_POS,p[1])
-      size = Vec3(p[2],p[3],p[4])
-      
-      platform = Platform('Platform' + str(i),size)
-      self.level_.addPlatform(platform)
-      platform.setPos(pos)
-      
-  def __setupGameObjects__(self):
-    
-    box_size = Vec3(TestGame.__BOX_SIDE_LENGTH__,TestGame.__BOX_SIDE_LENGTH__,TestGame.__BOX_SIDE_LENGTH__)
-    start_pos = Vec3(-TestGame.__NUM_BOXES__*TestGame.__BOX_SIDE_LENGTH__*0.5,0,6)
-    for i in range(0,TestGame.__NUM_BOXES__):            
-        obj = GameObject("obj"+str(i),box_size,True)
-        self.level_.addGameObject(obj)
-        obj.setPos(start_pos + Vec3(i*TestGame.__BOX_SIDE_LENGTH__*0.5,0,i*TestGame.__BOX_SIDE_LENGTH__*1.2))    
-        
   # __ CAM_METHODS __
   def moveCamUp(self):
       self.cam.setPos(self.cam.getPos() + Vec3(0, 0,TestGame.__CAM_STEP__))

@@ -26,9 +26,10 @@ class AnimationActor(SpriteAnimator):
   LOGGER = logging.getLogger(__name__)
   LOGGER.setLevel(level=logging.INFO)
   
-  DEFAULT_WIDTH = 0.001
+  DEFAULT_WIDTH = 0.01
   DEFAULT_MASS = 1.0
   BOUND_PADDING = 0.1
+  COLLISION_MARGIN = 0.01
   
   RIGHT_SPRITE_PLAYER_SUFF = '-rsprite-player'
   LEFT_SPRITE_PLAYER_SUFF = '-lsprite-player'
@@ -280,7 +281,7 @@ class AnimationActor(SpriteAnimator):
       
     # completing rigid body setup
     rigid_body.setMass(self.mass_)
-    rigid_body.setLinearFactor((1,0,1))   
+    rigid_body.setLinearFactor((1,1,1))   
     rigid_body.setAngularFactor((0,0,0)) 
     rigid_body.setBoundsType(BoundingVolume.BT_box)
     
@@ -321,6 +322,7 @@ class AnimationActor(SpriteAnimator):
       size = box.size
       center = box.center
       box_shape = BulletBoxShape(Vec3(0.5*size[0],0.5*AnimationActor.DEFAULT_WIDTH,0.5 * size[1]))
+      #box_shape.setMargin(AnimationActor.COLLISION_MARGIN)
       transform = transform.setPos(Vec3(center[0],0,center[1]))
       ghost_node.addShape(box_shape,transform)
       

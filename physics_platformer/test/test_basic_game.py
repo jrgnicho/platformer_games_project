@@ -104,6 +104,7 @@ class Hiei(CharacterBase):
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.MOVE_LEFT.key,CharacterStateKeys.RUNNING)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.JUMP.key,CharacterStateKeys.TAKEOFF)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CollisionAction.FREE_FALL,CharacterStateKeys.FALLING)
+    self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.FALL.key,CharacterStateKeys.FALLING)
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.EDGE_RECOVERY.key,CharacterStateKeys.STANDING_EDGE_RECOVERY) 
     self.sm_.addTransition(CharacterStateKeys.STANDING,CharacterActions.DASH.key,CharacterStateKeys.DASHING)   
     
@@ -190,9 +191,16 @@ class TestBasicGame(TestGame):
     if not self.character_.setup():
       logging.error("Character setup failed")
       sys.exit()
-      
-    self.level_.addGameObject(self.character_)      
-    self.character_.setPos(Vec3(5,0,self.character_.getSize().getZ()+8))     
+    
+    # placing character in world
+    
+    sector  = self.level_.getSectors()[2]
+    self.level_.addGameObject(self.character_)          
+    self.character_.setPos(sector,Vec3(18,0,26))  
+    #self.character_.setHpr(sector,Vec3.zero())
+    #self.character_.setReferenceNodePath(sector)
+    sector.attach(self.character_)   
+    sector.enableTransitions(True)
     self.character_.pose(ANIMATIONS[4])    
     
     # create character keyboard controller
@@ -276,11 +284,12 @@ class TestBasicGame(TestGame):
       self.camera_controller_.setEnabled(True)      
       self.camera_controller_.setTargetNode(self.character_)
     else:
-      self.input_manager_ = self.camera_input_manager_      
-      pos = self.cam.getPos(self.level_)
+      ref_np = self.character_.getReferenceNodePath()
+      self.input_manager_ = self.camera_input_manager_         
+      tr = self.cam.getTransform(ref_np)
       self.camera_controller_.setEnabled(False)
-      self.cam.reparentTo(self.level_)
-      self.cam.setPos(pos)
+      self.cam.reparentTo(ref_np)
+      self.cam.setTransform(ref_np,tr)
       
     self.follow_player_ = not self.follow_player_
     

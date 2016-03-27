@@ -32,11 +32,15 @@ Game Object class
 
 """
 class GameObject(NodePath):
+  
     DEFAULT_RESOURCES_DIRECTORY = rospkg.RosPack().get_path('physics_platformer') + '/resources'        
     DEFAULT_TEXTURE = TexturePool.loadTexture(DEFAULT_RESOURCES_DIRECTORY +'/models/limba.jpg')
     DEFAULT_BOX_MODEL = NodePath(ModelPool.loadModel( DEFAULT_RESOURCES_DIRECTORY + '/models/box.egg'))
     
     ID_PYTHON_TAG = "ObjectID"
+    DEFAULT_COLLISION_MARGIN = 0.01
+    ORIGIN_SPHERE_RADIUS = 0.05
+    ORIGIN_XOFFSET = 0.5
     
     
     def __init__(self,name,size,mass = 0,setup_visual = True):   
@@ -59,10 +63,9 @@ class GameObject(NodePath):
         
         # set collision shape
         collision_shape = BulletBoxShape(self.size_/2) 
+        collision_shape.setMargin(GameObject.DEFAULT_COLLISION_MARGIN)
         self.node().addShape(collision_shape)
         self.node().setMass(mass)
-        self.node().setLinearFactor((1,0,1))   
-        self.node().setAngularFactor((0,1,0))   
         self.setCollideMask(CollisionMasks.GAME_OBJECT_AABB)
         
         #  setting bounding volume
@@ -71,12 +74,15 @@ class GameObject(NodePath):
         self.node().setBoundsType(BoundingVolume.BT_box)    
         self.node().setBounds(BoundingBox(min_point ,max_point ))
         
+        # Frame of reference
+        self.reference_np_ = None
+        
         # visual properties
         if setup_visual:     
                    
             visual_nh = GameObject.DEFAULT_BOX_MODEL 
             visual_nh.clearModelNodes()            
-            self.visual_nh_ = visual_nh.instanceUnderNode(self,name + '-visual');    
+            self.visual_nh_ = visual_nh.instanceUnderNode(self,name + '-visual');  
             self.visual_nh_.setTexture(GameObject.DEFAULT_TEXTURE,1)   
             
             if GameObject.DEFAULT_TEXTURE == None:
@@ -114,7 +120,17 @@ class GameObject(NodePath):
         
     def getObjectID(self):      
       return self.getPythonTag(GameObject.ID_PYTHON_TAG)
-            
+    
+    def setReferenceNodePath(self,ref_np):
+      '''
+      setReferenceNodePath(Nodepath ref_np)
+      
+        Movement and Transform changes will be done relative to the ref_np Nodepath
+      '''
+      self.reference_np_ = ref_np     
+      
+    def getReferenceNodePath(self):  
+      return self.reference_np_
        
     def getSize(self):
       '''
