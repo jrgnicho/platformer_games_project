@@ -6,10 +6,12 @@
 - [x] **Apply linear velocity relative to ReferenceNode.**
 - [x] **Do not lock global y movement through the  setLinearFactor method of the BulletRigidBody class.**
 - [x] **Use the Sector's class plane constraint to enforced relative 2D movement.**
-- [ ] Implement Roll action which can be achieved during landing.
-- [ ] Implement ClimbWall action. This might required some rearchitecturing of the Platform class
-- [ ] Do not trigger Land action after short jumps
 - [x] **Fix odd bouncing behaviour when landing near walls.  The solution to this is likely to be placing ghost nodes with WALL bitmask on each side of the platforms to prevent triggering SURFACE_LANDING type collisions**
+- [ ] Implement Roll action which can be achieved during landing.
+- [ ] Implement ClimbWall action. This might required some rearchitecturing of the Platform class.
+- [ ] Do not trigger Land action after short jumps.
+- [ ] Fix inconsistent jump height.
+
 
 ## GameObject
 - [ ] Modified all positional methods in order to handle transform data relative to the Reference NodePath.
