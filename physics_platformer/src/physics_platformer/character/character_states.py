@@ -59,13 +59,12 @@ class CharacterState(State):
     ref_node = self.character_obj_.getReferenceNodePath()
      
     if result.hasHit():
-      ref_pos = ref_node.getRelativePoint(parent,result.getHitPos())
-      self.character_obj_.clampBottom(ref_pos.getZ())      
-      self.character_obj_.node().setLinearFactor(LVector3(1,1,0)) # disable movement in z
       
-#       platform = self.character_obj_.getStatus().platform
-#       self.character_obj_.clampBottom(platform.getMax().getZ())      
-    
+      self.character_obj_.node().setLinearFactor(LVector3(1,1,0)) # disable movement in z
+      ref_pos = ref_node.getRelativePoint(parent,result.getHitPos())
+      self.character_obj_.clampBottom(ref_pos.getZ())    
+      self.character_obj_.node().setLinearFactor(LVector3(1,1,1)) # disable movement in z 
+          
     return result.hasHit()
   
   def done(self):
@@ -144,7 +143,7 @@ class AerialBaseState(CharacterState):
   def checkAscendFinished(self,action):
     
     vel = self.character_obj_.getLinearVelocity()
-    if vel.getZ() < 0.01:
+    if vel.getZ() < 1e-6:
       StateMachine.postEvent(StateEvent(self.parent_state_machine_, StateMachineActions.DONE))  
           
 class CharacterStates(object): # Class Namespace
@@ -250,6 +249,7 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.node().setLinearFactor(LVector3(1,1,0)) # disable movement in z
       
     def exit(self):
+      self.character_obj_.node().setLinearFactor(LVector3(1,1,1)) # disable movement in z
       self.character_obj_.stop()
       self.character_obj_.getStatus().momentum.setX(0)
     
@@ -420,7 +420,7 @@ class CharacterStates(object): # Class Namespace
       self.addAction(CollisionAction.CEILING_COLLISION,self.ceilingCollisionCallback)  
       
     def enter(self):
-      AerialBaseState.enter(self)
+      AerialBaseState.enter(self)            
       self.character_obj_.applyCentralImpulse(LVector3(0,0,self.character_obj_.character_info_.jump_force))
               
     def exit(self):
@@ -646,6 +646,7 @@ class CharacterStates(object): # Class Namespace
       
       if not self.clampToPlatform() :
         logging.warn("Missed Landing")  
+        
       
       self.character_obj_.enableFriction(True)
       self.character_obj_.getStatus().air_jumps_count = 0
@@ -656,18 +657,13 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.getStatus().momentum.setX(0)
       
     def turnRight(self,action):   
-      if not self.character_obj_.isFacingRight():
-        self.character_obj_.faceRight(True)
       self.character_obj_.getStatus().momentum.setX(self.character_obj_.character_info_.run_speed)
       
     def turnLeft(self,action):
-      if self.character_obj_.isFacingRight():
-        self.character_obj_.faceRight(False)
       self.character_obj_.getStatus().momentum.setX(self.character_obj_.character_info_.run_speed)     
 
       
     def exit(self):      
-      self.character_obj_.node().setLinearFactor(LVector3(1,1,1)) # re-enable movement in z
       self.character_obj_.stop()
       self.character_obj_.setAnimationEndCallback(None)
       
