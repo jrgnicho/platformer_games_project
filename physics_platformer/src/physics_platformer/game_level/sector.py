@@ -6,21 +6,25 @@ from panda3d.bullet import BulletRigidBodyNode, BulletPlaneShape,\
   BulletGhostNode, BulletBoxShape, BulletGenericConstraint
 from physics_platformer.collision import CollisionMasks
 from physics_platformer.game_object import GameObject
+from operator import pos
 
 class SectorTransition(NodePath):
   
   SOURCE_SECTOR_NAME = 'SOURCE_SECTOR'
   DESTINATION_SECTOR_NAME = 'DESTINATION_SECTOR'
+  ENTRANCE_POSITION = 'ENTRANCE_POSITION'
   
-  def __init__(self,name,size,src_sector_name,destination_sector_name):
+  def __init__(self,name,size,src_sector_name,destination_sector_name, entrance_pos = None):
     
     NodePath.__init__(self,BulletGhostNode(name))
     self.src_sector_name_ = src_sector_name
     self.destination_sector_name_ = destination_sector_name    
     self.node().addShape(BulletBoxShape(size/2))
+    self.node().getShape(0).setMargin(0.01)
     self.node().setIntoCollideMask(CollisionMasks.SECTOR_TRANSITION)
     self.setPythonTag(SectorTransition.SOURCE_SECTOR_NAME, self.src_sector_name_)
     self.setPythonTag(SectorTransition.DESTINATION_SECTOR_NAME, self.destination_sector_name_)
+    self.setPythonTag(SectorTransition.ENTRANCE_POSITION,entrance_pos)
     
   def getDestinationSectionName(self):
     return self.destination_sector_name_
@@ -81,6 +85,27 @@ class Sector(NodePath):
     self.destination_sector_dict_ = {}
       
     self.physics_world_.remove(self.motion_plane_np_.node())
+    
+    
+  def connect(self,sector, pos, approach_from_right ):
+    
+    """
+    connect(Sector sector, Vec3 pos, Bool approach_from_right)
+    
+      Connects this sector to 'sector' by creating transitions that 
+      allow the character to move between the two sectors
+      
+      @param sector:  Sector to be connected
+      @param pos: Position of transition point relative to this sector
+      @param approach_from_right: True if the transition box is to be approached from the right 
+                                  relative to this sector.  False if it must be approached
+                                  from the left
+    """
+    
+    self.addTransition(sector, pos, approach_from_right)
+    
+    sec_pos = sector.getRelativePoint(self,pos)
+    sector.addTransition(self,sec_pos,(not approach_from_right))    
          
     
   def addTransition(self,destination_sector,pos, on_right_side ,size = None):
@@ -96,17 +121,18 @@ class Sector(NodePath):
     
     size = Sector.SECTOR_TRANSITION_SIZE if size is None else size
     
+    rel_pos = destination_sector.getRelativePoint(self,pos)
     st = SectorTransition(self.getName() + '-transition-to-' + destination_sector.getName(),
                           size,
                           self.getName(),
-                          destination_sector.getName())
+                          destination_sector.getName(),rel_pos)
     
     width = size[0]
     height = size[2]
     direction = 1 if on_right_side else -1
     
     st.reparentTo(self)
-    st_pos = Vec3(pos.getX()+ direction*(width/2 + 4*GameObject.ORIGIN_SPHERE_RADIUS),0,pos.getZ()+ 0.5*height)
+    st_pos = Vec3(pos.getX()+ direction*(width/2 + 0*GameObject.ORIGIN_SPHERE_RADIUS + GameObject.ORIGIN_XOFFSET),0,pos.getZ()+ 0.5*height)
     st.setPos(self,st_pos)
     self.physics_world_.attach(st.node())
     
@@ -131,7 +157,19 @@ class Sector(NodePath):
     return self.destination_sector_dict_.get(transition_np_name,None)
     
     
-  def attach(self,obj):
+  def attach(self,obj,pos = None):
+    
+    """
+    attach(GameObject obj, Vec3 pos = None)
+    Attaches the game obj to this sector at the designated position pos
+    relative to this sector.
+    """
+    
+    if pos is not None:
+      obj.setX(self,pos.getX())
+      logging.debug('Sector Entered at Pos %s'%(str(pos)))
+    else:
+      logging.warn("Sector Entrance Position is invalid, val: %s"%(str(pos)))
     
     if not self.motion_plane_np_.getTransform(self).isIdentity():
       self.motion_plane_np_.setTransform(self,TransformState.makeIdentity())

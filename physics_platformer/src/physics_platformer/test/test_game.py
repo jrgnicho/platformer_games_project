@@ -100,9 +100,14 @@ class TestLevel(Level):
     # adding sector transitions
     sector = None
     dest_sector = None
-    for i in range(0,num_sectors):
+    for i in range(0,num_sectors-1):
       
       sector = self.getSectors()[i]
+      dest_sector = self.getSectors()[i+1]
+      sector.connect(dest_sector,Vec3(100,0,28),True)
+       
+      continue
+    
       if i == 0:        
         # following sector
         dest_sector = self.getSectors()[i+1]

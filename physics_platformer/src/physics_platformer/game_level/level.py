@@ -222,6 +222,7 @@ class Level(NodePath):
       
       src_sector  = self.sectors_dict_[sector_transition_node.getPythonTag(SectorTransition.SOURCE_SECTOR_NAME)]
       dest_sector = self.sectors_dict_[sector_transition_node.getPythonTag(SectorTransition.DESTINATION_SECTOR_NAME)]
+      entrance_pos = sector_transition_node.getPythonTag(SectorTransition.ENTRANCE_POSITION)
       id = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
       obj = self.game_object_map_.get(id,None)
             
@@ -231,9 +232,9 @@ class Level(NodePath):
       
       logging.debug("Sector Transition detected from src: %s to dest: %s"%(src_sector.getName(),dest_sector.getName()))
       
-      src_sector.remove(obj)
-      dest_sector.attach(obj) 
       src_sector.enableTransitions(False)
+      src_sector.remove(obj)      
+      dest_sector.attach(obj,entrance_pos) 
       dest_sector.enableTransitions(True)
       break
       

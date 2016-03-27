@@ -65,11 +65,16 @@ class CharacterBase(AnimatableObject):
     self.node().setBoundsType(BoundingVolume.BT_box)    
     self.node().setBounds(BoundingBox(min,max))
     
-    # setting origin ghosht node
-    rel_pos = Vec3(0,0,info.height/2)
-    self.origin_gn_ = self.attachNewNode(BulletGhostNode(self.getName() + '-origin'))
-    self.origin_gn_.node().addShape(BulletSphereShape(GameObject.ORIGIN_SPHERE_RADIUS),TransformState.makePosHpr(rel_pos,Vec3.zero()))
-    self.origin_gn_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_ORIGIN)
+    # setting origin ghost nodes
+    rel_pos = Vec3(-GameObject.ORIGIN_XOFFSET,0,info.height/2)
+    self.left_origin_gn_ = self.attachNewNode(BulletGhostNode(self.getName() + '-left-origin'))
+    self.left_origin_gn_.node().addShape(BulletSphereShape(GameObject.ORIGIN_SPHERE_RADIUS),TransformState.makePosHpr(rel_pos,Vec3.zero()))
+    self.left_origin_gn_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_ORIGIN if not self.isFacingRight() else CollisionMasks.NO_COLLISION)
+    
+    rel_pos = Vec3(GameObject.ORIGIN_XOFFSET,0,info.height/2)
+    self.right_origin_gn_ = self.attachNewNode(BulletGhostNode(self.getName() + '-right-origin'))
+    self.right_origin_gn_.node().addShape(BulletSphereShape(GameObject.ORIGIN_SPHERE_RADIUS),TransformState.makePosHpr(rel_pos,Vec3.zero()))
+    self.right_origin_gn_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_ORIGIN if self.isFacingRight() else CollisionMasks.NO_COLLISION)
     
     # character status
     self.status_ = CharacterStatus()
@@ -107,7 +112,8 @@ class CharacterBase(AnimatableObject):
     
   def setPhysicsWorld(self,physics_world):
     GameObject.setPhysicsWorld(self,physics_world)
-    self.physics_world_.attach(self.origin_gn_.node())
+    self.physics_world_.attach(self.left_origin_gn_.node())
+    self.physics_world_.attach(self.right_origin_gn_.node())
     
   def getStatus(self):
     '''
@@ -581,6 +587,14 @@ class CharacterBase(AnimatableObject):
     
     if self.animator_np_ is not None :
       self.animator_.faceRight(face_right)
+      
+    if face_right:
+      self.right_origin_gn_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_ORIGIN)
+      self.left_origin_gn_.node().setIntoCollideMask(CollisionMasks.NO_COLLISION)
+    else:
+      self.left_origin_gn_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_ORIGIN)
+      self.right_origin_gn_.node().setIntoCollideMask(CollisionMasks.NO_COLLISION)
+      
         
   def __setupConstraints__(self,actor_rigid_body_np):
     

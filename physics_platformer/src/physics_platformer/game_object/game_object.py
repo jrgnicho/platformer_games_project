@@ -40,6 +40,7 @@ class GameObject(NodePath):
     ID_PYTHON_TAG = "ObjectID"
     DEFAULT_COLLISION_MARGIN = 0.01
     ORIGIN_SPHERE_RADIUS = 0.05
+    ORIGIN_XOFFSET = 0.5
     
     
     def __init__(self,name,size,mass = 0,setup_visual = True):   
