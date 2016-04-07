@@ -672,3 +672,51 @@ xaxis = 12
 yaxis = 48
 flags = 0
 file = 9-5.png
+
+[SpriteDef]
+group = 10
+image = 0
+xaxis = 21
+yaxis = 55
+flags = 0
+file = 10-0.png
+
+[SpriteDef]
+group = 10
+image = 1
+xaxis = 23
+yaxis = 51
+flags = 0
+file = 10-1.png
+
+[SpriteDef]
+group = 10
+image = 2
+xaxis = 22
+yaxis = 49
+flags = 0
+file = 10-2.png
+
+[SpriteDef]
+group = 10
+image = 3
+xaxis = 19
+yaxis = 49
+flags = 0
+file = 10-3.png
+
+[SpriteDef]
+group = 10
+image = 4
+xaxis = 19
+yaxis = 44
+flags = 0
+file = 10-4.png
+
+[SpriteDef]
+group = 10
+image = 5
+xaxis = 24
+yaxis = 50
+flags = 0
+file = 10-5.png
