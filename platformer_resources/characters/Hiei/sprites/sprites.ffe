@@ -677,7 +677,7 @@ file = 9-5.png
 group = 10
 image = 0
 xaxis = 21
-yaxis = 55
+yaxis = 57
 flags = 0
 file = 10-0.png
 
@@ -685,38 +685,94 @@ file = 10-0.png
 group = 10
 image = 1
 xaxis = 23
-yaxis = 51
+yaxis = 54
 flags = 0
 file = 10-1.png
 
 [SpriteDef]
 group = 10
 image = 2
-xaxis = 22
-yaxis = 49
+xaxis = 19
+yaxis = 51
 flags = 0
 file = 10-2.png
 
 [SpriteDef]
 group = 10
 image = 3
-xaxis = 19
-yaxis = 49
+xaxis = 13
+yaxis = 53
 flags = 0
 file = 10-3.png
 
 [SpriteDef]
 group = 10
 image = 4
-xaxis = 19
-yaxis = 44
+xaxis = 13
+yaxis = 48
 flags = 0
 file = 10-4.png
 
 [SpriteDef]
 group = 10
 image = 5
-xaxis = 24
-yaxis = 50
+xaxis = 18
+yaxis = 54
 flags = 0
 file = 10-5.png
+
+[SpriteDef]
+group = 11
+image = 0
+xaxis = 15
+yaxis = 48
+flags = 0
+file = 11-0.png
+
+[SpriteDef]
+group = 11
+image = 1
+xaxis = 17
+yaxis = 48
+flags = 0
+file = 11-1.png
+
+[SpriteDef]
+group = 11
+image = 2
+xaxis = 17
+yaxis = 48
+flags = 0
+file = 11-0.png
+
+[SpriteDef]
+group = 11
+image = 3
+xaxis = 19
+yaxis = 49
+flags = 0
+file = 11-3.png
+
+[SpriteDef]
+group = 11
+image = 4
+xaxis = 18
+yaxis = 48
+flags = 0
+file = 11-4.png
+
+[SpriteDef]
+group = 11
+image = 5
+xaxis = 17
+yaxis = 49
+flags = 0
+file = 11-3.png
+
+[SpriteDef]
+group = 11
+image = 6
+xaxis = 17
+yaxis = 48
+flags = 0
+file = 11-4.png
