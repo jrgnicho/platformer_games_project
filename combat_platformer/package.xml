@@ -4,13 +4,11 @@
   <version>0.0.0</version>
   <description>The combat_platformer package</description>
 
-  <maintainer email="coky@todo.todo">coky</maintainer>
+  <maintainer email="jrgnichodeve@gmail.com">Jorge Nicho</maintainer>
+  <author email="jrgnichodeve@gmail.com">Jorge Nicho</author>
   <license>TODO</license>
 
-
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>simple_platformer</build_depend>
-  <build_depend>rospy</build_depend>
   <run_depend>simple_platformer</run_depend>
   <run_depend>rospy</run_depend>
 

@@ -3,9 +3,9 @@
   <name>platformer_resources</name>
   <version>0.0.0</version>
   <description>The platformer_resources package for holding various resources used by the platformer games</description>
-  <maintainer email="jrgnichodevel@gmail.com">JorgeNicho</maintainer>
+  <maintainer email="jrgnichodevel@gmail.com">Jorge Nicho</maintainer>
   <license>TODO</license>
-  <author email="jrgnichodevel@gmail.com">JorgeNicho</author>
+  <author email="jrgnichodevel@gmail.com">Jorge Nicho</author>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rospy</build_depend>

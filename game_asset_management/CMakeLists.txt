@@ -3,8 +3,6 @@ project(game_asset_management)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
-  rospy
-  simple_platformer
 )
 
 catkin_python_setup()
@@ -20,7 +18,9 @@ catkin_python_setup()
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package()
+catkin_package(
+    CATKIN_DEPENDS rospy simple_platformer
+)
 
 ###########
 ## Build ##

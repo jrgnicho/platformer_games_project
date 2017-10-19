@@ -2,13 +2,12 @@
 <package>
   <name>game_asset_management</name>
   <version>0.0.0</version>
-  <description>The game_asset_management package</description>
-  <maintainer email="ros-industrial@todo.todo">ros-industrial</maintainer>
+  <description>The game_asset_management package, this package is candidate for deletion</description>
+  <maintainer email="jrgnichodeve@gmail.com">Jorge Nicho</maintainer>
+  <author email="jrgnichodeve@gmail.com">Jorge Nicho</author>
   <license>TODO</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>simple_platformer</build_depend>
   <run_depend>rospy</run_depend>
   <run_depend>simple_platformer</run_depend>
 

@@ -15,15 +15,19 @@ Project that uses python libraries for creating a platformer style video game.
 - Pygame:
   - Download from [source](https://bitbucket.org/pygame/pygame/wiki/VersionControl) and follow instructions in the wiki page.  Alternatively, you can install the debian however there is an
     issue with the joystick module where it prints lots of debug messages into the console when that module is used.
+  - Alternatively install from debian
+    ```
+    sudo apt install python-pygame
+    ```
 
 - Shapely:
   ```
-  sudo pip install shapely
+  sudo apt install python-shapely
   ```
 
 - Construct:
   ```
-  sudo pip install construct
+  sudo apt install python-construct
   ```
 
 

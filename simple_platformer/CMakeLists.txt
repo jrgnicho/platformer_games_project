@@ -7,11 +7,12 @@ find_package(catkin REQUIRED COMPONENTS rospy)
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 catkin_python_setup()
 
-
 ###################################
 ## catkin specific configuration ##
 ###################################
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS rospy python-bitarray python-pygame
+)
 
 ###########
 ## Build ##
