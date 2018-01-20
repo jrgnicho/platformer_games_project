@@ -7,8 +7,8 @@ class Move(object):
         Inputs:
             - name             : String containing the name for the move
             - button_sequence  : List containing a JoystickButton list that activates the move
-            - is_submove : True | False indicating if this move is part of a larger move
-            - callback : The function that will be executed when the execute() method is invoked
+            - is_submove       : True or False, Indicates if the button sequence that activates this move is a part of another move's larger button sequence.
+            - callback         : The function that will be executed when the execute() method is invoked
     """
     
     def __init__(self,name,button_sequence,is_submove = False,callback = None):

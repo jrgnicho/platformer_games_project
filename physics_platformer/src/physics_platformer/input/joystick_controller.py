@@ -171,8 +171,8 @@ class JoystickController(ControllerInterface):
       matched_moves = self.findMatchingMoves(self.button_press_moves_,self.button_press_buffer_)
       for move in matched_moves:
         move.execute()
-        if not move.is_submove:
-          self.reset() # clear buffer
+        if not move.is_submove:  # button sequence is final so clear the buffer
+          self.reset() 
           break  
       
     
@@ -184,7 +184,7 @@ class JoystickController(ControllerInterface):
       matched_moves = self.findMatchingMoves(self.button_release_moves_,self.button_release_buffer_)
       for move in matched_moves:
         move.execute()
-        if not move.is_submove:
+        if not move.is_submove:  # button sequence is final so clear the buffer
           self.button_release_buffer_ = []
           break
         
@@ -200,7 +200,7 @@ class JoystickController(ControllerInterface):
     if (len(button_buffer) == 0):            
       button_buffer.append(buttons)
     else:
-      if buttons != button_buffer[-1] :
+      if buttons != button_buffer[-1] : # avoid repeating
         button_buffer.append(buttons)
                    
     # Keeping buffer size to max allowed

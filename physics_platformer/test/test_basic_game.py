@@ -215,20 +215,20 @@ class TestBasicGame(TestGame):
     
   def setupKeyboardController(self):
     # create character keyboard controller
-    button_map = {'a' : KeyboardButtons.KEY_A , 's' : KeyboardButtons.KEY_S,'d' : KeyboardButtons.KEY_D}
+    button_map = {'a' : KeyboardButtons.KEY_A , 's' : KeyboardButtons.KEY_S,'d' : KeyboardButtons.KEY_D, 'q' : KeyboardButtons.KEY_Q}
     keyboard_manager = KeyboardController(self.input_state_, button_map)
     
     # Creating press moves
     keyboard_manager.addMove(Move('UP',[KeyboardButtons.DPAD_UP],True, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
     keyboard_manager.addMove(Move('DOWN',[KeyboardButtons.DPAD_DOWN],True,  lambda : self.character_.execute(CharacterActions.MOVE_DOWN)))
-    keyboard_manager.addMove(Move('LEFT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_LEFT)))
-    keyboard_manager.addMove(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_RIGHT)))    
+    keyboard_manager.addMove(Move('LEFT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.motion_commander_.moveLeft() ))
+    keyboard_manager.addMove(Move('RIGHT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.motion_commander_.moveRight() ))    
     keyboard_manager.addMove(Move('JUMP',[KeyboardButtons.KEY_S],True, lambda : self.character_.execute(CharacterActions.JUMP)))
-    #keyboard_manager.addMove(Move('DASH',[KeyboardButtons.KEY_Q],False, lambda : self.character_.execute(CharacterActions.MOVE_UP)))
+    keyboard_manager.addMove(Move('DASH',[KeyboardButtons.KEY_Q],False, lambda : self.character_.execute(CharacterActions.DASH)))
     
     # Creating release moves
-    keyboard_manager.addMove(Move('HALT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)
-    keyboard_manager.addMove(Move('HALT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.execute(CharacterActions.MOVE_NONE)),False)    
+    keyboard_manager.addMove(Move('HALT',[KeyboardButtons.DPAD_RIGHT],True, lambda : self.character_.motion_commander_.stop()),False)
+    keyboard_manager.addMove(Move('HALT',[KeyboardButtons.DPAD_LEFT],True, lambda : self.character_.motion_commander_.stop()),False)    
     keyboard_manager.addMove(Move('JUMP_CANCEL',[KeyboardButtons.KEY_S],True, lambda : self.character_.execute(CharacterActions.JUMP_CANCEL)),False)
     
     return keyboard_manager
