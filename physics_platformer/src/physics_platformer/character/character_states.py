@@ -53,19 +53,7 @@ class CharacterState(State):
     return self.parent_state_machine_
   
   def clampToPlatform(self):
-    
-    result = self.character_obj_.doCollisionSweepTestZ()
-    parent = self.character_obj_.getParent()
-    ref_node = self.character_obj_.getReferenceNodePath()
-     
-    if result.hasHit():
-      
-      self.character_obj_.node().setLinearFactor(LVector3(1,1,0)) # disable movement in z
-      ref_pos = ref_node.getRelativePoint(parent,result.getHitPos())
-      self.character_obj_.clampBottom(ref_pos.getZ())    
-      self.character_obj_.node().setLinearFactor(LVector3(1,1,1)) # disable movement in z 
-          
-    return result.hasHit()
+    return self.character_obj_.clampBottomToSurface()
   
   def done(self):
     '''

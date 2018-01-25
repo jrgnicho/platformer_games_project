@@ -1,0 +1,5 @@
+- [ ] Modify GameObject constructor to optionally take a BulletNode type in its constructor instead of creating a BulletRigidBody by default
+- [ ] Make the current Platform class into a SimplePlatform which contains two ledges, two walls, a surface and a box rigid body.  Make a new Platform class that is a more generic one that can hold multiple ledges, walls, rigid bodies and that can be composed using the bullet rigid and ghost bodies.
+- [ ] Create a class to load platforms, motion planes, and entire levels from a blender file that has been properly constructed
+- [ ] Rename the CharacterInfo class to CharacterProperties
+- [ ] Rename the CharacterStatus class to CharacterStateData

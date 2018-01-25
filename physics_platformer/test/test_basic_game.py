@@ -216,7 +216,7 @@ class TestBasicGame(TestGame):
   def setupKeyboardController(self):
     # create character keyboard controller
     button_map = {'a' : KeyboardButtons.KEY_A , 's' : KeyboardButtons.KEY_S,'d' : KeyboardButtons.KEY_D, 'q' : KeyboardButtons.KEY_Q}
-    keyboard_manager = KeyboardController(self.input_state_, button_map)
+    keyboard_manager = KeyboardController(self.input_state_, button_map, True)
     
     # Creating press moves
     keyboard_manager.addMove(Move('UP',[KeyboardButtons.DPAD_UP],True, lambda : self.character_.execute(CharacterActions.MOVE_UP)))

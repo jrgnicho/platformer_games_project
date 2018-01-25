@@ -250,6 +250,24 @@ class CharacterBase(AnimatableObject):
     self.setZ(ref,z - bbox.bottom) 
     if self.getAnimatorActor() is not None:
       self.getAnimatorActor().getRigidBody().setZ(ref,z - bbox.bottom)
+      
+  def clampBottomToSurface(self):
+    """
+      Places the bottom of the character's bounding box on the nearest surface that's below the character
+    """
+    
+    result = self.doCollisionSweepTestZ()
+    parent = self.getParent()
+    ref_node = self.getReferenceNodePath()
+     
+    if result.hasHit():
+      
+      self.node().setLinearFactor(LVector3(1,1,0))   # disable movement in z
+      ref_pos = ref_node.getRelativePoint(parent,result.getHitPos())
+      self.clampBottom(ref_pos.getZ())               # place bottom at hit point
+      self.node().setLinearFactor(LVector3(1,1,1))   # enable movement in z 
+      
+    return result.hasHit()
   
   def clampTop(self,z):
     '''

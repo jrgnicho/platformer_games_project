@@ -7,7 +7,14 @@ Project that uses python libraries for creating a platformer style video game.
 ### Install
 - ROS:
   - See the [ros wiki](http://wiki.ros.org/indigo/Installation/Ubuntu) for installation instructions. Only the ROS-Base libraries are needed
-  - Only the package indexing capabilities are used so this dependency shall go away in the future.
+  - Only the package finding capabilities are used so this dependency shall go away in the future.
+
+- [tinyblend](https://github.com/gabdube/tinyblend)
+  Used to read blender files into the gme
+  ```
+  pip install tinyblend
+
+  ```
 
 - Panda3D:
   - Download the corresponding [Panda3D SDK](http://www.panda3d.org/download.php?platform=ubuntu&version=1.9.1&sdk) and install using 'dpkg -i panda3d#####.deb' with the downloaded file
