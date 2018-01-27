@@ -17,11 +17,9 @@ class Ledge(GameObject):
     
       Creates a ledge object used to detect the extent of a platform at a given location
     '''
-    mass = 0
-    setup_visual = False
-    GameObject.__init__(self,name,size,mass,setup_visual)
     
     # storing members
+    self.size_ = size
     self.parent_platform_ = parent_platform
     self.is_right_side_ledge_ = right_side_ledge
 
@@ -35,9 +33,7 @@ class Ledge(GameObject):
     #ledge_gn.getShape(0).setMargin(GameObject.DEFAULT_COLLISION_MARGIN)
     ledge_gn.setIntoCollideMask(CollisionMasks.LEDGE)  
     
-    # This is hackish but don't know of a different way to replace the BulletRigidBody with a BulletGhostNode
-    self.clear()
-    NodePath.__init__(self,ledge_gn)
+    GameObject.__init__(self,ledge_gn)
     
   def isRightSideLedge(self):
     '''

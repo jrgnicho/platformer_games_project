@@ -30,7 +30,8 @@ class AnimationSpriteAlignment(object):
 class AnimatableObject(GameObject):
     
     def __init__(self,name,size,mass):
-        GameObject.__init__(self,name,size,mass,False) # creating GameObject with a default box shape and no Visual
+        GameObject.__init__(self,name)
+        super(AnimatableObject,self).__initToBox__(name,size,mass,False) # initialize game object to a box with no Visual
         self.setTransparency(TransparencyAttrib.M_alpha)
         self.node().setAngularFactor((0,0,0))  # no rotation
         self.animation_root_np_ = self.attachNewNode('animations_root')

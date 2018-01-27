@@ -137,7 +137,7 @@ class TestLevel(Level):
       for r in range(0,TestLevel.NUM_BOXES_ROWS):     
         current_pos = TestLevel.START_POS + Vec3(r*TestLevel.X_INCR,0,c*TestLevel.Z_INCR)
            
-        obj = GameObject("box"+str(self.num_boxes_),box_size,True)
+        obj = GameObject.createBox("box"+str(self.num_boxes_),box_size,True)
         self.addGameObject(obj)
         obj.setPos(sector,current_pos) 
         obj.setHpr(sector,0,0,0)

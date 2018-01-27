@@ -18,7 +18,8 @@ class Platform(GameObject):
     '''
     Platform(String name, Vec3 size, Bool right_side_ledge, Bool left_side_ledge)
     '''
-    GameObject.__init__(self,name,size,0)
+    GameObject.__init__(self,name)
+    super(Platform,self).__initToBox__(name,size,0,True) # initialize game object to a static box with no Visual
     self.setCollideMask(CollisionMasks.LEVEL_OBSTACLE)
     self.visual_nh_.setTexture(Platform.__DEFAULT_TEXTURE__,1) 
     
