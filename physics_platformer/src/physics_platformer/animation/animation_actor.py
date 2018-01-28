@@ -47,7 +47,7 @@ class AnimationActor(SpriteAnimator):
     self.parent_physics_world_ = None
     
     # bounds    
-    self.rigid_body_bbox_ = None
+    self.rigid_body_bbox_ = None # 2D Bounding box
     self.bbox_top_np_ = None  # Node path to the top box ghost node
     self.bbox_bottom_np_ = None # Node path to the bottom box ghost node
     self.bbox_back_np_ = None # Node path to the rear box ghost node
