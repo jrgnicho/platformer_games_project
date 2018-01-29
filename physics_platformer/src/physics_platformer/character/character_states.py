@@ -506,7 +506,7 @@ class CharacterStates(object): # Class Namespace
       
     def exit(self): 
       
-      self.character_obj_.getActionGhostBody().node().setIntoCollideMask(CollisionMasks.ACTION_BODY)   
+      self.character_obj_.getActionGhostBody().node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER)   
       self.character_obj_.setStatic(False)
       self.character_obj_.stop()
       

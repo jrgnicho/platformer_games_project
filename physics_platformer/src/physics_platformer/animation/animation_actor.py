@@ -96,7 +96,7 @@ class AnimationActor(SpriteAnimator):
     if len(self.animation_info_.action_boxes) > 0: # collecting boxes from each individual sprite          
       self.action_body_np_ =  self.rigid_body_np_.attachNewNode(
          self.__createBulletGhostNodeFromBoxes__(self.animation_info_.action_boxes,scale, self.getName() + '-actor-action-gn') )
-      self.action_body_np_.node().setIntoCollideMask(CollisionMasks.ACTION_BODY)
+      self.action_body_np_.node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER)
 
     # creating attack collision and hit ghosts bodies for handling attack boxes
     col_boxes = []    

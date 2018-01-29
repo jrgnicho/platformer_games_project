@@ -50,21 +50,21 @@ class Platform(GameObject):
     self.floor_ghost_np_.node().addShape(BulletBoxShape(Vec3((size.getX()-2*thickness)*0.5,size.getY()*0.5 ,thickness*0.5) ))
     #self.floor_ghost_np_.node().getShape(0).setMargin(GameObject.DEFAULT_COLLISION_MARGIN)
     self.floor_ghost_np_.setPosHpr(self,Vec3(0,0,(size.getZ() - thickness)*0.5),Vec3.zero())
-    self.floor_ghost_np_.node().setIntoCollideMask(CollisionMasks.PLATFORM_FLOOR)
+    self.floor_ghost_np_.node().setIntoCollideMask(CollisionMasks.SURFACE)
     
     # creating platform right wall node
     self.rightwall_ghost_np_ = self.attachNewNode(BulletGhostNode(name + 'right-wall'))
     self.rightwall_ghost_np_.node().addShape(BulletBoxShape(Vec3(thickness*0.5,size.getY()*0.5,size.getZ()*0.5 )))
     #self.rightwall_ghost_np_.node().getShape(0).setMargin(GameObject.DEFAULT_COLLISION_MARGIN)
     self.rightwall_ghost_np_.setPosHpr(self,Vec3((size.getX() - thickness)*0.5,0,0),Vec3.zero())
-    self.rightwall_ghost_np_.node().setIntoCollideMask(CollisionMasks.PLATFORM_WALL)
+    self.rightwall_ghost_np_.node().setIntoCollideMask(CollisionMasks.WALL)
     
     # creating platform left wall node
     self.leftwall_ghost_np_ = self.attachNewNode(BulletGhostNode(name + 'left-wall'))
     self.leftwall_ghost_np_.node().addShape(BulletBoxShape(Vec3(thickness*0.5,size.getY()*0.5,size.getZ()*0.5 )))
     #self.leftwall_ghost_np_.node().getShape(0).setMargin(GameObject.DEFAULT_COLLISION_MARGIN)
     self.leftwall_ghost_np_.setPosHpr(self,Vec3(-(size.getX() - thickness)*0.5,0,0),Vec3.zero())
-    self.leftwall_ghost_np_.node().setIntoCollideMask(CollisionMasks.PLATFORM_WALL)
+    self.leftwall_ghost_np_.node().setIntoCollideMask(CollisionMasks.WALL)
     
     
   def setObjectID(self,id):            
