@@ -142,7 +142,7 @@ class CharacterLoader(object):
       
     # creating animations dictionary
     for anim in self.anim_loader_.animations:
-      if self.anims_dict_.has_key(anim.name):
+      if anim.name in self.anims_dict_:
         logging.warn("Multiple animations with the name %s have been found, only the last one will be stored")        
       self.anims_dict_[anim.name] = anim
       

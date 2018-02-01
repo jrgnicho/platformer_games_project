@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from direct.interval.Interval import Interval
 from physics_platformer.test import TestApplication
@@ -71,7 +71,7 @@ class TestAnimatableObject(TestApplication):
         sprite_loader = SpriteLoader()        
         sprite_animator_set = []
         
-        for v in SPRITE_IMAGE_DETAILS.values():
+        for v in list(SPRITE_IMAGE_DETAILS.values()):
             success, right_imgs = sprite_loader.loadSpriteImages(v.path,v.cols,v.rows,False,False)
             if not success:
                 logging.error(' Failed to load sprite images')
@@ -162,7 +162,7 @@ if __name__ == '__main__':
             # Configuring logging level
             log_level = getattr(logging, arg.upper(), None)
             if isinstance(log_level, int):                                
-                print "Configuring log level to %s"%(arg.upper())
+                print("Configuring log level to %s"%(arg.upper()))
         
     
     logging.basicConfig(format='%(levelname)s: %(message)s',level=log_level)    

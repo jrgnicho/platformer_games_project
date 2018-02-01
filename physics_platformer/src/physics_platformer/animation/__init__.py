@@ -1,2 +1,2 @@
-from animation_info import *
-from animation_actor import *
+from .animation_info import *
+from .animation_actor import *

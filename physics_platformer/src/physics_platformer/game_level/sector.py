@@ -44,7 +44,8 @@ class Sector(NodePath):
     Sector(NodePath parent_np, TransformState tr = TransformState.makeIdentity()
     
       Creates a level Sector object which ensures that all objects in it only move in the x and z
-      directions relative to the sector.
+      directions relative to the sector. The z and x vectors lie on the plane with +X pointing to the right
+      and +Z pointing up.  +Y is perpedicular to the plane into the screen from the user's perspective
       
       @param parent_np: NodePath to the parent of the sector, usually is the Level object that contains the sector.
       @param physics_world: The physics world
@@ -74,7 +75,7 @@ class Sector(NodePath):
     
   def __del__(self):
     
-    for k,c in self.object_constraints_dict_.items():
+    for k,c in list(self.object_constraints_dict_.items()):
       self.physics_world_.remove(c)
     self.object_constraints_dict_.clear()
       
@@ -182,7 +183,7 @@ class Sector(NodePath):
       
   def remove(self,obj):
     
-    if not self.object_constraints_dict_.has_key(obj.getObjectID()):
+    if obj.getObjectID() not in self.object_constraints_dict_:
       return
     
     constraint = self.object_constraints_dict_[obj.getObjectID()]

@@ -38,7 +38,7 @@ class FFELoader(object):
     self.logger_.setLevel( level= logging.INFO)
         
   def hasGroup(self, group_no):
-    return self.groups_dict_.has_key(group_no)
+    return (group_no in self.groups_dict_)
     
   def getSprite(self,group_no,im_no,right_side = True):
     
@@ -171,7 +171,7 @@ class FFELoader(object):
   
   def __createGroupPair__(self,group_no):
     
-    if not self.groups_dict_.has_key(group_no):
+    if group_no not in self.groups_dict_:
       self.groups_dict_[group_no] = (SpriteGroup(group_no),SpriteGroup(group_no))
     
     return self.groups_dict_[group_no] 

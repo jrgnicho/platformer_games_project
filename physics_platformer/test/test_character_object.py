@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from direct.interval.Interval import Interval
 from physics_platformer.test import TestApplication
@@ -182,7 +182,7 @@ if __name__ == '__main__':
             # Configuring logging level
             log_level = getattr(logging, arg.upper(), None)
             if isinstance(log_level, int):                                
-                print "Configuring log level to %s"%(arg.upper())
+                print("Configuring log level to %s"%(arg.upper()))
         
     
     logging.basicConfig(format='%(levelname)s: %(message)s',level=log_level)    

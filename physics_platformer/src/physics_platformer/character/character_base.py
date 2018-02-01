@@ -535,7 +535,7 @@ class CharacterBase(AnimatableObject):
       logging.warning("PhysicsWorld or Parent NodePath have not been set on the Character object, pose can not be selected")
       return False
     
-    if not self.animators_.has_key(animation_name):
+    if animation_name not in self.animators_:
       logging.warning( "Invalid animation name '%s'"%(animation_name))
       return False
     

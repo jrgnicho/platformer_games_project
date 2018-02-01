@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 FFE Read for python
@@ -7,7 +7,7 @@ This utility will read sprites from an FFE file generated with Fighter Factory 3
 
 """
 
-from StringIO import StringIO
+from io import StringIO
 from PIL import Image
 from physics_platformer.resource_management.ff3 import FFELoader
 from panda3d.core import PNMImage, StringStream

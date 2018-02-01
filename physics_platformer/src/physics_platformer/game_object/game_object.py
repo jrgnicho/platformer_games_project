@@ -60,7 +60,7 @@ class GameObject(NodePath):
       if len(args) > 0:
         if isinstance(args[0],str):
           name = args[0]          
-          NodePath.__init__(self,BulletBodyNode(name))
+          NodePath.__init__(self,PandaNode(name))
         elif isinstance(args[0], BulletBodyNode):
           bn = args[0]
           NodePath.__init__(self,bn)

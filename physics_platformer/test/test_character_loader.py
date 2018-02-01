@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from physics_platformer.resource_management.ff3 import CharacterLoader
 import logging
@@ -21,7 +21,7 @@ def main():
     return
   
   for anim in character_loader.getAnimations():
-    print str(anim)
+    print(str(anim))
     
     
 if __name__ == '__main__':

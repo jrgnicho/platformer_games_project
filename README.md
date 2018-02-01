@@ -1,48 +1,48 @@
-Platformer Game Project
+Platformer Game 
 ===============
 
 Project that uses python libraries for creating a platformer style video game.
 
 
-### Install
-- ROS:
-  - See the [ros wiki](http://wiki.ros.org/indigo/Installation/Ubuntu) for installation instructions. Only the ROS-Base libraries are needed
-  - Only the package finding capabilities are used so this dependency shall go away in the future.
+### Info
+- This game library can be used with python 2.7 and 3.0 and has been built with the following libraries:
+ 
+  - ROS:
+    - See the [ros wiki](http://wiki.ros.org/indigo/Installation/Ubuntu) for installation instructions. Only the ROS-Base option is needed
+    - This game only uses the **rospkg** module to locate directories and resources
+    - The ROS command tools (roscd, rospack, rosrun, etc) can be used too
 
-- [tinyblend](https://github.com/gabdube/tinyblend)
-  Used to read blender files into the gme
-  ```
-  pip install tinyblend
+  - [tinyblend](https://github.com/gabdube/tinyblend)
+    Used to read blender files into the game
 
-  ```
+  - Panda3D:
+    - Game engine [Panda3D SDK](http://www.panda3d.org) 
 
-- Panda3D:
-  - Download the corresponding [Panda3D SDK](http://www.panda3d.org/download.php?platform=ubuntu&version=1.9.1&sdk) and install using 'dpkg -i panda3d#####.deb' with the downloaded file
+  - Pygame:
+    - 2D game engine.  Only the joystick module from this library is used 
+    - Download from [source](https://bitbucket.org/pygame/pygame/wiki/VersionControl) and follow instructions in the wiki page.  Alternatively, you can install the debian however there is an
+      issue with the joystick module which floods the console window with debug messages.
 
-- Pygame:
-  - Download from [source](https://bitbucket.org/pygame/pygame/wiki/VersionControl) and follow instructions in the wiki page.  Alternatively, you can install the debian however there is an
-    issue with the joystick module where it prints lots of debug messages into the console when that module is used.
-  - Alternatively install from debian
-    ```
-    sudo apt install python-pygame
-    ```
 
-- Shapely:
-  ```
-  sudo apt install python-shapely
-  ```
+### Install Dependencies
+The following python3 libraries need to be installed using the ```sudo pip3 install [pkg-name]``` command:
 
-- Construct:
-  ```
-  sudo apt install python-construct
-  ```
+- panda3d
+- rospkg
+- shapely
+- construct
+- docutils
+
 
 
 ### Play
 - Recomendations:
-  A PS2 Joystick is recommended however you can still play with the keyboard if no joystick is plugged in.
+  A PS2 Joystick is recommended however the game will default to the keyboard if no joystick is plugged in.
 
 - Run
   ```
   rosrun physics_platformer test_basic_game.py
   ```
+
+  - You can run, jump, dash, double jump and hang from ledges.
+  - Have fun ...

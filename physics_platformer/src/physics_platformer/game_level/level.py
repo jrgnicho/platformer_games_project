@@ -63,7 +63,7 @@ class Level(NodePath):
     
     # removing game objects
     for gobj in self.game_object_map_.values():
-      if self.platforms_.has_key(gobj.getObjectID()):
+      if gobj.getObjectID() in self.platforms_:
         continue
       
       gobj.clearPhysicsWorld()

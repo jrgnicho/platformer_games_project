@@ -53,7 +53,7 @@ class AnimatableObject(GameObject):
         
     def setObjectID(self,id):
       GameObject.setObjectID(self,id)    
-      for k in self.animators_.keys():
+      for k in list(self.animators_.keys()):
         animator = self.animators_[k].node().getPythonTag(SpriteAnimator.__name__) 
         animator.setPythonTag(GameObject.ID_PYTHON_TAG,id) 
         
@@ -78,7 +78,7 @@ class AnimatableObject(GameObject):
             self.animators_[k] = np
             
         # selecting first animation
-        keys = sprite_animator_dict.keys()
+        keys = list(sprite_animator_dict.keys())
         self.pose(keys[0])
         
     def addSpriteAnimation(self,name,sprite_animator,
@@ -134,7 +134,7 @@ class AnimatableObject(GameObject):
             
     def clearSpriteAnimations(self):
         
-        for np in self.animators_.values():
+        for np in list(self.animators_.values()):
             np.detachNode()          
         
         self.animators_ = {}
@@ -144,7 +144,7 @@ class AnimatableObject(GameObject):
         
     def pose(self,animation_name, frame = 0):
         
-        if not self.animators_.has_key(animation_name):
+        if animation_name not in self.animators_:
             logging.error( "Invalid animation name '%s'"%(animation_name))
             return False
         
@@ -174,7 +174,7 @@ class AnimatableObject(GameObject):
         if animation_name == None :
             return self.animator_.getNumFrames()
         
-        if self.animators_.has_key(animation_name):
+        if animation_name in self.animators_:
             animator_np = self.animators_[animation_name]   
             animator = animator_np.node().getPythonTag(SpriteAnimator.PANDA_TAG)  
             return animator.getNumFrames()
@@ -191,7 +191,7 @@ class AnimatableObject(GameObject):
         if animation_name == None:
             return  self.animator_.getFrameRate()
         
-        if self.animators_.has_key(animation_name):
+        if animation_name in self.animators_:
             animator_np = self.animators_[animation_name]   
             animator = animator_np.node().getPythonTag(SpriteAnimator.PANDA_TAG)  
             return animator.getFrameRate()

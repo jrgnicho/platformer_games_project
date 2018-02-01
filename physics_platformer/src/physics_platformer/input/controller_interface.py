@@ -1,5 +1,6 @@
 from physics_platformer.input import JoystickButtons
 from physics_platformer.input import Move
+import logging
 
 
 class ControllerInterface(object):
@@ -29,7 +30,7 @@ class ControllerInterface(object):
         self.setMoves(self.button_release_moves_, button_press)         
        
       
-      print "Added new %s move to ControllerInterface" % (move.name)  
+      logging.info("Added new %s move to ControllerInterface" % (move.name))  
         
     def reset(self):
       pass

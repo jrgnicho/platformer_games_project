@@ -262,7 +262,7 @@ class TestGame(ShowBase):
     # check if image can be loaded
     img_head = PNMImageHeader()
     if not img_head.readHeader(image_file ):
-        raise IOError, "PNMImageHeader could not read file %s. Try using absolute filepaths"%(image_file.c_str())
+        raise IOError("PNMImageHeader could not read file %s. Try using absolute filepaths"%(image_file.c_str()))
         sys.exit()
         
     # Load the image with a PNMImage
