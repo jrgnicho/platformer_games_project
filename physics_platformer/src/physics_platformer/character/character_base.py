@@ -85,6 +85,9 @@ class CharacterBase(AnimatableObject):
     # motion commander
     self.motion_commander_ = MotionCommander(self)
     
+    # set id
+    self.setObjectID(self.getName())
+    
   def setup(self):    
 
     self.__setupDefaultStates__()
@@ -496,6 +499,7 @@ class CharacterBase(AnimatableObject):
       return False
     
     self.addSpriteAnimation(name, anim_actor, align, center_offset)
+    anim_actor.setPythonTag(GameObject.ID_PYTHON_TAG,self.getName())
     
     if (self.animator_np_ is None):
       self.pose(name)  

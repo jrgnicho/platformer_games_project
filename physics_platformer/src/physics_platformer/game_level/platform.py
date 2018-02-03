@@ -66,6 +66,9 @@ class Platform(GameObject):
     self.leftwall_ghost_np_.setPosHpr(self,Vec3(-(size.getX() - thickness)*0.5,0,0),Vec3.zero())
     self.leftwall_ghost_np_.node().setIntoCollideMask(CollisionMasks.WALL)
     
+    # setting id 
+    self.setObjectID(self.getName())
+    
     
   def setObjectID(self,id):            
     self.setPythonTag(GameObject.ID_PYTHON_TAG,str(id))

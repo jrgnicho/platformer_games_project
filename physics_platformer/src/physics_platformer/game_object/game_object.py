@@ -70,6 +70,7 @@ class GameObject(NodePath):
       # instantiating to a bullet rigid body
       self.physics_world_ = None
       self.size_ = Vec3(0,0,0)
+      GameObject.setObjectID(self, self.getName())
     
     @classmethod        
     def createBox(cls,name,size,mass = 0,setup_visual = True):
@@ -111,7 +112,7 @@ class GameObject(NodePath):
       self.node().setBounds(BoundingBox(min_point ,max_point ))
       
       # Frame of reference
-      self.reference_np_ = None
+      self.reference_np_ = None      
       
       # visual properties
       if setup_visual:     
@@ -130,7 +131,10 @@ class GameObject(NodePath):
           scale_factor = 1/max([extents.getX(),extents.getY(),extents.getZ()])
           self.visual_nh_.setScale(self.size_.getX()*scale_factor,self.size_.getY()*scale_factor,self.size_.getZ()*scale_factor)
       else:
-          self.visual_nh_ = NodePath() # create empty node
+          self.visual_nh_ = NodePath() # create empty node          
+          
+      # setting ID
+      GameObject.setObjectID(self, self.getName())
              
     def setPhysicsWorld(self,physics_world): 
       if type(physics_world) is not BulletWorld:
@@ -149,6 +153,7 @@ class GameObject(NodePath):
       
     def clearPhysicsWorld(self):
       if self.physics_world_ is not None:
+        logging.debug('Removing %s from physics world'%(self.getName()))
         self.physics_world_.remove(self.node())
         
       self.physics_world_ = None

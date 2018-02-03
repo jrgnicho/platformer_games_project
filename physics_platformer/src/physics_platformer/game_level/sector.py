@@ -10,7 +10,6 @@ from operator import pos
 
 class SectorTransition(NodePath):
   
-  SOURCE_SECTOR_NAME = 'SOURCE_SECTOR'
   DESTINATION_SECTOR_NAME = 'DESTINATION_SECTOR'
   ENTRANCE_POSITION = 'ENTRANCE_POSITION'
   
@@ -22,7 +21,6 @@ class SectorTransition(NodePath):
     self.node().addShape(BulletBoxShape(size/2))
     self.node().getShape(0).setMargin(0.01)
     self.node().setIntoCollideMask(CollisionMasks.SECTOR_TRANSITION)
-    self.setPythonTag(SectorTransition.SOURCE_SECTOR_NAME, self.src_sector_name_)
     self.setPythonTag(SectorTransition.DESTINATION_SECTOR_NAME, self.destination_sector_name_)
     self.setPythonTag(SectorTransition.ENTRANCE_POSITION,entrance_pos)
     
@@ -58,7 +56,7 @@ class Sector(NodePath):
     self.physics_world_ = physics_world
     
     # creating 2d motion plane
-    self.motion_plane_np_ = self.attachNewNode(BulletRigidBodyNode())
+    self.motion_plane_np_ = self.attachNewNode(BulletRigidBodyNode(self.getName() + '-motion-plane'))
     self.motion_plane_np_.node().setMass(0)
     self.motion_plane_np_.node().setIntoCollideMask(CollisionMasks.NO_COLLISION)
     self.motion_plane_np_.node().addShape(BulletPlaneShape(Vec3(0,1,0),0))

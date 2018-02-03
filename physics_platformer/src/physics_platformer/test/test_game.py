@@ -133,15 +133,19 @@ class TestLevel(Level):
     
     box_size = Vec3(TestLevel.BOX_SIDE_LENGTH,TestLevel.BOX_SIDE_LENGTH,TestLevel.BOX_SIDE_LENGTH)
     
+    self.num_boxes_ =0
     for c in range(0,TestLevel.NUM_BOXES_COLUMNS):    
       for r in range(0,TestLevel.NUM_BOXES_ROWS):     
         current_pos = TestLevel.START_POS + Vec3(r*TestLevel.X_INCR,0,c*TestLevel.Z_INCR)
-           
-        obj = GameObject.createBox("box"+str(self.num_boxes_),box_size,True)
+        
+        obj_name = sector.getName() + '-box' + str(self.num_boxes_)
+        print("Creating box " + obj_name)   
+        obj = GameObject.createBox(obj_name,box_size,True)
         self.addGameObject(obj)
         obj.setPos(sector,current_pos) 
         obj.setHpr(sector,0,0,0)
         sector.attach(obj) 
+        self.num_boxes_ += 1
     
     
   def __createPlatforms__(self,sector,use_first_ledge = False):

@@ -43,7 +43,7 @@ class Level(NodePath):
     self.size_ = max_point - min_point   
     self.bound_boxes_ = [] # node paths to rigid bodies 
     self.game_object_map_ = {}  # game objects in the world including static and mobile
-    self.mobile_object_ids_ = [] # list of object ids far all mobile objects
+    self.dynamic_object_ids_ = [] # list of object ids far all mobile objects
     self.id_counter_ = 0
     self.collision_action_matrix_ = CollisionActionMatrix()
     self.platforms_ = {}
@@ -129,31 +129,26 @@ class Level(NodePath):
     resolver.setupCollisionRules(self.physics_world_)
     self.collision_resolvers_.append(resolver)
     
-  def addPlatform(self,platform):    
+  def addPlatform(self,platform): 
+       
     platform.setPhysicsWorld(self.physics_world_)
     platform.reparentTo(self)
-    new_id = 'platform-'+str(len(self.platforms_))
-    platform.setObjectID(new_id)
-    self.game_object_map_[platform.getObjectID()] = platform
+    self.game_object_map_[platform.getName()] = platform
     
     # adding children of platform
     for obj in platform.getChildrenGameObjects():
       self.id_counter_+=1
-      new_id = 'game-object-' + str(self.id_counter_)
-      obj.setObjectID(new_id)
-      self.game_object_map_[obj.getObjectID()] = obj
+      self.game_object_map_[obj.getName()] = obj
     
     
     self.platforms_[platform.getObjectID()] = platform
     
   def addGameObject(self,game_object):    
     self.id_counter_+=1
-    new_id = 'game-object-' + str(self.id_counter_)
-    game_object.setObjectID(new_id)    
-    self.game_object_map_[game_object.getObjectID()] = game_object
+    self.game_object_map_[game_object.getName()] = game_object
     game_object.setPhysicsWorld(self.physics_world_)
     game_object.reparentTo(self)   
-    self.mobile_object_ids_.append(new_id)
+    self.dynamic_object_ids_.append(game_object.getName())
   
   def update(self,dt):
     self.physics_world_.doPhysics(dt, Level.__PHYSICS_SIM_SUBSTEPS__, Level.__PHYSICS_SIM_STEPSIZE__)
@@ -220,15 +215,22 @@ class Level(NodePath):
       
       processed_contacts.append(i)
       
-      src_sector  = self.sectors_dict_[sector_transition_node.getPythonTag(SectorTransition.SOURCE_SECTOR_NAME)]
-      dest_sector = self.sectors_dict_[sector_transition_node.getPythonTag(SectorTransition.DESTINATION_SECTOR_NAME)]
-      entrance_pos = sector_transition_node.getPythonTag(SectorTransition.ENTRANCE_POSITION)
-      id = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
-      obj = self.game_object_map_.get(id,None)
+      #id = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
+      id = node1.getName()
+      obj = None
+      if id in self.game_object_map_:
+        obj = self.game_object_map_.get(id,None)          
+      else:
+        id_obj = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
+        obj = self.game_object_map_.get(id_obj,None) if id_obj is not None else None    
             
       if obj is None:
-        logging.warn('Object with game id %s was not found')
-        continue
+        logging.warn('Object with game id %s was not found'%(id))
+        continue    
+      
+      src_sector  = self.sectors_dict_[obj.getReferenceNodePath().getName()]
+      dest_sector = self.sectors_dict_[sector_transition_node.getPythonTag(SectorTransition.DESTINATION_SECTOR_NAME)]
+      entrance_pos = sector_transition_node.getPythonTag(SectorTransition.ENTRANCE_POSITION)
       
       logging.debug("Sector Transition detected from src: %s to dest: %s"%(src_sector.getName(),dest_sector.getName()))
       
@@ -249,7 +251,7 @@ class Level(NodePath):
     unprocessed_contacts = self.__processSectorTransitions__(contact_manifolds)
     
     for r in self.collision_resolvers_:
-      unprocessed_contacts = r.processCollisions(unprocessed_contacts,self.game_object_map_,self.mobile_object_ids_)
+      unprocessed_contacts = r.processCollisions(unprocessed_contacts,self.game_object_map_,self.dynamic_object_ids_)
       
       
         

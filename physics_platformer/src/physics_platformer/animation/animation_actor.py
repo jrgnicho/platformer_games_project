@@ -34,9 +34,10 @@ class AnimationActor(SpriteAnimator):
   RIGHT_SPRITE_PLAYER_SUFF = '-rsprite-player'
   LEFT_SPRITE_PLAYER_SUFF = '-lsprite-player'
   
-  def __init__(self,name,mass = DEFAULT_MASS):
+  def __init__(self,name,character_name = 'uno', mass = DEFAULT_MASS):
     SpriteAnimator.__init__(self,name)
     
+    self.character_name_ = character_name 
     self.mass_ = mass
     self.animation_info_ = None
     self.rigid_body_np_ = None # NodePath to a bullet rigid body that contains the collision boxes that are used to handle interactions with the environment    
@@ -95,7 +96,8 @@ class AnimationActor(SpriteAnimator):
     # creating bullet ghost body for detecting interactions with the environment
     if len(self.animation_info_.action_boxes) > 0: # collecting boxes from each individual sprite          
       self.action_body_np_ =  self.rigid_body_np_.attachNewNode(
-         self.__createBulletGhostNodeFromBoxes__(self.animation_info_.action_boxes,scale, self.getName() + '-actor-action-gn') )
+         self.__createBulletGhostNodeFromBoxes__(self.animation_info_.action_boxes,scale, 
+                                                 self.character_name_ + '-' +self.getName() + '-actor-action-gn') )
       self.action_body_np_.node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER)
 
     # creating attack collision and hit ghosts bodies for handling attack boxes
@@ -108,13 +110,13 @@ class AnimationActor(SpriteAnimator):
     if len(col_boxes) > 0:  
       col_boxes = [Box2D.createBoundingBox(col_boxes)]            
       self.damage_box_np_ = self.rigid_body_np_.attachNewNode( 
-        self.__createBulletGhostNodeFromBoxes__(col_boxes,scale, self.getName() + '-actor-damage-gn' ) )
+        self.__createBulletGhostNodeFromBoxes__(col_boxes,scale, self.character_name_ + '-' + self.getName() + '-actor-damage-gn' ) )
       self.damage_box_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_DAMAGE)
       
     if len(hit_boxes) > 0:
       hit_boxes = [Box2D.createBoundingBox(hit_boxes)]
       self.hit_box_np_ = self.rigid_body_np_.attachNewNode( 
-        self.__createBulletGhostNodeFromBoxes__(hit_boxes,scale, self.getName() + '-actor-hit-gn'))
+        self.__createBulletGhostNodeFromBoxes__(hit_boxes,scale, self.character_name_ + '-' +self.getName() + '-actor-hit-gn'))
       self.hit_box_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_HIT)
       
     # scaling remaining boxes (animation frames and auxiliary)     
@@ -250,7 +252,7 @@ class AnimationActor(SpriteAnimator):
      
     
   def __createRigidBody__(self,scale):
-    self.rigid_body_np_ = NodePath(BulletRigidBodyNode('RigidBody'))
+    self.rigid_body_np_ = NodePath(BulletRigidBodyNode(self.character_name_ + '-' + self.getName()+ '-rb'))
     rigid_body = self.rigid_body_np_.node()
     rigid_body.setIntoCollideMask(CollisionMasks.GAME_OBJECT_AABB)
     rigid_body.setFriction(0)
