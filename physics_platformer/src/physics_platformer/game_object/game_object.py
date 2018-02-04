@@ -103,7 +103,7 @@ class GameObject(NodePath):
       collision_shape.setMargin(GameObject.DEFAULT_COLLISION_MARGIN)
       self.node().addShape(collision_shape)
       self.node().setMass(mass)
-      self.setCollideMask(CollisionMasks.GAME_OBJECT_AABB)
+      self.setCollideMask(CollisionMasks.GAME_OBJECT_RIGID_BODY)
       
       #  setting bounding volume
       min_point = LPoint3(-0.5*size.getX(),-0.5*size.getY(),-0.5*size.getZ())

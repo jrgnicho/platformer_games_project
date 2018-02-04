@@ -151,6 +151,7 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.animate(self.animation_key_)    
       self.character_obj_.node().setLinearFactor(LVector3(1,1,0)) # disable movement in z
       self.character_obj_.setLinearVelocity(LVector3(0,0,0))
+      self.character_obj_.clampBottomToSurface()
       self.character_obj_.clearForces()      
       
     def exit(self):
@@ -506,7 +507,7 @@ class CharacterStates(object): # Class Namespace
       
     def exit(self): 
       
-      self.character_obj_.getActionGhostBody().node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER)   
+      self.character_obj_.getActionGhostBody().node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER_1)   
       self.character_obj_.setStatic(False)
       self.character_obj_.stop()
       

@@ -20,7 +20,7 @@ class Platform(GameObject):
     '''
     GameObject.__init__(self,name)
     super(Platform,self).__initToBox__(name,size,0,True) # initialize game object to a static box with no Visual
-    self.setCollideMask(CollisionMasks.LEVEL_OBSTACLE)
+    self.setCollideMask(CollisionMasks.PLATFORM_RIGID_BODY)
     self.visual_nh_.setTexture(Platform.__DEFAULT_TEXTURE__,1) 
     
     # platform_ledge members

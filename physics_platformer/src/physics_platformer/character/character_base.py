@@ -69,12 +69,12 @@ class CharacterBase(AnimatableObject):
     rel_pos = Vec3(-GameObject.ORIGIN_XOFFSET,0,info.height/2)
     self.left_origin_gn_ = self.attachNewNode(BulletGhostNode(self.getName() + '-left-origin'))
     self.left_origin_gn_.node().addShape(BulletSphereShape(GameObject.ORIGIN_SPHERE_RADIUS),TransformState.makePosHpr(rel_pos,Vec3.zero()))
-    self.left_origin_gn_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_ORIGIN if not self.isFacingRight() else CollisionMasks.NO_COLLISION)
+    self.left_origin_gn_.node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER_0 if not self.isFacingRight() else CollisionMasks.NO_COLLISION)
     
     rel_pos = Vec3(GameObject.ORIGIN_XOFFSET,0,info.height/2)
     self.right_origin_gn_ = self.attachNewNode(BulletGhostNode(self.getName() + '-right-origin'))
     self.right_origin_gn_.node().addShape(BulletSphereShape(GameObject.ORIGIN_SPHERE_RADIUS),TransformState.makePosHpr(rel_pos,Vec3.zero()))
-    self.right_origin_gn_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_ORIGIN if self.isFacingRight() else CollisionMasks.NO_COLLISION)
+    self.right_origin_gn_.node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER_0 if self.isFacingRight() else CollisionMasks.NO_COLLISION)
     
     # character status
     self.status_ = CharacterStatus()
@@ -568,7 +568,7 @@ class CharacterBase(AnimatableObject):
       
     return True 
   
-  def doCollisionSweepTestZ(self,col_mask = CollisionMasks.LEVEL_OBSTACLE,from_z = 0, to_z = 0):
+  def doCollisionSweepTestZ(self,col_mask = CollisionMasks.PLATFORM_RIGID_BODY,from_z = 0, to_z = 0):
     '''
     doCollisionSweepTestZ(double from_z = 0, double to_z = 0)
     Performs a collision sweep test along z in order to determine the height 
@@ -611,10 +611,10 @@ class CharacterBase(AnimatableObject):
       self.animator_.faceRight(face_right)
       
     if face_right:
-      self.right_origin_gn_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_ORIGIN)
+      self.right_origin_gn_.node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER_0)
       self.left_origin_gn_.node().setIntoCollideMask(CollisionMasks.NO_COLLISION)
     else:
-      self.left_origin_gn_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_ORIGIN)
+      self.left_origin_gn_.node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER_0)
       self.right_origin_gn_.node().setIntoCollideMask(CollisionMasks.NO_COLLISION)
       
         

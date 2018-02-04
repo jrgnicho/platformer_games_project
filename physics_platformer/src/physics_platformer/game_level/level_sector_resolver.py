@@ -17,10 +17,10 @@ class LevelSectorResolver(CollisionResolver):
     
     self.physics_world_ = physics_world
     
-    self.physics_world_.setGroupCollisionFlag(CollisionMasks.SECTOR_TRANSITION.getLowestOnBit(),CollisionMasks.GAME_OBJECT_ORIGIN.getLowestOnBit(),True)
+    self.physics_world_.setGroupCollisionFlag(CollisionMasks.SECTOR_TRANSITION.getLowestOnBit(),CollisionMasks.ACTION_TRIGGER_0.getLowestOnBit(),True)
     
     # populating collision action matrix
-    self.collision_action_matrix_.addEntry(CollisionMasks.SECTOR_TRANSITION.getLowestOnBit(),CollisionMasks.GAME_OBJECT_ORIGIN.getLowestOnBit(),
+    self.collision_action_matrix_.addEntry(CollisionMasks.SECTOR_TRANSITION.getLowestOnBit(),CollisionMasks.ACTION_TRIGGER_0.getLowestOnBit(),
                                            CollisionAction.NONE,CollisionAction.NONE)
 
     

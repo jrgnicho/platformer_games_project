@@ -23,19 +23,19 @@ class LevelCollisionResolver(CollisionResolver):
     self.physics_world_ = physics_world
     
     # setting collision rules
-    #self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_BOTTOM.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),True)
+    #self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_BOTTOM.getLowestOnBit(),CollisionMasks.PLATFORM_RIGID_BODY.getLowestOnBit(),True)
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_BOTTOM.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),True)
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_BOTTOM.getLowestOnBit(),CollisionMasks.SURFACE.getLowestOnBit(),True)
     
-    self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_TOP.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),True)
+    self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_TOP.getLowestOnBit(),CollisionMasks.PLATFORM_RIGID_BODY.getLowestOnBit(),True)
     
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_LEFT.getLowestOnBit(),CollisionMasks.WALL.getLowestOnBit(),True)
     self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_RIGHT.getLowestOnBit(),CollisionMasks.WALL.getLowestOnBit(),True)
     
-    self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_AABB.getLowestOnBit(),CollisionMasks.LEVEL_BOUND.getLowestOnBit(),True)
-    self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_AABB.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),True)   
+    self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_RIGID_BODY.getLowestOnBit(),CollisionMasks.LEVEL_BOUND.getLowestOnBit(),True)
+    self.physics_world_.setGroupCollisionFlag(CollisionMasks.GAME_OBJECT_RIGID_BODY.getLowestOnBit(),CollisionMasks.PLATFORM_RIGID_BODY.getLowestOnBit(),True)   
      
-    self.physics_world_.setGroupCollisionFlag(CollisionMasks.ACTION_TRIGGER.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),True)
+    self.physics_world_.setGroupCollisionFlag(CollisionMasks.ACTION_TRIGGER_1.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),True)
     
     # populating collision action matrix
     self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_BOTTOM.getLowestOnBit(),CollisionMasks.SURFACE.getLowestOnBit(),
@@ -43,7 +43,7 @@ class LevelCollisionResolver(CollisionResolver):
     self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_BOTTOM.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),
                                            CollisionAction.LEDGE_BOTTOM_COLLISION,CollisionAction.NONE)
     
-    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_TOP.getLowestOnBit(),CollisionMasks.LEVEL_OBSTACLE.getLowestOnBit(),
+    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_TOP.getLowestOnBit(),CollisionMasks.PLATFORM_RIGID_BODY.getLowestOnBit(),
                                            CollisionAction.CEILING_COLLISION,CollisionAction.NONE)
     
     self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_LEFT.getLowestOnBit(),CollisionMasks.WALL.getLowestOnBit(),
@@ -51,10 +51,10 @@ class LevelCollisionResolver(CollisionResolver):
     self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_RIGHT.getLowestOnBit(),CollisionMasks.WALL.getLowestOnBit(),
                                            CollisionAction.RIGHT_WALL_COLLISION,CollisionAction.NONE)
     
-    self.collision_action_matrix_.addEntry(CollisionMasks.ACTION_TRIGGER.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),
+    self.collision_action_matrix_.addEntry(CollisionMasks.ACTION_TRIGGER_1.getLowestOnBit(),CollisionMasks.LEDGE.getLowestOnBit(),
                                            CollisionAction.LEDGE_ACTION_COLLISION,CollisionAction.NONE)
     
-    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_AABB.getLowestOnBit(),CollisionMasks.LEVEL_BOUND.getLowestOnBit(),
+    self.collision_action_matrix_.addEntry(CollisionMasks.GAME_OBJECT_RIGID_BODY.getLowestOnBit(),CollisionMasks.LEVEL_BOUND.getLowestOnBit(),
                                            CollisionAction.COLLIDE_LEVEL_BOUND,CollisionAction.NONE)
   
     logging.debug(str(self.collision_action_matrix_))

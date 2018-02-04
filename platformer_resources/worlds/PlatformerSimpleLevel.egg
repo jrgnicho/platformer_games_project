@@ -32,6 +32,7 @@
 }
 
   <Group> sector1 {
+    <Tag> object_type { 7 }
     <Transform> {
       <Matrix4> {
         1.0 0.0 0.0 0.0 
@@ -41,7 +42,20 @@
       }
     }
     
+    <Group> start_position {
+      <Tag> object_type { 6 }
+      <Transform> {
+        <Matrix4> {
+          1.0 0.0 0.0 0.0 
+          0.0 1.0 0.0 0.0 
+          0.0 0.0 0.9999998807907104 0.0 
+          -5.398069381713867 -2.384185791015625e-07 4.50714111328125 1.0 
+        }
+      }
+      
+    }
     <Group> s1.platform6 {
+      <Tag> object_type { 11 }
       <Transform> {
         <Matrix4> {
           -1.6292068494294654e-07 -1.0 0.0 0.0 
@@ -52,6 +66,7 @@
       }
       
       <Group> s1.p6.platform_body {
+        <Tag> object_type { 111 }
         <Transform> {
           <Matrix4> {
             1.0000001192092896 0.0 4.261005678613157e-14 0.0 
@@ -1448,6 +1463,7 @@
       }
     }
     <Group> s1.platform5 {
+      <Tag> object_type { 11 }
       <Transform> {
         <Matrix4> {
           -1.6292068494294654e-07 -1.0 0.0 0.0 
@@ -1458,6 +1474,7 @@
       }
       
       <Group> s1.p5.platform_body {
+        <Tag> object_type { 111 }
         <Transform> {
           <Matrix4> {
             1.0 1.4210854715202004e-14 0.0 0.0 
@@ -8645,6 +8662,7 @@
         }
       }
       <Group> s1.p5.ledge_right {
+        <Tag> object_type { 112 }
         <Transform> {
           <Matrix4> {
             7.549790126404332e-08 1.6940658945086007e-21 -1.0 0.0 
@@ -8828,6 +8846,7 @@
         }
       }
       <Group> s1.p5.ledge_left {
+        <Tag> object_type { 114 }
         <Transform> {
           <Matrix4> {
             7.549790126404332e-08 1.6940658945086007e-21 -1.0 0.0 
@@ -9012,6 +9031,7 @@
       }
     }
     <Group> s1.platform4 {
+      <Tag> object_type { 11 }
       <Transform> {
         <Matrix4> {
           -1.6292068494294654e-07 -1.0 0.0 0.0 
@@ -9022,6 +9042,7 @@
       }
       
       <Group> s0.p4.platform_body {
+        <Tag> object_type { 111 }
         <Transform> {
           <Matrix4> {
             1.0 -1.4210854715202004e-14 -3.979666734501251e-14 0.0 
@@ -11401,6 +11422,7 @@
         }
       }
       <Group> s1.p4.ledge_right1 {
+        <Tag> object_type { 112 }
         <Transform> {
           <Matrix4> {
             7.549790126404332e-08 -8.470329472543003e-22 -0.9999999403953552 0.0 
@@ -11584,6 +11606,7 @@
         }
       }
       <Group> s1.p4.ledge_right2 {
+        <Tag> object_type { 112 }
         <Transform> {
           <Matrix4> {
             7.549790126404332e-08 -8.470329472543003e-22 -0.9999999403953552 0.0 
@@ -11767,6 +11790,7 @@
         }
       }
       <Group> s1.p4.ledge_left {
+        <Tag> object_type { 114 }
         <Transform> {
           <Matrix4> {
             7.549790126404332e-08 -8.470329472543003e-22 -0.9999999403953552 0.0 
@@ -11951,6 +11975,7 @@
       }
     }
     <Group> s1.platform3 {
+      <Tag> object_type { 11 }
       <Transform> {
         <Matrix4> {
           -1.6292068494294654e-07 -1.0 0.0 0.0 
@@ -11961,6 +11986,7 @@
       }
       
       <Group> s1.p3.ledge_left {
+        <Tag> object_type { 114 }
         <Transform> {
           <Matrix4> {
             -4.371138828673793e-08 0.0 -1.0 0.0 
@@ -12144,6 +12170,7 @@
         }
       }
       <Group> s1.p3.platform_body {
+        <Tag> object_type { 111 }
         <Transform> {
           <Matrix4> {
             0.6192367672920227 0.0 0.0 0.0 
@@ -12396,6 +12423,7 @@
         }
       }
       <Group> s1.p3.wall_left {
+        <Tag> object_type { 116 }
         <Transform> {
           <Matrix4> {
             0.699999988079071 0.0 0.0 0.0 
@@ -12483,6 +12511,7 @@
         }
       }
       <Group> s1.p3.wall_right.001 {
+        <Tag> object_type { 116 }
         <Transform> {
           <Matrix4> {
             0.699999988079071 0.0 0.0 0.0 
@@ -12570,6 +12599,7 @@
         }
       }
       <Group> s1.p3.ledge_right {
+        <Tag> object_type { 112.0 }
         <Transform> {
           <Matrix4> {
             -4.371138828673793e-08 0.0 -1.0 0.0 
@@ -12754,6 +12784,7 @@
       }
     }
     <Group> s1.platform2 {
+      <Tag> object_type { 11 }
       <Transform> {
         <Matrix4> {
           -4.371138828673793e-08 -1.0 0.0 0.0 
@@ -12764,6 +12795,7 @@
       }
       
       <Group> s1.p2.platform_body {
+        <Tag> object_type { 111 }
         <Transform> {
           <Matrix4> {
             1.0 3.552713678800501e-15 1.7763568394002505e-15 0.0 
@@ -12938,6 +12970,7 @@
         }
       }
       <Group> s1.p2.ledge_right {
+        <Tag> object_type { 112 }
         <Transform> {
           <Matrix4> {
             -5.6379388269078845e-08 -8.940696716308594e-08 -1.0 0.0 
@@ -13121,6 +13154,7 @@
         }
       }
       <Group> s1.p2.wall_right {
+        <Tag> object_type { 116 }
         <Transform> {
           <Matrix4> {
             1.2843700647354126 7.099103833133275e-15 3.5439415938404986e-15 0.0 
@@ -13209,6 +13243,7 @@
       }
     }
     <Group> s1.platform1 {
+      <Tag> object_type { 11 }
       <Transform> {
         <Matrix4> {
           -1.6292068494294654e-07 -1.0 0.0 0.0 
@@ -13219,6 +13254,7 @@
       }
       
       <Group> s1.p2.wall_left {
+        <Tag> object_type { 116 }
         <Transform> {
           <Matrix4> {
             0.699999988079071 -9.736346839872567e-09 0.0 0.0 
@@ -13393,6 +13429,7 @@
         }
       }
       <Group> s1.p1.ledge_left {
+        <Tag> object_type { 114 }
         <Transform> {
           <Matrix4> {
             -4.371138828673793e-08 -1.4901159417490817e-08 -0.9999999403953552 0.0 
@@ -13576,6 +13613,7 @@
         }
       }
       <Group> s1.p1.platform_body {
+        <Tag> object_type { 111 }
         <Transform> {
           <Matrix4> {
             0.6192367672920227 -8.613014301772637e-09 0.0 0.0 
@@ -13742,6 +13780,7 @@
       }
     }
     <Group> s1.platform7 {
+      <Tag> object_type { 11 }
       <Transform> {
         <Matrix4> {
           -1.6292068494294654e-07 -1.0 0.0 0.0 
@@ -13752,6 +13791,7 @@
       }
       
       <Group> s1.p7.platform_body {
+        <Tag> object_type { 111 }
         <Transform> {
           <Matrix4> {
             1.0 -1.8626593600856722e-09 2.2464155711933616e-14 0.0 
@@ -20756,6 +20796,7 @@
       }
     }
     <Group> s1.platform8 {
+      <Tag> object_type { -11 }
       <Transform> {
         <Matrix4> {
           -1.6292068494294654e-07 -1.0 0.0 0.0 
@@ -20766,6 +20807,7 @@
       }
       
       <Group> s1.p8.platform_body {
+        <Tag> object_type { 111 }
         <Transform> {
           <Matrix4> {
             1.0000001192092896 0.0 0.0 0.0 
@@ -27738,6 +27780,7 @@
       }
     }
     <Group> s1.platform9 {
+      <Tag> object_type { 11 }
       <Transform> {
         <Matrix4> {
           -1.6292068494294654e-07 -1.0 0.0 0.0 
@@ -27748,6 +27791,7 @@
       }
       
       <Group> s1.p9.platform_body {
+        <Tag> object_type { 111 }
         <Transform> {
           <Matrix4> {
             1.0 -1.4210854715202004e-14 -3.490186723073725e-14 0.0 
@@ -30021,10 +30065,10 @@
   <Group> Camera {
     <Transform> {
       <Matrix4> {
-        0.6859206557273865 0.7276763319969177 0.0 0.0 
-        -0.32401347160339355 0.305420845746994 0.8953956365585327 0.0 
-        0.6515582203865051 -0.6141703724861145 0.44527140259742737 0.0 
-        7.481131553649902 -6.5076398849487305 5.34366512298584 1.0 
+        0.9965179562568665 -0.08337829262018204 0.0 0.0 
+        0.03712597116827965 0.4437209665775299 0.8953956365585327 0.0 
+        -0.07465656101703644 -0.8922778367996216 0.44527140259742737 0.0 
+        7.481131553649902 -12.153139114379883 12.52309799194336 1.0 
       }
     }
     

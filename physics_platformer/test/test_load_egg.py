@@ -27,6 +27,7 @@ NUM_BOXES = 20
 BOX_SIDE_LENGTH = 0.4
 RESOURCE_DIR = rospkg.RosPack().get_path('platformer_resources')
 DEFAULT_EGG_PATH = os.path.join(RESOURCE_DIR,'worlds/PlatformerSimpleLevel.egg')
+PYTHON_TAG = 'object_type'
 
 class TestLoadEgg(TestApplication):
     
@@ -53,17 +54,45 @@ class TestLoadEgg(TestApplication):
         
     def setupResources(self):
       TestApplication.setupResources(self)
-
+      
+    def printModelTree(self,model):
+      
+      def toTabChars(indentation_level):
+        t = '  '
+        return t*indentation_level
+      
+      def printNode(np,depth):        
+               
+        # print node name
+        print(toTabChars(depth) + '-' + np.getName())   
         
+        # extracting tag
+        tag = np.getTag(PYTHON_TAG)
+        attrib = ''
+        if tag is not None:          
+          attrib = ' (%s: %s)'%(PYTHON_TAG,tag) 
+          print(toTabChars(depth) + ' ' + attrib)              
+          
+        if np.getNumChildren() > 0:         
+          depth +=1
+          for c in np.getChildren():
+            printNode(c,depth)
+          
+      depth = 1
+      printNode(model,depth)
+              
     def setupPhysics(self):
       
       TestApplication.setupPhysics(self,False)
       
       # loading egg model
       egg_model = NodePath(ModelPool.loadModel(Filename(self.egg_file_path)))
-      egg_model.reparentTo(self.world_node_)     
+      egg_model.reparentTo(self.world_node_)       
       
       self.cam.setPos(self.world_node_,6.60001, -68, 14.4)
+      
+      # printing loaded egg model
+      self.printModelTree(egg_model)
       
     def setupBoxes(self):
       

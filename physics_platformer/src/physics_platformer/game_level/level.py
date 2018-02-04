@@ -195,7 +195,7 @@ class Level(NodePath):
     self.addCollisionResolver(level_coll_resolver)   
     
     # enabling sector detection
-    self.physics_world_.setGroupCollisionFlag(CollisionMasks.SECTOR_TRANSITION.getLowestOnBit(),CollisionMasks.GAME_OBJECT_ORIGIN.getLowestOnBit(),True)
+    self.physics_world_.setGroupCollisionFlag(CollisionMasks.SECTOR_TRANSITION.getLowestOnBit(),CollisionMasks.ACTION_TRIGGER_0.getLowestOnBit(),True)
     
   def __processSectorTransitions__(self,contact_manifolds):  
     processed_contacts = []
@@ -209,7 +209,7 @@ class Level(NodePath):
       col_mask1 = node1.getIntoCollideMask().getLowestOnBit()
       col_mask2 = sector_transition_node.getIntoCollideMask().getLowestOnBit()
       
-      if (col_mask2 != CollisionMasks.SECTOR_TRANSITION.getLowestOnBit()) or (col_mask1 != CollisionMasks.GAME_OBJECT_ORIGIN.getLowestOnBit()):
+      if (col_mask2 != CollisionMasks.SECTOR_TRANSITION.getLowestOnBit()) or (col_mask1 != CollisionMasks.ACTION_TRIGGER_0.getLowestOnBit()):
         continue
       
       
