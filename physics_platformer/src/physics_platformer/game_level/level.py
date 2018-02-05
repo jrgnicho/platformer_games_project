@@ -143,12 +143,14 @@ class Level(NodePath):
     
     self.platforms_[platform.getObjectID()] = platform
     
-  def addGameObject(self,game_object):    
+  def addGameObject(self,game_object, is_dynamic = True):    
     self.id_counter_+=1
     self.game_object_map_[game_object.getName()] = game_object
     game_object.setPhysicsWorld(self.physics_world_)
-    game_object.reparentTo(self)   
-    self.dynamic_object_ids_.append(game_object.getName())
+    game_object.reparentTo(self)  
+    
+    if is_dynamic: 
+      self.dynamic_object_ids_.append(game_object.getName())
   
   def update(self,dt):
     self.physics_world_.doPhysics(dt, Level.__PHYSICS_SIM_SUBSTEPS__, Level.__PHYSICS_SIM_STEPSIZE__)

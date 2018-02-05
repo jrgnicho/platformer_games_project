@@ -69,9 +69,11 @@ class GameObject(NodePath):
       
       # instantiating to a bullet rigid body
       self.physics_world_ = None
-      self.size_ = Vec3(0,0,0)
+      self.size_ = self.__estimateSize__()
       GameObject.setObjectID(self, self.getName())
     
+
+        
     @classmethod        
     def createBox(cls,name,size,mass = 0,setup_visual = True):
     
@@ -89,7 +91,7 @@ class GameObject(NodePath):
       box.__initToBox__(name,size,mass,setup_visual)
       return box;
     
-    def __initToBox__(self,name, size,mass = 0,setup_visual = True):
+    def __initToBox__(self,name, size,mass = 0,add_visual = True):
       
       NodePath.__init__(self,BulletRigidBodyNode(name))
       
@@ -115,23 +117,23 @@ class GameObject(NodePath):
       self.reference_np_ = None      
       
       # visual properties
-      if setup_visual:     
+      if add_visual:     
+            visual_np = GameObject.createSimpleBoxVisualNode(self,self.size_, self.getName() + '-visual')
                  
-          visual_nh = GameObject.DEFAULT_BOX_MODEL 
-          visual_nh.clearModelNodes()            
-          self.visual_nh_ = visual_nh.instanceUnderNode(self,name + '-visual');  
-          self.visual_nh_.setTexture(GameObject.DEFAULT_TEXTURE,1)   
-          
-          if GameObject.DEFAULT_TEXTURE == None:
-              logging.error('Texture failed to load')
-          
-          # scaling visual model
-          bounds = self.visual_nh_.getTightBounds()
-          extents = Vec3(bounds[1] - bounds[0])
-          scale_factor = 1/max([extents.getX(),extents.getY(),extents.getZ()])
-          self.visual_nh_.setScale(self.size_.getX()*scale_factor,self.size_.getY()*scale_factor,self.size_.getZ()*scale_factor)
-      else:
-          self.visual_nh_ = NodePath() # create empty node          
+#           visual_nh = GameObject.DEFAULT_BOX_MODEL 
+#           visual_nh.clearModelNodes()            
+#           self.visual_nh_ = visual_nh.instanceUnderNode(self,name + '-visual');  
+#           self.visual_nh_.setTexture(GameObject.DEFAULT_TEXTURE,1)   
+#           
+#           if GameObject.DEFAULT_TEXTURE == None:
+#               logging.error('Texture failed to load')
+#           
+#           # scaling visual model
+#           bounds = self.visual_nh_.getTightBounds()
+#           extents = Vec3(bounds[1] - bounds[0])
+#           scale_factor = 1/max([extents.getX(),extents.getY(),extents.getZ()])
+#           self.visual_nh_.setScale(self.size_.getX()*scale_factor,self.size_.getY()*scale_factor,self.size_.getZ()*scale_factor)
+       
           
       # setting ID
       GameObject.setObjectID(self, self.getName())
@@ -226,7 +228,35 @@ class GameObject(NodePath):
       return []
 
       
+    def __estimateSize__(self):
+      minp = LPoint3.zero()
+      maxp = LPoint3.zero()
+      size = Vec3.zero()
+      if self.calcTightBounds(minp,maxp):
+        size = maxp - minp
+        
+      return size 
+    
+    
+    @staticmethod
+    def createSimpleBoxVisualNode(parent_np, size, name):
+      """
+      Convenience function that returns a Nodepath containing a textured box
+      """      
+      template_np = GameObject.DEFAULT_BOX_MODEL 
+      template_np.clearModelNodes()            
+      box_np = template_np.instanceUnderNode(parent_np,name);  
+      box_np.setTexture(GameObject.DEFAULT_TEXTURE,1)   
       
+      if GameObject.DEFAULT_TEXTURE == None:
+          logging.error('Texture failed to load')
+      
+      # scaling visual model to size
+      bounds = box_np.getTightBounds()
+      extents = Vec3(bounds[1] - bounds[0])
+      scale_factor = 1/max([extents.getX(),extents.getY(),extents.getZ()])
+      box_np.setScale( size.getX()*scale_factor, size.getY()*scale_factor, size.getZ()*scale_factor)
+      return box_np
     
         
         

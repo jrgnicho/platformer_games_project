@@ -70,13 +70,19 @@ class TestLoadEgg(TestApplication):
         tag = np.getTag(PYTHON_TAG)
         attrib = ''
         if tag is not None:          
-          attrib = ' (%s: %s)'%(PYTHON_TAG,tag) 
-          print(toTabChars(depth) + ' ' + attrib)              
+          attrib = '(%s: %s)'%(PYTHON_TAG,tag) 
+          print(toTabChars(depth) + '  ' + attrib) 
           
-        if np.getNumChildren() > 0:         
-          depth +=1
+        # printing position
+        pos = np.getPos()
+        print(toTabChars(depth) + '  Pos:' + str(pos))  
+          
+        if np.getNumChildren() > 0:
+          print(toTabChars(depth) + '  Children:')          
+          depth +=2
           for c in np.getChildren():
             printNode(c,depth)
+            
           
       depth = 1
       printNode(model,depth)

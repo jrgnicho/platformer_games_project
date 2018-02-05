@@ -39,7 +39,7 @@ from panda3d.core import deg2Rad
 
 from physics_platformer.state_machine import StateMachine
 from physics_platformer.game_level import Level
-from physics_platformer.game_level import Platform
+from physics_platformer.game_level import SimplePlatform
 from physics_platformer.input import Move
 from physics_platformer.input import KeyboardButtons
 from physics_platformer.input import KeyboardController
@@ -150,7 +150,7 @@ class TestLevel(Level):
     
   def __createPlatforms__(self,sector,use_first_ledge = False):
     
-    # Platforms Schematic X, Z (Each new line measures 2 units and each character 2 units)
+    # SimplePlatforms Schematic X, Z (Each new line measures 2 units and each character 2 units)
     
     '''                               
            30                                          _______
@@ -172,7 +172,7 @@ class TestLevel(Level):
           -20  -10    0   10   20   30   40   50   60   70   80   90   100
     '''
     
-    # Platform Details [ (float left, float top, Vec3 size, Bool right_ledge, Bool left_ledge ),... ]
+    # SimplePlatform Details [ (float left, float top, Vec3 size, Bool right_ledge, Bool left_ledge ),... ]
     depth = TestLevel.PLATFORM_DEPTH
     platform_details = [
                         (-4,20,Vec3(24,depth,2),True,use_first_ledge),
@@ -203,7 +203,7 @@ class TestLevel(Level):
       right_ledge_enable = p[3]
       left_ledge_enable = p[4]
       
-      platform = Platform(sector.getName() + '-' + 'platform' + str(i),size,right_ledge_enable,left_ledge_enable)
+      platform = SimplePlatform(sector.getName() + '-' + 'platform' + str(i),size,right_ledge_enable,left_ledge_enable)
       self.addPlatform(platform)
       platform.setPos(sector,pos)
       platform.setHpr(sector,0,0,0)
