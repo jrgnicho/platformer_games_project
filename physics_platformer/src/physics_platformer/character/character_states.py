@@ -5,7 +5,7 @@ from physics_platformer.game_actions import GeneralActions
 from physics_platformer.game_actions import AnimationActions
 from physics_platformer.game_actions import CharacterActions
 from physics_platformer.game_actions import CollisionAction
-from physics_platformer.character import CharacterStatus
+from physics_platformer.character import CharacterStateData
 from physics_platformer.collision import CollisionMasks
 from direct.interval.MetaInterval import Sequence
 from direct.interval.FunctionInterval import Func
@@ -183,7 +183,7 @@ class CharacterStates(object): # Class Namespace
             StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.EDGE_RECOVERY)) 
           
       # storing relevant variables
-      self.character_obj_.getStatus().contact_data = CharacterStatus.ContactData(self.character_obj_.getName(),\
+      self.character_obj_.getStatus().contact_data = CharacterStateData.ContactData(self.character_obj_.getName(),\
                                                                                  bottom = collision_action.contact_manifold)   
       self.character_obj_.getStatus().ledge = ledge     
 
@@ -605,7 +605,7 @@ class CharacterStates(object): # Class Namespace
         if abs(self.character_obj_.getBottom()  - contact_point.getZ()) < AerialBaseState.LANDING_THRESHOLD :            
         
           self.character_obj_.getStatus().platform = platform
-          self.character_obj_.getStatus().contact_data = CharacterStatus.ContactData(self.character_obj_.getObjectID(),
+          self.character_obj_.getStatus().contact_data = CharacterStateData.ContactData(self.character_obj_.getObjectID(),
                                                                                      action.contact_manifold)          
           # check if ledge is nearby
           result = self.character_obj_.doCollisionSweepTestZ(CollisionMasks.LEDGE)

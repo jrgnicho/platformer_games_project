@@ -5,7 +5,7 @@ from collections import namedtuple
 from physics_platformer.game_object import GameObject
 from physics_platformer.state_machine import *
 
-class CharacterStatus(object):
+class CharacterStateData(object):
   
   CollisionPoints = namedtuple("CollisionPoints", "manifolds on_self on_collided")
   
@@ -18,14 +18,14 @@ class CharacterStatus(object):
                     
       Stores contact data from BulletPersistentManifold objects in a convenient manner
       '''
-      empty = CharacterStatus.CollisionPoints(manifolds = None,on_self = [],on_collided = [])
+      empty = CharacterStateData.CollisionPoints(manifolds = None,on_self = [],on_collided = [])
       
       # hold list of BulletManifoldPoint
       self.object_id = object_id
-      self.points_bottom = empty if bottom is None else CharacterStatus.ContactData.createCollisionPoints(object_id,bottom)
-      self.points_top = empty if top is None else CharacterStatus.ContactData.createCollisionPoints(object_id,top)
-      self.points_left = empty if left is None else CharacterStatus.ContactData.createCollisionPoints(object_id,left)
-      self.points_right = empty if right is None else CharacterStatus.ContactData.createCollisionPoints(object_id,right)
+      self.points_bottom = empty if bottom is None else CharacterStateData.ContactData.createCollisionPoints(object_id,bottom)
+      self.points_top = empty if top is None else CharacterStateData.ContactData.createCollisionPoints(object_id,top)
+      self.points_left = empty if left is None else CharacterStateData.ContactData.createCollisionPoints(object_id,left)
+      self.points_right = empty if right is None else CharacterStateData.ContactData.createCollisionPoints(object_id,right)
       
     @staticmethod  
     def createCollisionPoints(object_id,contact_manifold):
@@ -41,11 +41,11 @@ class CharacterStatus(object):
           points_on_self.append(cp.getPositionWorldOnB())
           points_on_collided.append(cp.getPositionWorldOnA())
 
-      collision_points = CharacterStatus.CollisionPoints(manifolds = manifolds,on_self = points_on_self, on_collided = points_on_collided)
+      collision_points = CharacterStateData.CollisionPoints(manifolds = manifolds,on_self = points_on_self, on_collided = points_on_collided)
       return collision_points
       
     def clear(self):
-      empty = CharacterStatus.CollisionPoints(manifolds = None,on_self = [],on_collided = [])
+      empty = CharacterStateData.CollisionPoints(manifolds = None,on_self = [],on_collided = [])
       self.points_bottom = empty 
       self.points_top = empty
       self.points_left = empty
@@ -60,6 +60,6 @@ class CharacterStatus(object):
     self.velocity = Vec3(0,0,0)
     self.platform = None # Last platform that the character touched.
     self.ledge = None # Last ledge that the player came into contact with.
-    self.contact_data = CharacterStatus.ContactData('') # contact data from last collision
+    self.contact_data = CharacterStateData.ContactData('') # contact data from last collision
     self.air_jumps_count = 0
     self.air_dashes_count = 0

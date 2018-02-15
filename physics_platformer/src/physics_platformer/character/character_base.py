@@ -16,7 +16,7 @@ from physics_platformer.character import MotionCommander
 from physics_platformer.character.character_states import *
 from physics_platformer.character.character_states import CharacterStateKeys
 from physics_platformer.character.character_states import CharacterStates
-from physics_platformer.character.character_status import *
+from physics_platformer.character.character_state_data import *
 from physics_platformer.collision import CollisionMasks
 from physics_platformer.game_actions import *
 from physics_platformer.game_object import GameObject, AnimatableObject
@@ -77,7 +77,7 @@ class CharacterBase(AnimatableObject):
     self.right_origin_gn_.node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER_0 if self.isFacingRight() else CollisionMasks.NO_COLLISION)
     
     # character status
-    self.status_ = CharacterStatus()
+    self.state_data_ = CharacterStateData()
     
     # state machine
     self.sm_ = StateMachine()     
@@ -111,7 +111,7 @@ class CharacterBase(AnimatableObject):
     else:
       self.getAnimatorActor().getRigidBody().node().setFriction(0)
       
-    self.status_.friction_enabled = enable
+    self.state_data_.friction_enabled = enable
     
   def setPhysicsWorld(self,physics_world):
     GameObject.setPhysicsWorld(self,physics_world)
@@ -120,9 +120,9 @@ class CharacterBase(AnimatableObject):
     
   def getStatus(self):
     '''
-    Returns a CharacterStatus instance
+    Returns a CharacterStateData instance
     '''
-    return self.status_
+    return self.state_data_
   
   def getInfo(self):
     '''
