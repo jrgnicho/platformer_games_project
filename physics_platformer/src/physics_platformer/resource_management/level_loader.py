@@ -3,7 +3,7 @@ import logging
 import rospkg
 import getopt
 import os
-from panda3d.core import NodePath, GeomNode
+from panda3d.core import NodePath, GeomNode, Point3
 from panda3d.core import PandaNode
 from panda3d.core import loadPrcFileData
 from panda3d.core import Vec3
@@ -15,7 +15,7 @@ from physics_platformer.game_level import *
 from physics_platformer.collision import *
 from physics_platformer.resource_management.assets_common import *
 from panda3d.bullet import BulletTriangleMesh, BulletRigidBodyNode,\
-  BulletTriangleMeshShape
+  BulletTriangleMeshShape, BulletGhostNode
 
 
 EGG_EXTENSION = '.egg'
@@ -203,26 +203,36 @@ class LevelLoader(object):
         bullet_rb_node.addShape(bt_shape);
       
       # instantiate platform
-      p = Platform(bullet_rb_node);
+      platform = Platform(bullet_rb_node);
+      
       
       # find ledges and other objects
       for child_np in other_np_list:
         loaded_ok = True
         obj_type = int(chid_np.getTag(CustomProperties.OBJECT_TYPE_INT))
         if obj_type == ObjectTypeID.COLLISION_LEDGE_RIGHT:
-          loaded_ok = self.__loadLedge__(chid_np, p)
+          loaded_ok = self.__loadLedge__(chid_np, platform)
           
         elif obj_type == ObjectTypeID.COLLISION_LEDGE_LEFT:
-          loaded_ok = self.__loadLedge__(chid_np, p)
+          loaded_ok = self.__loadLedge__(chid_np, platform)
           
         elif obj_type == ObjectTypeID.COLLISION_WALL:
-          loaded_ok = self.__loadBtGhostNode__(chid_np,p)
+          
+          bt_ghost = self.__getBtGhostNode__(chid_np,CollisionMasks.WALL)
+          if bt_ghost is not None:
+            bt_ghost_np = platform.attachNewNode(bt_ghost)
+            tr = chid_np.getTransform(np)
+            bt_ghost_np.setTransform(platform,tr)
+          else:
+            loaded_ok = False
+            logging.error("Failed to load %s into a ghost node"%(chid_np.getName()))
+            
           
         elif obj_type == ObjectTypeID.COLLISION_SURFACE:
-          loaded_ok = self.__loadBtGhostNode__(chid_np,p)
+          loaded_ok = self.__loadBtGhostNode__(chid_np,platform)
           
         elif obj_type == ObjectTypeID.COLLISION_CEILING:
-          loaded_ok = self.__loadBtGhostNode__(chid_np,p)
+          loaded_ok = self.__loadBtGhostNode__(chid_np,platform)
           
         if not loaded_ok:
           return False
@@ -233,19 +243,52 @@ class LevelLoader(object):
     def __loadLedge__(self,np,parent_np):
       
       obj_type = int(np.getTag(CustomProperties.OBJECT_TYPE_INT))
-      if (not obj_type == ObjectTypeID.COLLISION_LEDGE_RIGHT) and (not obj_type == ObjectTypeID.COLLISION_LEDGE_LEFT):
+      if (obj_type != ObjectTypeID.COLLISION_LEDGE_RIGHT) and (obj_type != ObjectTypeID.COLLISION_LEDGE_LEFT):
+        logging.error("Node %s does not contain a Ledge Game Object"%(np.getName()))
         return False
       
-      bt_shape = self.__getBulletShape(np)
+      # getting relative transform
+      tr = np.getTransform(parent_np)
+      
+      # calculating dimensions
+      minp = maxp = Point3()
+      np.calcTightBounds(min, max)
+      extends = maxp - minp
+      size_ = [extends.getX(), extends.getY(), extends.getZ()]
+      
+      # verifying non-zero dimensions
+      size_vec = None
+      if all(x > 0 for x in size_):
+        width_ = min(size_)
+        length_ = max(size_)
+        size_vec = Vec3(width_,length_,size_[2])        
+      
+      
+      # creating ledge but ignoring dimensions for now
+      is_right_ledge = true if obj_type == ObjectTypeID.COLLISION_LEDGE_RIGHT else False
+      ledge_obj = Ledge(np.getName,is_right_ledge,size_vec)
+      
+      # adding ledge to level
+      self.level_.addGameObject(ledge_obj,False)
+      ledge_obj.setTransform(parent_np,tr)
       
         
-      pass
+      return True
     
     def __loadBtRigidBodyNode__(self,np):
       pass
     
-    def __loadBtGhostNode__(self,np,parent_np):
-      pass
+    def __getBtGhostNode__(self,np,col_mask):
+      bt_shape = self.__getBulletShape__(np)
+      if bt_shape is None:
+        return None
+      
+      bt_ghost = BulletGhostNode(np.getName())
+      bt_ghost.addShape(bt_shape)
+      bt_ghost.setIntoCollideMask(col_mask)
+      return bt_ghost
+      
+      
     
     def __getBulletShape__(self,np):
       

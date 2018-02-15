@@ -46,7 +46,7 @@ class Level(NodePath):
     self.dynamic_object_ids_ = [] # list of object ids far all mobile objects
     self.id_counter_ = 0
     self.collision_action_matrix_ = CollisionActionMatrix()
-    self.platforms_ = {}
+    self.platforms_ = {}  # @brief not really used but might be convenient to hold this list 
     
     # collision handling
     self.collision_resolvers_ = []
@@ -59,44 +59,33 @@ class Level(NodePath):
     self.__createLevelBounds__()
     self.__setupCollisionRules__()
     
-  def detachNode(self):
-    
-    # removing game objects
-    for gobj in self.game_object_map_.values():
-      if gobj.getObjectID() in self.platforms_:
-        continue
-      
-      gobj.clearPhysicsWorld()
-      
-    NodePath.detachNode(self)
-    
   def getPhysicsWorld(self):
     return self.physics_world_
     
   def __del__(self):  
     
     self.detachNode()  
-
-    # removing platforms
-    for pltf in self.platforms_.values():
-      pltf.clearPhysicsWorld()
+    
+    # removing game objects
+    for gobj in self.game_object_map_.values():
+      gobj.clearPhysicsWorld()
     
     # removing all remaining objects from physics world
     objs = self.physics_world_.getRigidBodies() 
     num_objects = len(objs)
     for obj in objs:          
       self.physics_world_.remove(obj)
-      logging.debug("Removed rigid body %s"%(obj.getName()))
+      logging.debug('Removed Game Object %s'%(obj.getName()))
       
     objs = self.physics_world_.getConstraints() 
     num_objects = len(objs)
-    logging.debug("Removing %i constraints from level"%(num_objects))
+    logging.debug('Removing %i constraints from level %s\'s physics world' % (num_objects,self.getName()))
     for obj in objs:     
       self.physics_world_.remove(obj)
     
     objs = self.physics_world_.getGhosts() 
     num_objects = len(objs)
-    logging.debug("Removing %i ghosts bodies from level"%(num_objects))
+    logging.debug('Removing %i ghosts bodies from level %s\'s physics world '%(num_objects,self.getName()))
     for obj in objs:     
       self.physics_world_.remove(obj)
     
@@ -129,28 +118,47 @@ class Level(NodePath):
     resolver.setupCollisionRules(self.physics_world_)
     self.collision_resolvers_.append(resolver)
     
-  def addPlatform(self,platform): 
-       
-    platform.setPhysicsWorld(self.physics_world_)
-    platform.reparentTo(self)
-    self.game_object_map_[platform.getName()] = platform
-    
-    # adding children of platform
-    for obj in platform.getChildrenGameObjects():
-      self.id_counter_+=1
-      self.game_object_map_[obj.getName()] = obj
-    
-    
+  def addPlatform(self,platform):            
+    self._registerGameObj_(platform, False, True)
     self.platforms_[platform.getObjectID()] = platform
     
-  def addGameObject(self,game_object, is_dynamic = True):    
-    self.id_counter_+=1
-    self.game_object_map_[game_object.getName()] = game_object
-    game_object.setPhysicsWorld(self.physics_world_)
-    game_object.reparentTo(self)  
+  def addGameObject(self,game_object, is_dynamic = True):      
+    self._registerGameObj_(game_object, is_dynamic, True)
+        
+  def _registerGameObj_(self,game_object, is_dynamic, add_to_physics,reparent = True ):    
+    """
+    @brief Adds and object and its children to the level's internal buffers for tracking 
+            and to the physics world
+    """
+    if not isinstance(game_object, GameObject):
+      logging.error('Object {0} is not an instance of GameObject'.format(game_object.getName()))
+      return False
     
-    if is_dynamic: 
-      self.dynamic_object_ids_.append(game_object.getName())
+    if game_object.getName() in self.game_object_map_:
+      logging.warn('Object {0} already added to Level {1}, skipping'.format(game_object.getName(),self.getName()))
+      return True
+    
+    if reparent:  
+      game_object.reparentTo(self) 
+      
+    self.game_object_map_[game_object.getName()] = game_object    
+    if add_to_physics:
+      game_object.setPhysicsWorld(self.physics_world_)    
+    
+    self.id_counter_+=1
+    
+    if is_dynamic and (game_object.getName() not in self.dynamic_object_ids_): 
+      self.dynamic_object_ids_.append(game_object.getName())     
+      
+    for obj in game_object.getChildrenGameObjects():
+      # Not adding to physics since the parent's setPhysicsWorld() method
+      # should've added them.  Not reparenting to the level either.
+      if not self._registerGameObj_(obj, is_dynamic, False,False):
+        return False
+    
+    logging.debug("\tAdded {0} to level".format(game_object.getName()))
+    return True
+      
   
   def update(self,dt):
     self.physics_world_.doPhysics(dt, Level.__PHYSICS_SIM_SUBSTEPS__, Level.__PHYSICS_SIM_STEPSIZE__)

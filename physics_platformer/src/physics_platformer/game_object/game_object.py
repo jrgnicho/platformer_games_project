@@ -146,6 +146,9 @@ class GameObject(NodePath):
       if not isinstance(self.node() ,BulletBodyNode):
         logging.warn('The node is not a Bullet Node Type, not adding to Physics world')
         return
+      
+      if physics_world is self.physics_world_:
+        return
               
       self.physics_world_ = physics_world
       self.physics_world_.attach(self.node())
