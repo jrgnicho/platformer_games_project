@@ -183,8 +183,8 @@ class CharacterStates(object): # Class Namespace
             StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.EDGE_RECOVERY)) 
           
       # storing relevant variables
-      self.character_obj_.getStatus().contact_data = CharacterStatus.ContactData(self.character_obj_.getName(),bottom = collision_action.contact_manifold)
-      self.character_obj_.getStatus().platform = ledge.getParentPlatform()      
+      self.character_obj_.getStatus().contact_data = CharacterStatus.ContactData(self.character_obj_.getName(),\
+                                                                                 bottom = collision_action.contact_manifold)   
       self.character_obj_.getStatus().ledge = ledge     
 
       
@@ -475,7 +475,6 @@ class CharacterStates(object): # Class Namespace
 
       ledge = action.game_obj2
       ghost_body = self.character_obj_.getActionGhostBody()
-      self.character_obj_.getStatus().platform = ledge.getParentPlatform()
       self.character_obj_.getStatus().ledge = ledge
             
       self.character_obj_.setStatic(True)
@@ -567,7 +566,6 @@ class CharacterStates(object): # Class Namespace
       ledge = action.game_obj2
       info = self.character_obj_.getInfo()
       self.character_obj_.getStatus().ledge = ledge
-      self.character_obj_.getStatus().platform = ledge.getParentPlatform()
       
       dist_from_ledge = 0
       parent = self.character_obj_.getParent()      

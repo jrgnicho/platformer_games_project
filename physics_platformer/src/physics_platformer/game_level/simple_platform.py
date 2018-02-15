@@ -37,8 +37,8 @@ class SimplePlatform(Platform):
     
     # addding ledges
     ledge_size = Vec3(SimplePlatform.__LEDGE_BOX_SIDE_LENGHT__,self.getSize().getY(),SimplePlatform.__LEDGE_BOX_SIDE_LENGHT__)
-    self.left_ledge_ = Ledge(name + 'left-ledge',False,self,ledge_size) if left_side_ledge else None
-    self.right_ledge_ = Ledge(name + 'right-ledge',True,self,ledge_size) if right_side_ledge else None
+    self.left_ledge_ = Ledge(name + 'left-ledge',False,ledge_size) if left_side_ledge else None
+    self.right_ledge_ = Ledge(name + 'right-ledge',True,ledge_size) if right_side_ledge else None
     self.ledges_ = [] 
     
     # ledge placement
