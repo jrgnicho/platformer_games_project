@@ -4,7 +4,7 @@ import logging
 import rospkg
 import pygame
 from panda3d.core import Vec3
-from physics_platformer.test import TestGame
+from physics_platformer.test import TestGameBase
 from physics_platformer.resource_management.ff3 import CharacterLoader
 from physics_platformer.character.character_states import CharacterStateKeys
 from physics_platformer.game_actions import *
@@ -151,22 +151,22 @@ class Hiei(CharacterBase):
     return True
     
 
-class TestBasicGame(TestGame):
+class TestBasicGame(TestGameBase):
   
   def __init__(self,name):
-    TestGame.__init__(self,name)
+    TestGameBase.__init__(self,name)
     
   def update(self,task):
     pygame.event.get()
-    return TestGame.update(self,task)
+    return TestGameBase.update(self,task)
     
   def setupScene(self):
-    TestGame.setupScene(self)
+    TestGameBase.setupScene(self)
     self.setupCharacter()    
     
   def setupControls(self):
     
-    TestGame.setupControls(self)
+    TestGameBase.setupControls(self)
     
        # Input (Events)
     self.accept('f6', self.toggleCameraController)

@@ -208,7 +208,7 @@ class TestLevel(Level):
       platform.setPos(sector,pos)
       platform.setHpr(sector,0,0,0)
 
-class TestGame(ShowBase):
+class TestGameBase(ShowBase):
   
   __CAM_ZOOM__ =  1
   __CAM_STEP__ = 0.2
@@ -220,7 +220,7 @@ class TestGame(ShowBase):
   __BACKGROUND_SCALE__ = 0.2 
 
   
-  def __init__(self,name ='TestGame'):
+  def __init__(self,name ='TestGameBase'):
     
     # configure to use group-mask collision filtering mode in the bullet physics world
     loadPrcFileData('', 'bullet-filter-algorithm groups-mask')
@@ -261,7 +261,7 @@ class TestGame(ShowBase):
     
   def setupBackgroundImage(self):    
     
-    image_file = Filename(TestGame.__BACKGROUND_IMAGE_PATH__)
+    image_file = Filename(TestGameBase.__BACKGROUND_IMAGE_PATH__)
     
     # check if image can be loaded
     img_head = PNMImageHeader()
@@ -292,8 +292,8 @@ class TestGame(ShowBase):
     background_np.setTexture(texture)
     
     background_np.reparentTo(self.render)
-    background_np.setPos(TestGame.__BACKGROUND_POSITION__)
-    background_np.setScale(TestGame.__BACKGROUND_SCALE__)
+    background_np.setPos(TestGameBase.__BACKGROUND_POSITION__)
+    background_np.setScale(TestGameBase.__BACKGROUND_SCALE__)
     
   def setupControls(self):
     
@@ -351,7 +351,7 @@ class TestGame(ShowBase):
     self.debug_node_.hide()
     
     self.cam.reparentTo(self.level_)
-    self.cam.setPos(self.level_,0, -TestGame.__CAM_ZOOM__*24, TestGame.__CAM_STEP__*25)
+    self.cam.setPos(self.level_,0, -TestGameBase.__CAM_ZOOM__*24, TestGameBase.__CAM_STEP__*25)
     
     self.camera_controller_ = CameraController(self.cam)
     
@@ -375,28 +375,28 @@ class TestGame(ShowBase):
     
   # __ CAM_METHODS __
   def moveCamUp(self):
-      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,TestGame.__CAM_STEP__))
+      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,TestGameBase.__CAM_STEP__))
       
   def moveCamDown(self):
-      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,-TestGame.__CAM_STEP__))
+      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,-TestGameBase.__CAM_STEP__))
   
   def moveCamRight(self):
-      self.cam.setPos(self.cam.getPos() + Vec3(TestGame.__CAM_STEP__,0,0))
+      self.cam.setPos(self.cam.getPos() + Vec3(TestGameBase.__CAM_STEP__,0,0))
   
   def moveCamLeft(self):
-      self.cam.setPos(self.cam.getPos() + Vec3(-TestGame.__CAM_STEP__,0,0))
+      self.cam.setPos(self.cam.getPos() + Vec3(-TestGameBase.__CAM_STEP__,0,0))
       
   def rotateCamZClockwise(self):
-    self.cam.setH(self.cam.getH() + TestGame.__CAM_ORIENT_STEP__)
+    self.cam.setH(self.cam.getH() + TestGameBase.__CAM_ORIENT_STEP__)
     
   def rotateCamZCounterClockwise(self):
-    self.cam.setH(self.cam.getH() + -TestGame.__CAM_ORIENT_STEP__)
+    self.cam.setH(self.cam.getH() + -TestGameBase.__CAM_ORIENT_STEP__)
       
   def zoomIn(self):
-    self.cam.setY(self.cam.getY()+TestGame.__CAM_ZOOM__)
+    self.cam.setY(self.cam.getY()+TestGameBase.__CAM_ZOOM__)
 
   def zoomOut(self):
-    self.cam.setY(self.cam.getY()-TestGame.__CAM_ZOOM__)
+    self.cam.setY(self.cam.getY()-TestGameBase.__CAM_ZOOM__)
     
   def toggleDebug(self):
     if self.debug_node_.isHidden():
