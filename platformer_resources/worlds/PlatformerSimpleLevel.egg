@@ -12336,6 +12336,7 @@
         }
       }
       <Group> s1.p3.surface {
+        <Tag> object_type { 115 }
         <Transform> {
           <Matrix4> {
             0.699999988079071 0.0 0.0 0.0 
@@ -12883,6 +12884,7 @@
         }
       }
       <Group> s1.p2.surface {
+        <Tag> object_type { 115 }
         <Transform> {
           <Matrix4> {
             1.2837646007537842 3.552713678800501e-15 3.552713678800501e-15 0.0 
@@ -13342,6 +13344,7 @@
         }
       }
       <Group> s1.p1.surface {
+        <Tag> object_type { 115 }
         <Transform> {
           <Matrix4> {
             0.699999988079071 -9.736346839872567e-09 0.0 0.0 

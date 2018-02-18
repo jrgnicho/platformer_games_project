@@ -13,9 +13,6 @@ from panda3d.core import Vec3
 from panda3d.core import ModelPool
 from panda3d.core import Filename
 
-# from direct.interval.LerpInterval import LerpFunc
-# from direct.interval.FunctionInterval import Func
-# from direct.interval.IntervalGlobal import Sequence
 from direct.task.TaskManagerGlobal import taskMgr
 
 # The lines below enable the Direct Session browser (Fails with python3)

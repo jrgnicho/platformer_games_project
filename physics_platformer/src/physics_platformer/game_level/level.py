@@ -88,20 +88,27 @@ class Level(NodePath):
     logging.debug('Removing %i ghosts bodies from level %s\'s physics world '%(num_objects,self.getName()))
     for obj in objs:     
       self.physics_world_.remove(obj)
-    
+          
     if not self.isSingleton(): 
       num_objects = self.getNumChildren()
       for i in range(0,num_objects):
-        np = self.getChild(i)
+        np = self.getChild(i)        
+        logging.debug('Level {0} detaching rogue node {1}'.format(self.getName(),np.getName()))
         np.detachNode()
         
       
     self.game_object_map_ = {}
     self.platforms_ = {}
     
-  def addSector(self,transform, name = ''):
+    logging.debug('Level {0} cleaup done'.format(self.getName()))
     
-    name = name if len(name) > 0 else self.getName() + '-sector-' + str(len(self.sectors_dict_))    
+  def createSector(self,transform, name = ''):    
+    
+    name = name if len(name) > 0 else self.getName() + '-sector-' + str(len(self.sectors_dict_))     
+    if name in self.sectors_dict_:
+      logging.warn("Sector {0} already in level".format(name))
+      return None
+       
     sector = Sector(name,self,self.physics_world_,transform)
     self.sectors_dict_[sector.getName()] = sector
     self.sectors_list_.append(sector)
@@ -124,6 +131,19 @@ class Level(NodePath):
     
   def addGameObject(self,game_object, is_dynamic = True):      
     self._registerGameObj_(game_object, is_dynamic, True)
+    
+  def hasGameObject(self,game_object):    
+    obj_name = ''
+    if isinstance(game_object, GameObject):
+      obj_name = game_object.getName()    
+    elif isinstance(game_object, str):
+      obj_name = game_object
+    else:
+      raise ValueError('Object is of unknown type, it should be either a string or GameObject')
+    
+    if obj_name in self.game_object_map_:
+      return True    
+    return False
         
   def _registerGameObj_(self,game_object, is_dynamic, add_to_physics,reparent = True ):    
     """
@@ -156,7 +176,7 @@ class Level(NodePath):
       if not self._registerGameObj_(obj, is_dynamic, False,False):
         return False
     
-    logging.debug("\tAdded {0} to level".format(game_object.getName()))
+    logging.debug("\tAdded {0} to level {1}".format(game_object.getName(),self.getName()))
     return True
       
   
@@ -225,7 +245,6 @@ class Level(NodePath):
       
       processed_contacts.append(i)
       
-      #id = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
       id = node1.getName()
       obj = None
       if id in self.game_object_map_:

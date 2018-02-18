@@ -6,10 +6,10 @@ class ObjectTypeID(object):
   
   
   # high level elements
-  START_POSITION            = 6
+  START_LOCATION            = 6
   SECTOR                    = 7
   SECTOR_TRANSITION         = 9
-  SECTOR_ENTRY_POINT        = 10
+  SECTOR_ENTRY_LOCATION        = 10
   STATIC_PLATFORM           = 11
   
   # collision objects

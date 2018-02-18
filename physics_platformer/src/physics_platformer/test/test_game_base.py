@@ -93,7 +93,7 @@ class TestLevel(Level):
       
       # creating sector
       tf = dummy_node.getTransform(self)
-      sector = self.addSector(tf,'sector' + str(i))
+      sector = self.createSector(tf,'sector' + str(i))
       self.__createPlatforms__(sector,i == 0) 
       self.__createBoxes__(sector)   
       
@@ -108,6 +108,8 @@ class TestLevel(Level):
        
       continue
     
+      # TODO: Unreachable code below left here for reference only, will get removed
+      #        after the whole sector transition functionality becomes more stable.
       if i == 0:        
         # following sector
         dest_sector = self.getSectors()[i+1]
@@ -320,8 +322,8 @@ class TestGameBase(ShowBase):
     self.input_manager_.addMove(Move('ROTATE_LEFT',[KeyboardButtons.KEY_E],False,lambda : self.rotateCamZCounterClockwise()))
     self.input_manager_.addMove(Move('ROTATE_RIGHT',[KeyboardButtons.KEY_W],False,lambda : self.rotateCamZClockwise()))
     
-    self.input_manager_.addMove(Move('ZoomIn',[KeyboardButtons.KEY_A],False,lambda : self.zoomIn()))
-    self.input_manager_.addMove(Move('ZoomOut',[KeyboardButtons.KEY_Q],False,lambda : self.zoomOut()))
+    self.input_manager_.addMove(Move('ZoomIn',[KeyboardButtons.KEY_Q],False,lambda : self.zoomIn()))
+    self.input_manager_.addMove(Move('ZoomOut',[KeyboardButtons.KEY_A],False,lambda : self.zoomOut()))
     
     
     self.title = self.createTitle("Panda3D: " + self.name_)
