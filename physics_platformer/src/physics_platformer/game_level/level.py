@@ -20,7 +20,7 @@ class Level(NodePath):
   __BOUND_THICKNESS_ = 10.0
   __BOUND_DEPTH_ = 1.0 # y direction
   __GRAVITY__ = Vec3(0,0,-14)
-  __PHYSICS_SIM_SUBSTEPS__ = 5
+  __PHYSICS_SIM_SUBSTEPS__ = 8
   __PHYSICS_SIM_STEPSIZE__ = 1.0/180.0
   
   def __init__(self,name,min_point, max_point):
