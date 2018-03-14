@@ -37,6 +37,12 @@ class TestLevelLoader(TestGameBase):
     
     self.level_.reparentTo(self.render)
     
+    if level_loader.start_location is not None:
+      logging.info('Start location is %s'%(str(level_loader.start_location.getPos(self.level_))))
+    
+    if level_loader.start_sector is not None:
+      logging.info('Level %s start sector is "%s"'%(self.level_.getName(),level_loader.start_sector.getName()) )
+    
     # enable debug visuals
     self.debug_node_ = self.level_.attachNewNode(BulletDebugNode('Debug'))
     self.debug_node_.node().showWireframe(True)

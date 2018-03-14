@@ -16,10 +16,6 @@ from physics_platformer.collision import *
 from physics_platformer.resource_management.assets_common import *
 from panda3d.bullet import BulletTriangleMesh, BulletRigidBodyNode,\
   BulletTriangleMeshShape, BulletGhostNode
-
-
-
-
   
 class LevelLoader(object):
   
@@ -28,7 +24,26 @@ class LevelLoader(object):
   
   def __init__(self):
     self.level_ = None
-    self.start_position_np_ = None
+    self.start_location_np_ = None
+    self.start_sector_ = None
+    
+  @property
+  def level(self):
+    return self.level_
+  
+  @property
+  def start_location(self):
+    """
+    Returns a nodepath to the start location.
+    """
+    return self.start_location_np_
+  
+  @property
+  def start_sector(self):
+    """
+    Returns the start sector object.
+    """
+    return self.start_sector_
   
   def load(self, file_path, verbosity = False):
     """
@@ -89,7 +104,7 @@ class LevelLoader(object):
       
       # loading model into level
       level_name = model_np.getName()  # it is assume that the top level node is the level node
-      level_name.replace(ext,'')
+      level_name = level_name.replace(ext,'')
       self.level_ = Level(level_name,min_point = Vec3(-150,-150,-50),max_point = Vec3(150,150,100))
       
       if model_np.getNumChildren() == 0:
@@ -182,7 +197,6 @@ class LevelLoader(object):
       logging.error('Failed to read "{0}" property from model node {1}'.format(CustomProperties.OBJECT_TYPE_INT,child_np.getName()))
       return False
     
-    parent_np = model_np.getParent()
     loaded_obj = True
     if obj_type == ObjectTypeID.STATIC_PLATFORM:
       if not self._loadPlatform_(model_np):
@@ -193,10 +207,8 @@ class LevelLoader(object):
         return False
       
     elif obj_type == ObjectTypeID.START_LOCATION:
-      # TODO: Create a class for this type of object,
-      #      It should have a method to set the characters location
-      #      and attach it to a sector
-      pass
+      if not self._loadStartLocation_(model_np):
+        return False
       
     elif obj_type == ObjectTypeID.COLLISION_LEDGE_LEFT or  \
         obj_type == ObjectTypeID.COLLISION_LEDGE_RIGHT:
@@ -220,9 +232,30 @@ class LevelLoader(object):
     
     return True
   
+  def _loadStartLocation_(self,np):
+    """
+    @brief Loads a start location node. It should be relative to a sector
+    @param np:  The node path containing the start location 
+    """
+    
+    start_loc_np = NodePath(np.getName())
+    tr = np.getTransform(self.model_np_)
+    start_loc_np.reparentTo(self.level_)
+    start_loc_np.setTransform(self.level_,tr)
+    
+    self.start_location_np_ = start_loc_np
+    
+    # finding start sector
+    sector_np = self.level_.find('*' + np.getParent().getName())
+    if sector_np.isEmpty():
+      self.start_sector_ = None
+    else:
+      self.start_sector_ = self.level_.getSector(sector_np.getName())
+    
+    return True
+  
   def _loadSector_(self, np):
-    parent_np = np.getParent()
-    tr = np.getTransform(parent_np)
+    tr = np.getTransform(self.model_np_)
     sector = self.level_.createSector(tr,np.getName())
     
     if sector is None:
@@ -238,9 +271,7 @@ class LevelLoader(object):
     @param np   NodePath containing the platform nodes (Geometries, ledges and other ghost nodes for walls, floor, etc.)
     @return True if succeeded, false otherwise
     """
-    
-    parent_np = np.getParent()
-    
+        
     # finding node path containing platform rigid body
     if np.getNumChildren() == 0:
       logging.error("Plaform node has no children")
@@ -281,7 +312,7 @@ class LevelLoader(object):
     # instantiate platform
     platform = Platform(bullet_rb_node);    
     
-    # TODO: temporarity adding collision model nodes for visualization
+    # TODO: temporarily adding loaded collision model nodes for visualization
     for platform_rb_np in platform_np_list:
       tr = platform_rb_np.getTransform(np)
       platform_rb_np.reparentTo(platform)
@@ -289,7 +320,7 @@ class LevelLoader(object):
       
     # placing platform as child of level
     platform.reparentTo(self.level_)
-    tr = np.getTransform(parent_np)
+    tr = np.getTransform(self.model_np_)
     platform.setTransform(self.level_,tr)
     
     # find ledges and other objects
@@ -365,10 +396,7 @@ class LevelLoader(object):
   
   def _loadBtRigidBodyNode_(self,np):
     pass    
-  
-  def _loadStartPosition_(self,np):
-    pass
-  
+    
   def _loadGhostNode_(self,np,new_parent_np, col_mask):
     
     parent_np = np.getParent()
