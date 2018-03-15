@@ -221,11 +221,12 @@ class Level(NodePath):
     if self.delta_time_accumulator_ < self.physics_step_size_:    
       return 
     
-    self.physics_world_.doPhysics(self.physics_step_size_, self.physics_substeps_, self.physics_step_size_)    
-    self.delta_time_accumulator_ -= self.physics_step_size_
+    self.physics_world_.doPhysics(self.delta_time_accumulator_, self.physics_substeps_, self.physics_step_size_)  
     
     for obj in self.game_object_map_.values():
-      obj.update(dt)
+      obj.update(self.delta_time_accumulator_ )      
+      
+    self.delta_time_accumulator_ = 0
     
     self.__processCollisions__()    
     
