@@ -91,8 +91,12 @@ class LevelCollisionResolver(CollisionResolver):
         key2 = node1.getPythonTag(GameObject.ID_PYTHON_TAG)
         obj2 = game_objects_dict[key2] if (key2 is not None and key2 in game_objects_dict) else None
       
-      if (obj1 is None) or (obj2 is None):
-        logging.warn("Found Unknown objects '%s' and '%s' while resolving collisions"%(key1,key2))
+      if obj1 is None:
+        logging.warn("Found Unknown objects '%s' while resolving collisions"%(key1))
+        continue
+      
+      if obj2 is None:
+        logging.warn("Found Unknown objects '%s' while resolving collisions"%(key2))
         continue
        
       action_key1 , action_key2 = self.collision_action_matrix_.getActions(col_mask1.getLowestOnBit() , col_mask2.getLowestOnBit())      

@@ -118,22 +118,7 @@ class GameObject(NodePath):
       
       # visual properties
       if add_visual:     
-            visual_np = GameObject.createSimpleBoxVisualNode(self,self.size_, self.getName() + '-visual')
-                 
-#           visual_nh = GameObject.DEFAULT_BOX_MODEL 
-#           visual_nh.clearModelNodes()            
-#           self.visual_nh_ = visual_nh.instanceUnderNode(self,name + '-visual');  
-#           self.visual_nh_.setTexture(GameObject.DEFAULT_TEXTURE,1)   
-#           
-#           if GameObject.DEFAULT_TEXTURE == None:
-#               logging.error('Texture failed to load')
-#           
-#           # scaling visual model
-#           bounds = self.visual_nh_.getTightBounds()
-#           extents = Vec3(bounds[1] - bounds[0])
-#           scale_factor = 1/max([extents.getX(),extents.getY(),extents.getZ()])
-#           self.visual_nh_.setScale(self.size_.getX()*scale_factor,self.size_.getY()*scale_factor,self.size_.getZ()*scale_factor)
-       
+            visual_np = GameObject.createSimpleBoxVisualNode(self,self.size_, self.getName() + '-visual')       
           
       # setting ID
       GameObject.setObjectID(self, self.getName())

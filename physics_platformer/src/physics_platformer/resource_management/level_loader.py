@@ -234,7 +234,7 @@ class LevelLoader(object):
   
   def _loadStartLocation_(self,np):
     """
-    @brief Loads a start location node. It should be relative to a sector
+    @brief Loads a start location node. It should be relative to the level
     @param np:  The node path containing the start location 
     """
     
@@ -345,6 +345,7 @@ class LevelLoader(object):
         return False
       
     # Do this at the end to add newly added ghost nodes to the physics world
+    platform.setObjectID(platform.getName())  # needed to set python tag on all children nodepaths
     self.level_.addPlatform(platform)    
   
 
@@ -402,7 +403,6 @@ class LevelLoader(object):
     parent_np = np.getParent()
     bt_ghost = self._createBtGhostNode_(np)
     
-    bt_ghost_np = None
     if bt_ghost is not None:        
       bt_ghost_np = new_parent_np.attachNewNode(bt_ghost)
       
