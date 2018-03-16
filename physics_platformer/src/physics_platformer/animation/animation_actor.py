@@ -6,7 +6,7 @@ from physics_platformer.animation import AnimationInfo
 from physics_platformer.collision import *
 from physics_platformer.geometry2d import Box2D
 from panda3d.core import NodePath, BoundingVolume
-from panda3d.bullet import BulletRigidBodyNode
+from panda3d.bullet import BulletRigidBodyNode, BulletCapsuleShape, ZUp
 from panda3d.bullet import BulletGhostNode
 from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletGenericConstraint
@@ -67,28 +67,28 @@ class AnimationActor(SpriteAnimator):
       if np is not None:
         np.setPythonTag(tag,obj)
     
-  def loadAnimation(self,animation):
+  def loadAnimation(self,animation_info):
     """
-    Loads the animation data from a AnimationInfo object
+    Loads the animation_info data from a AnimationInfo object
     """    
-    if type(animation) is not AnimationInfo:
+    if type(animation_info) is not AnimationInfo:
       AnimationActor.LOGGER.error("Object pass is not an instance of the AnimationInfo class")
       return False
     
     # load sprites
-    if not self.loadAnimationSprites(animation.sprites_right, animation.sprites_left, animation.sprites_time):
+    if not self.loadAnimationSprites(animation_info.sprites_right, animation_info.sprites_left, animation_info.sprites_time):
       AnimationActor.LOGGER.error('Failed to load sprites from AnimationInfo object')
       return False
     
     # scale    
-    scale = (animation.scalex, animation.scaley)
+    scale = (animation_info.scalex, animation_info.scaley)
     
-    # saving animation
-    self.animation_info_ = animation
+    # saving animation_info
+    self.animation_info_ = animation_info
     
     # setting properties
-    self.loop_mode_ = animation.loop_mode
-    self.loop_start_frame_ = animation.loopstart
+    self.loop_mode_ = animation_info.loop_mode
+    self.loop_start_frame_ = animation_info.loopstart
     
     # creating representative rigid body (Used to determine collisions with the environment
     self.__createRigidBody__(scale)
@@ -119,7 +119,7 @@ class AnimationActor(SpriteAnimator):
         self.__createBulletGhostNodeFromBoxes__(hit_boxes,scale, self.character_name_ + '-' +self.getName() + '-actor-hit-gn'))
       self.hit_box_np_.node().setIntoCollideMask(CollisionMasks.ATTACK_HIT)
       
-    # scaling remaining boxes (animation frames and auxiliary)     
+    # scaling remaining boxes (animation_info frames and auxiliary)     
     self.setScale(Vec3(scale[0],1,scale[1]))
           
     return True
@@ -274,15 +274,20 @@ class AnimationActor(SpriteAnimator):
         collision_boxes = [Box2D.createBoundingBox(boxes)]
         
       
-    # create rigid body
+    # create rigid body with capsule shape
     for box in collision_boxes:
       box.scale = scale
       size = box.size
       center = box.center
       transform = TransformState.makeIdentity()
-      box_shape = BulletBoxShape(Vec3(0.5*size[0],0.5*AnimationActor.DEFAULT_WIDTH,0.5 * size[1]))
+      
+      radius = 0.5 * size[0]
+      height = size[1] - 2.0* radius
+      height = height if height >= 0 else 0.0
+      #bullet_collision_shape = BulletBoxShape(Vec3(0.5*size[0],0.5*AnimationActor.DEFAULT_WIDTH,0.5 * size[1]))
+      bullet_collision_shape = BulletCapsuleShape(radius,height,ZUp)
       transform = transform.setPos(Vec3(center[0],0,center[1]))
-      rigid_body.addShape(box_shape,transform)
+      rigid_body.addShape(bullet_collision_shape,transform)
       
     # completing rigid body setup
     rigid_body.setMass(self.mass_)

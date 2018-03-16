@@ -473,7 +473,10 @@ class LevelLoader(object):
     for geom in geom_node.getGeoms():      
       bullet_mesh.addGeom(geom,True,tr)
     
-    return BulletTriangleMeshShape(bullet_mesh,False,True,True)
+    bullet_shape = BulletTriangleMeshShape(bullet_mesh,False,True,True)    
+    bullet_shape.setMargin(GameObject.DEFAULT_COLLISION_MARGIN)
+    
+    return bullet_shape
   
   @staticmethod
   def _getObjType_(np):

@@ -20,8 +20,8 @@ class Level(NodePath):
   __BOUND_THICKNESS_ = 10.0
   __BOUND_DEPTH_ = 1.0 # y direction
   __GRAVITY__ = Vec3(0,0,-14)
-  __PHYSICS_SIM_SUBSTEPS__ = 10
-  __PHYSICS_SIM_STEPSIZE__ = 1.0/80
+  __PHYSICS_SIM_SUBSTEPS__ = 4
+  __PHYSICS_SIM_STEPSIZE__ = 1.0/60
   
   def __init__(self,name,min_point, max_point, physics_substeps = None, physics_step_size = None):
     """
@@ -221,12 +221,12 @@ class Level(NodePath):
     if self.delta_time_accumulator_ < self.physics_step_size_:    
       return 
     
-    self.physics_world_.doPhysics(self.delta_time_accumulator_, self.physics_substeps_, self.physics_step_size_)  
+    self.physics_world_.doPhysics(self.physics_step_size_, self.physics_substeps_, self.physics_step_size_)  
     
     for obj in self.game_object_map_.values():
-      obj.update(self.delta_time_accumulator_ )      
+      obj.update(self.physics_step_size_)      
       
-    self.delta_time_accumulator_ = 0
+    self.delta_time_accumulator_ -= self.physics_step_size_
     
     self.__processCollisions__()    
     

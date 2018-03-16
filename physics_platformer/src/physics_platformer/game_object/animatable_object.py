@@ -198,12 +198,15 @@ class AnimatableObject(GameObject):
             
     
     def selectFrame(self,frame):
-        """
-        Selects the frame of the current animation
-        """  
-        self.animator_.pose(frame) 
+      """
+      Selects the frame of the current animation
+      """  
+      self.animator_.pose(frame) 
         
-    def animate(self,animation_name):    
+    def animate(self,animation_name):
+      '''
+      Animates the object in either play or loop mode depending on the current animation properties.
+      '''    
       if self.pose(animation_name):            
         self.stop()            
         self.animator_.animate()
@@ -211,11 +214,14 @@ class AnimatableObject(GameObject):
         
         
     def play(self,animation_name):
+      '''
+      Plays the animation once from beggining to end
+      '''
         
-        if self.pose(animation_name):            
-            self.stop()            
-            self.animator_.play()
-            self.__startFrameMonitor__()
+      if self.pose(animation_name):            
+          self.stop()            
+          self.animator_.play()
+          self.__startFrameMonitor__()
             
     def loop(self,animation_name):        
         

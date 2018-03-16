@@ -1,6 +1,7 @@
 from docutils import TransformSpec
 import logging
-from panda3d.bullet import BulletBoxShape, BulletGhostNode, BulletSphereShape
+from panda3d.bullet import BulletCapsuleShape, BulletGhostNode, BulletSphereShape,\
+  ZUp
 from panda3d.bullet import BulletGenericConstraint
 from panda3d.bullet import BulletWorld
 from panda3d.core import BoundingBox
@@ -46,14 +47,18 @@ class CharacterBase(AnimatableObject):
     self.right_constraint_ = None
     self.selected_constraint_ = None
     
-    # rigid body
+    # removing default shapes from rigid body
     shapes = self.node().getShapes()
     for shape in shapes:
       self.node().removeShape(shape)
-      
-    box_shape = BulletBoxShape(self.size_/2) 
-    box_shape.setMargin(GameObject.DEFAULT_COLLISION_MARGIN)
-    self.node().addShape(box_shape,TransformState.makePos(Vec3(0,0,0.5*size.getZ()))) # box bottom center coincident with the origin
+    
+    # adding capsule shape
+    radius = 0.5*size.getX()
+    height = size.getZ() - 2.0*radius  # height of cylindrical part only
+    height = height if height >= 0 else 0.0
+    bullet_shape = BulletCapsuleShape(radius, height, ZUp)
+    bullet_shape.setMargin(GameObject.DEFAULT_COLLISION_MARGIN)
+    self.node().addShape(bullet_shape,TransformState.makePos(Vec3(0,0,0.5*size.getZ()))) # box bottom center coincident with the origin
     self.node().setMass(self.character_info_.mass)
     self.node().setLinearFactor((1,1,1)) 
     self.node().setAngularFactor((0,0,0)) 
