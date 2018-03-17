@@ -56,7 +56,6 @@ class Level(NodePath):
     # physics
     self.physics_substeps_ = physics_substeps if physics_substeps is not None else Level.__PHYSICS_SIM_SUBSTEPS__
     self.physics_step_size_ = physics_step_size if physics_step_size is not None else Level.__PHYSICS_SIM_STEPSIZE__
-    self.delta_time_accumulator_ = 0.0 # Used to keep simulation time consistent (See https://www.panda3d.org/manual/index.php/Simulating_the_Physics_World)
     
     # sectors
     self.sectors_dict_ = {}
@@ -214,21 +213,13 @@ class Level(NodePath):
       
   
   def update(self,dt):
-    
-    # Controlling simulation consistensy suing method shown
-    # in https://www.panda3d.org/manual/index.php/Simulating_the_Physics_World
-    self.delta_time_accumulator_ += dt
-    if self.delta_time_accumulator_ < self.physics_step_size_:    
-      return 
-    
-    self.physics_world_.doPhysics(self.physics_step_size_, self.physics_substeps_, self.physics_step_size_)  
-    
+
+    self.physics_world_.doPhysics(dt, self.physics_substeps_, self.physics_step_size_)     
     for obj in self.game_object_map_.values():
-      obj.update(self.physics_step_size_)      
-      
-    self.delta_time_accumulator_ -= self.physics_step_size_
+      obj.update(dt)
     
-    self.__processCollisions__()    
+    self.__processCollisions__()   
+      
     
   def __createLevelBounds__(self): 
     

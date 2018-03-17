@@ -221,6 +221,8 @@ class TestGameBase(ShowBase):
   __BACKGROUND_POSITION__ = Vec3(0,100,0)
   __BACKGROUND_SCALE__ = 0.2 
 
+  __DESIRED_FRAME_RATE__ = 1.0/60.0
+
   
   def __init__(self,name ='TestGameBase'):
     
@@ -235,6 +237,8 @@ class TestGameBase(ShowBase):
     self.setupControls()
     self.setupScene()
     self.clock_ = ClockObject()
+    self.delta_time_accumulator_ = 0.0 # Used to keep simulation time consistent (See https://www.panda3d.org/manual/index.php/Simulating_the_Physics_World)
+    self.desired_frame_rate_ = TestGameBase.__DESIRED_FRAME_RATE__
   
     # Task
     taskMgr.add(self.update, 'updateWorld')
@@ -368,10 +372,17 @@ class TestGameBase(ShowBase):
   def update(self,task):
     self.clock_.tick()
     dt = self.clock_.getDt()
-    self.level_.update(dt)
-    StateMachine.processEvents() 
-    self.input_manager_.update(dt)
-    self.camera_controller_.update(dt)
+
+    self.delta_time_accumulator_ += dt
+    while self.delta_time_accumulator_ > self.desired_frame_rate_:
+
+      self.delta_time_accumulator_ -= self.desired_frame_rate_
+
+      self.level_.update(self.desired_frame_rate_)      
+      self.input_manager_.update(self.desired_frame_rate_)
+      self.camera_controller_.update(self.desired_frame_rate_)
+      StateMachine.processEvents() 
+
     
     return task.cont
     
