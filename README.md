@@ -17,7 +17,7 @@ Project that uses python libraries for creating a platformer style video game.
 
   - Pygame:
     - 2D game engine.  Only the joystick module from this library is used 
-    - Download from [source](https://bitbucket.org/pygame/pygame/wiki/VersionControl) and follow instructions in the wiki page
+    - The source code can be downloaded from [here](https://bitbucket.org/pygame/pygame/wiki/VersionControl).  However, it's preferable to install through pip3
 
 
 ### Install Dependencies
