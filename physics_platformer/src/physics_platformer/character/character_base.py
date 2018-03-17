@@ -1,6 +1,7 @@
 from docutils import TransformSpec
 import logging
-from panda3d.bullet import BulletBoxShape, BulletGhostNode, BulletSphereShape
+from panda3d.bullet import BulletCapsuleShape, BulletGhostNode, BulletSphereShape,\
+  ZUp
 from panda3d.bullet import BulletGenericConstraint
 from panda3d.bullet import BulletWorld
 from panda3d.core import BoundingBox
@@ -16,7 +17,7 @@ from physics_platformer.character import MotionCommander
 from physics_platformer.character.character_states import *
 from physics_platformer.character.character_states import CharacterStateKeys
 from physics_platformer.character.character_states import CharacterStates
-from physics_platformer.character.character_status import *
+from physics_platformer.character.character_state_data import *
 from physics_platformer.collision import CollisionMasks
 from physics_platformer.game_actions import *
 from physics_platformer.game_object import GameObject, AnimatableObject
@@ -46,14 +47,18 @@ class CharacterBase(AnimatableObject):
     self.right_constraint_ = None
     self.selected_constraint_ = None
     
-    # rigid body
+    # removing default shapes from rigid body
     shapes = self.node().getShapes()
     for shape in shapes:
       self.node().removeShape(shape)
-      
-    box_shape = BulletBoxShape(self.size_/2) 
-    box_shape.setMargin(GameObject.DEFAULT_COLLISION_MARGIN)
-    self.node().addShape(box_shape,TransformState.makePos(Vec3(0,0,0.5*size.getZ()))) # box bottom center coincident with the origin
+    
+    # adding capsule shape
+    radius = 0.5*size.getX()
+    height = size.getZ() - 2.0*radius  # height of cylindrical part only
+    height = height if height >= 0 else 0.0
+    bullet_shape = BulletCapsuleShape(radius, height, ZUp)
+    bullet_shape.setMargin(GameObject.DEFAULT_COLLISION_MARGIN)
+    self.node().addShape(bullet_shape,TransformState.makePos(Vec3(0,0,0.5*size.getZ()))) # box bottom center coincident with the origin
     self.node().setMass(self.character_info_.mass)
     self.node().setLinearFactor((1,1,1)) 
     self.node().setAngularFactor((0,0,0)) 
@@ -69,21 +74,24 @@ class CharacterBase(AnimatableObject):
     rel_pos = Vec3(-GameObject.ORIGIN_XOFFSET,0,info.height/2)
     self.left_origin_gn_ = self.attachNewNode(BulletGhostNode(self.getName() + '-left-origin'))
     self.left_origin_gn_.node().addShape(BulletSphereShape(GameObject.ORIGIN_SPHERE_RADIUS),TransformState.makePosHpr(rel_pos,Vec3.zero()))
-    self.left_origin_gn_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_ORIGIN if not self.isFacingRight() else CollisionMasks.NO_COLLISION)
+    self.left_origin_gn_.node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER_0 if not self.isFacingRight() else CollisionMasks.NO_COLLISION)
     
     rel_pos = Vec3(GameObject.ORIGIN_XOFFSET,0,info.height/2)
     self.right_origin_gn_ = self.attachNewNode(BulletGhostNode(self.getName() + '-right-origin'))
     self.right_origin_gn_.node().addShape(BulletSphereShape(GameObject.ORIGIN_SPHERE_RADIUS),TransformState.makePosHpr(rel_pos,Vec3.zero()))
-    self.right_origin_gn_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_ORIGIN if self.isFacingRight() else CollisionMasks.NO_COLLISION)
+    self.right_origin_gn_.node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER_0 if self.isFacingRight() else CollisionMasks.NO_COLLISION)
     
     # character status
-    self.status_ = CharacterStatus()
+    self.state_data_ = CharacterStateData()
     
     # state machine
     self.sm_ = StateMachine()     
     
     # motion commander
     self.motion_commander_ = MotionCommander(self)
+    
+    # set id
+    self.setObjectID(self.getName())
     
   def setup(self):    
 
@@ -108,7 +116,7 @@ class CharacterBase(AnimatableObject):
     else:
       self.getAnimatorActor().getRigidBody().node().setFriction(0)
       
-    self.status_.friction_enabled = enable
+    self.state_data_.friction_enabled = enable
     
   def setPhysicsWorld(self,physics_world):
     GameObject.setPhysicsWorld(self,physics_world)
@@ -117,9 +125,9 @@ class CharacterBase(AnimatableObject):
     
   def getStatus(self):
     '''
-    Returns a CharacterStatus instance
+    Returns a CharacterStateData instance
     '''
-    return self.status_
+    return self.state_data_
   
   def getInfo(self):
     '''
@@ -250,6 +258,24 @@ class CharacterBase(AnimatableObject):
     self.setZ(ref,z - bbox.bottom) 
     if self.getAnimatorActor() is not None:
       self.getAnimatorActor().getRigidBody().setZ(ref,z - bbox.bottom)
+      
+  def clampBottomToSurface(self):
+    """
+      Places the bottom of the character's bounding box on the nearest surface that's below the character
+    """
+    
+    result = self.doCollisionSweepTestZ()
+    parent = self.getParent()
+    ref_node = self.getReferenceNodePath()
+     
+    if result.hasHit():
+      
+      self.node().setLinearFactor(LVector3(1,1,0))   # disable movement in z
+      ref_pos = ref_node.getRelativePoint(parent,result.getHitPos())
+      self.clampBottom(ref_pos.getZ())               # place bottom at hit point
+      self.node().setLinearFactor(LVector3(1,1,1))   # enable movement in z 
+      
+    return result.hasHit()
   
   def clampTop(self,z):
     '''
@@ -478,6 +504,7 @@ class CharacterBase(AnimatableObject):
       return False
     
     self.addSpriteAnimation(name, anim_actor, align, center_offset)
+    anim_actor.setPythonTag(GameObject.ID_PYTHON_TAG,self.getName())
     
     if (self.animator_np_ is None):
       self.pose(name)  
@@ -517,7 +544,7 @@ class CharacterBase(AnimatableObject):
       logging.warning("PhysicsWorld or Parent NodePath have not been set on the Character object, pose can not be selected")
       return False
     
-    if not self.animators_.has_key(animation_name):
+    if animation_name not in self.animators_:
       logging.warning( "Invalid animation name '%s'"%(animation_name))
       return False
     
@@ -546,7 +573,7 @@ class CharacterBase(AnimatableObject):
       
     return True 
   
-  def doCollisionSweepTestZ(self,col_mask = CollisionMasks.LEVEL_OBSTACLE,from_z = 0, to_z = 0):
+  def doCollisionSweepTestZ(self,col_mask = CollisionMasks.PLATFORM_RIGID_BODY,from_z = 0, to_z = 0):
     '''
     doCollisionSweepTestZ(double from_z = 0, double to_z = 0)
     Performs a collision sweep test along z in order to determine the height 
@@ -589,10 +616,10 @@ class CharacterBase(AnimatableObject):
       self.animator_.faceRight(face_right)
       
     if face_right:
-      self.right_origin_gn_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_ORIGIN)
+      self.right_origin_gn_.node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER_0)
       self.left_origin_gn_.node().setIntoCollideMask(CollisionMasks.NO_COLLISION)
     else:
-      self.left_origin_gn_.node().setIntoCollideMask(CollisionMasks.GAME_OBJECT_ORIGIN)
+      self.left_origin_gn_.node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER_0)
       self.right_origin_gn_.node().setIntoCollideMask(CollisionMasks.NO_COLLISION)
       
         

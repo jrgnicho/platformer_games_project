@@ -5,7 +5,7 @@ from physics_platformer.game_actions import GeneralActions
 from physics_platformer.game_actions import AnimationActions
 from physics_platformer.game_actions import CharacterActions
 from physics_platformer.game_actions import CollisionAction
-from physics_platformer.character import CharacterStatus
+from physics_platformer.character import CharacterStateData
 from physics_platformer.collision import CollisionMasks
 from direct.interval.MetaInterval import Sequence
 from direct.interval.FunctionInterval import Func
@@ -53,19 +53,7 @@ class CharacterState(State):
     return self.parent_state_machine_
   
   def clampToPlatform(self):
-    
-    result = self.character_obj_.doCollisionSweepTestZ()
-    parent = self.character_obj_.getParent()
-    ref_node = self.character_obj_.getReferenceNodePath()
-     
-    if result.hasHit():
-      
-      self.character_obj_.node().setLinearFactor(LVector3(1,1,0)) # disable movement in z
-      ref_pos = ref_node.getRelativePoint(parent,result.getHitPos())
-      self.character_obj_.clampBottom(ref_pos.getZ())    
-      self.character_obj_.node().setLinearFactor(LVector3(1,1,1)) # disable movement in z 
-          
-    return result.hasHit()
+    return self.character_obj_.clampBottomToSurface()
   
   def done(self):
     '''
@@ -163,6 +151,7 @@ class CharacterStates(object): # Class Namespace
       self.character_obj_.animate(self.animation_key_)    
       self.character_obj_.node().setLinearFactor(LVector3(1,1,0)) # disable movement in z
       self.character_obj_.setLinearVelocity(LVector3(0,0,0))
+      self.character_obj_.clampBottomToSurface()
       self.character_obj_.clearForces()      
       
     def exit(self):
@@ -194,8 +183,8 @@ class CharacterStates(object): # Class Namespace
             StateMachine.postEvent(StateEvent(self.parent_state_machine_, CharacterActions.EDGE_RECOVERY)) 
           
       # storing relevant variables
-      self.character_obj_.getStatus().contact_data = CharacterStatus.ContactData(self.character_obj_.getName(),bottom = collision_action.contact_manifold)
-      self.character_obj_.getStatus().platform = ledge.getParentPlatform()      
+      self.character_obj_.getStatus().contact_data = CharacterStateData.ContactData(self.character_obj_.getName(),\
+                                                                                 bottom = collision_action.contact_manifold)   
       self.character_obj_.getStatus().ledge = ledge     
 
       
@@ -486,7 +475,6 @@ class CharacterStates(object): # Class Namespace
 
       ledge = action.game_obj2
       ghost_body = self.character_obj_.getActionGhostBody()
-      self.character_obj_.getStatus().platform = ledge.getParentPlatform()
       self.character_obj_.getStatus().ledge = ledge
             
       self.character_obj_.setStatic(True)
@@ -518,7 +506,7 @@ class CharacterStates(object): # Class Namespace
       
     def exit(self): 
       
-      self.character_obj_.getActionGhostBody().node().setIntoCollideMask(CollisionMasks.ACTION_BODY)   
+      self.character_obj_.getActionGhostBody().node().setIntoCollideMask(CollisionMasks.ACTION_TRIGGER_1)   
       self.character_obj_.setStatic(False)
       self.character_obj_.stop()
       
@@ -578,7 +566,6 @@ class CharacterStates(object): # Class Namespace
       ledge = action.game_obj2
       info = self.character_obj_.getInfo()
       self.character_obj_.getStatus().ledge = ledge
-      self.character_obj_.getStatus().platform = ledge.getParentPlatform()
       
       dist_from_ledge = 0
       parent = self.character_obj_.getParent()      
@@ -618,7 +605,7 @@ class CharacterStates(object): # Class Namespace
         if abs(self.character_obj_.getBottom()  - contact_point.getZ()) < AerialBaseState.LANDING_THRESHOLD :            
         
           self.character_obj_.getStatus().platform = platform
-          self.character_obj_.getStatus().contact_data = CharacterStatus.ContactData(self.character_obj_.getObjectID(),
+          self.character_obj_.getStatus().contact_data = CharacterStateData.ContactData(self.character_obj_.getObjectID(),
                                                                                      action.contact_manifold)          
           # check if ledge is nearby
           result = self.character_obj_.doCollisionSweepTestZ(CollisionMasks.LEDGE)

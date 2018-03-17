@@ -39,7 +39,7 @@ from panda3d.core import deg2Rad
 
 from physics_platformer.state_machine import StateMachine
 from physics_platformer.game_level import Level
-from physics_platformer.game_level import Platform
+from physics_platformer.game_level import SimplePlatform
 from physics_platformer.input import Move
 from physics_platformer.input import KeyboardButtons
 from physics_platformer.input import KeyboardController
@@ -93,7 +93,7 @@ class TestLevel(Level):
       
       # creating sector
       tf = dummy_node.getTransform(self)
-      sector = self.addSector(tf,'sector' + str(i))
+      sector = self.createSector(tf,'sector' + str(i))
       self.__createPlatforms__(sector,i == 0) 
       self.__createBoxes__(sector)   
       
@@ -108,6 +108,8 @@ class TestLevel(Level):
        
       continue
     
+      # TODO: Unreachable code below left here for reference only, will get removed
+      #        after the whole sector transition functionality becomes more stable.
       if i == 0:        
         # following sector
         dest_sector = self.getSectors()[i+1]
@@ -133,20 +135,24 @@ class TestLevel(Level):
     
     box_size = Vec3(TestLevel.BOX_SIDE_LENGTH,TestLevel.BOX_SIDE_LENGTH,TestLevel.BOX_SIDE_LENGTH)
     
+    self.num_boxes_ =0
     for c in range(0,TestLevel.NUM_BOXES_COLUMNS):    
       for r in range(0,TestLevel.NUM_BOXES_ROWS):     
         current_pos = TestLevel.START_POS + Vec3(r*TestLevel.X_INCR,0,c*TestLevel.Z_INCR)
-           
-        obj = GameObject("box"+str(self.num_boxes_),box_size,True)
+        
+        obj_name = sector.getName() + '-box' + str(self.num_boxes_)
+        print("Creating box " + obj_name)   
+        obj = GameObject.createBox(obj_name,box_size,True)
         self.addGameObject(obj)
         obj.setPos(sector,current_pos) 
         obj.setHpr(sector,0,0,0)
         sector.attach(obj) 
+        self.num_boxes_ += 1
     
     
   def __createPlatforms__(self,sector,use_first_ledge = False):
     
-    # Platforms Schematic X, Z (Each new line measures 2 units and each character 2 units)
+    # SimplePlatforms Schematic X, Z (Each new line measures 2 units and each character 2 units)
     
     '''                               
            30                                          _______
@@ -168,7 +174,7 @@ class TestLevel(Level):
           -20  -10    0   10   20   30   40   50   60   70   80   90   100
     '''
     
-    # Platform Details [ (float left, float top, Vec3 size, Bool right_ledge, Bool left_ledge ),... ]
+    # SimplePlatform Details [ (float left, float top, Vec3 size, Bool right_ledge, Bool left_ledge ),... ]
     depth = TestLevel.PLATFORM_DEPTH
     platform_details = [
                         (-4,20,Vec3(24,depth,2),True,use_first_ledge),
@@ -199,12 +205,12 @@ class TestLevel(Level):
       right_ledge_enable = p[3]
       left_ledge_enable = p[4]
       
-      platform = Platform(sector.getName() + '-' + 'platform' + str(i),size,right_ledge_enable,left_ledge_enable)
+      platform = SimplePlatform(sector.getName() + '-' + 'platform' + str(i),size,right_ledge_enable,left_ledge_enable)
       self.addPlatform(platform)
       platform.setPos(sector,pos)
       platform.setHpr(sector,0,0,0)
 
-class TestGame(ShowBase):
+class TestGameBase(ShowBase):
   
   __CAM_ZOOM__ =  1
   __CAM_STEP__ = 0.2
@@ -215,8 +221,10 @@ class TestGame(ShowBase):
   __BACKGROUND_POSITION__ = Vec3(0,100,0)
   __BACKGROUND_SCALE__ = 0.2 
 
+  __DESIRED_FRAME_RATE__ = 1.0/60.0
+
   
-  def __init__(self,name ='TestGame'):
+  def __init__(self,name ='TestGameBase'):
     
     # configure to use group-mask collision filtering mode in the bullet physics world
     loadPrcFileData('', 'bullet-filter-algorithm groups-mask')
@@ -229,6 +237,8 @@ class TestGame(ShowBase):
     self.setupControls()
     self.setupScene()
     self.clock_ = ClockObject()
+    self.delta_time_accumulator_ = 0.0 # Used to keep simulation time consistent (See https://www.panda3d.org/manual/index.php/Simulating_the_Physics_World)
+    self.desired_frame_rate_ = TestGameBase.__DESIRED_FRAME_RATE__
   
     # Task
     taskMgr.add(self.update, 'updateWorld')
@@ -257,12 +267,12 @@ class TestGame(ShowBase):
     
   def setupBackgroundImage(self):    
     
-    image_file = Filename(TestGame.__BACKGROUND_IMAGE_PATH__)
+    image_file = Filename(TestGameBase.__BACKGROUND_IMAGE_PATH__)
     
     # check if image can be loaded
     img_head = PNMImageHeader()
     if not img_head.readHeader(image_file ):
-        raise IOError, "PNMImageHeader could not read file %s. Try using absolute filepaths"%(image_file.c_str())
+        raise IOError("PNMImageHeader could not read file %s. Try using absolute filepaths"%(image_file.c_str()))
         sys.exit()
         
     # Load the image with a PNMImage
@@ -288,8 +298,8 @@ class TestGame(ShowBase):
     background_np.setTexture(texture)
     
     background_np.reparentTo(self.render)
-    background_np.setPos(TestGame.__BACKGROUND_POSITION__)
-    background_np.setScale(TestGame.__BACKGROUND_SCALE__)
+    background_np.setPos(TestGameBase.__BACKGROUND_POSITION__)
+    background_np.setScale(TestGameBase.__BACKGROUND_SCALE__)
     
   def setupControls(self):
     
@@ -316,8 +326,8 @@ class TestGame(ShowBase):
     self.input_manager_.addMove(Move('ROTATE_LEFT',[KeyboardButtons.KEY_E],False,lambda : self.rotateCamZCounterClockwise()))
     self.input_manager_.addMove(Move('ROTATE_RIGHT',[KeyboardButtons.KEY_W],False,lambda : self.rotateCamZClockwise()))
     
-    self.input_manager_.addMove(Move('ZoomIn',[KeyboardButtons.KEY_A],False,lambda : self.zoomIn()))
-    self.input_manager_.addMove(Move('ZoomOut',[KeyboardButtons.KEY_Q],False,lambda : self.zoomOut()))
+    self.input_manager_.addMove(Move('ZoomIn',[KeyboardButtons.KEY_Q],False,lambda : self.zoomIn()))
+    self.input_manager_.addMove(Move('ZoomOut',[KeyboardButtons.KEY_A],False,lambda : self.zoomOut()))
     
     
     self.title = self.createTitle("Panda3D: " + self.name_)
@@ -347,7 +357,7 @@ class TestGame(ShowBase):
     self.debug_node_.hide()
     
     self.cam.reparentTo(self.level_)
-    self.cam.setPos(self.level_,0, -TestGame.__CAM_ZOOM__*24, TestGame.__CAM_STEP__*25)
+    self.cam.setPos(self.level_,0, -TestGameBase.__CAM_ZOOM__*24, TestGameBase.__CAM_STEP__*25)
     
     self.camera_controller_ = CameraController(self.cam)
     
@@ -362,37 +372,44 @@ class TestGame(ShowBase):
   def update(self,task):
     self.clock_.tick()
     dt = self.clock_.getDt()
-    self.level_.update(dt)
-    StateMachine.processEvents() 
-    self.input_manager_.update(dt)
-    self.camera_controller_.update(dt)
+
+    self.delta_time_accumulator_ += dt
+    while self.delta_time_accumulator_ > self.desired_frame_rate_:
+
+      self.delta_time_accumulator_ -= self.desired_frame_rate_
+
+      self.level_.update(self.desired_frame_rate_)      
+      self.input_manager_.update(self.desired_frame_rate_)
+      self.camera_controller_.update(self.desired_frame_rate_)
+      StateMachine.processEvents() 
+
     
     return task.cont
     
   # __ CAM_METHODS __
   def moveCamUp(self):
-      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,TestGame.__CAM_STEP__))
+      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,TestGameBase.__CAM_STEP__))
       
   def moveCamDown(self):
-      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,-TestGame.__CAM_STEP__))
+      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,-TestGameBase.__CAM_STEP__))
   
   def moveCamRight(self):
-      self.cam.setPos(self.cam.getPos() + Vec3(TestGame.__CAM_STEP__,0,0))
+      self.cam.setPos(self.cam.getPos() + Vec3(TestGameBase.__CAM_STEP__,0,0))
   
   def moveCamLeft(self):
-      self.cam.setPos(self.cam.getPos() + Vec3(-TestGame.__CAM_STEP__,0,0))
+      self.cam.setPos(self.cam.getPos() + Vec3(-TestGameBase.__CAM_STEP__,0,0))
       
   def rotateCamZClockwise(self):
-    self.cam.setH(self.cam.getH() + TestGame.__CAM_ORIENT_STEP__)
+    self.cam.setH(self.cam.getH() + TestGameBase.__CAM_ORIENT_STEP__)
     
   def rotateCamZCounterClockwise(self):
-    self.cam.setH(self.cam.getH() + -TestGame.__CAM_ORIENT_STEP__)
+    self.cam.setH(self.cam.getH() + -TestGameBase.__CAM_ORIENT_STEP__)
       
   def zoomIn(self):
-    self.cam.setY(self.cam.getY()+TestGame.__CAM_ZOOM__)
+    self.cam.setY(self.cam.getY()+TestGameBase.__CAM_ZOOM__)
 
   def zoomOut(self):
-    self.cam.setY(self.cam.getY()-TestGame.__CAM_ZOOM__)
+    self.cam.setY(self.cam.getY()-TestGameBase.__CAM_ZOOM__)
     
   def toggleDebug(self):
     if self.debug_node_.isHidden():

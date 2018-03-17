@@ -34,10 +34,7 @@ class CameraController(NodePath):
     # rotation tracking
     self.rot_pr_target_ = Vec3.zero()
     self.rot_interpolation_sequence_ = Sequence()
-    
-    # time checks
-    self.elapsed_time_ = 0 # elapsed time since last update
-    
+        
   def setEnabled(self,enable):
     self.enabled_ = enable
     
@@ -48,7 +45,7 @@ class CameraController(NodePath):
       
   def setTargetNode(self, target_np):    
     self.target_np_ = target_np  
-    self.target_tracker_np_.setPos(target_np.getPos())
+    self.target_tracker_np_.setPos(target_np,Vec3(0,0,0))
     self.target_tracker_np_.setHpr(target_np,Vec3(0,0,0))
     self.target_locked_ = True
     
@@ -59,7 +56,6 @@ class CameraController(NodePath):
     self.camera_np_.reparentTo(self.target_tracker_np_)
     self.camera_np_.setPos(CameraController.__CAMERA_POS_OFFSET__)
     self.camera_np_.setHpr(CameraController.__CAMERA_ORIENT_OFFSET__)
-    self.elapsed_time_ = 0.0
     
     logging.debug("Activated Camera Controller for cam %s with local pos %s and hpr %s"%(str(self.camera_np_),
                                                                                          str(self.camera_np_.getPos()),

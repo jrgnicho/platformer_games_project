@@ -33,14 +33,14 @@ class SpriteLoader:
         # Make a filepath
         image_file = Filename(file_path)
         if image_file .empty():
-            raise IOError, "File not found"
+            raise IOError("File not found")
             return (False, [])
     
         # Instead of loading it outright, check with the PNMImageHeader if we can open
         # the file.
         img_head = PNMImageHeader()
         if not img_head.readHeader(image_file ):
-            raise IOError, "PNMImageHeader could not read file %s. Try using absolute filepaths"%(file_path)
+            raise IOError("PNMImageHeader could not read file %s. Try using absolute filepaths"%(file_path))
             return (False, [])
     
         # Load the image with a PNMImage

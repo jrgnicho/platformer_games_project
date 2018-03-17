@@ -1,6 +1,6 @@
 from physics_platformer.resource_management.sff_support import *
 from physics_platformer.sprite import Sprite, SpriteGroup
-from StringIO import StringIO
+from io import StringIO
 from PIL import Image
 from panda3d.core import PNMImage, StringStream
 from panda3d.core import Texture
@@ -16,7 +16,7 @@ class SFFLoader(object):
     self.groups_dict_ = {}
     
   def hasGroup(self, group_no):
-    return self.groups_dict_.has_key(group_no)
+    return group_no in self.groups_dict_
     
   def loadSff(self,filename,groups = []):
     """

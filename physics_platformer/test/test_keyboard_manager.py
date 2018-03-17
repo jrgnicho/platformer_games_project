@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from direct.showbase.ShowBase import ShowBase
 from direct.interval.IntervalGlobal import Sequence
 from direct.interval.LerpInterval import LerpFunc

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 SSF Extract for python
@@ -11,7 +11,7 @@ leif theden, 2012 - 2015
 public domain
 """
 
-from StringIO import StringIO
+from io import StringIO
 from PIL import Image
 from physics_platformer.resource_management.sff_support import *
 from panda3d.core import PNMImage, StringStream
@@ -67,10 +67,10 @@ def main():
             raise ValueError("Invalid image!")
           
 
-          print "Image Group: %i, no: %i, size: %i x %i ,offset: (%i , %i), palette %i"%(subfile.groupno,subfile.imageno, 
-            image.size[0],image.size[1],subfile.axisx,subfile.axisy,subfile.palette)
+          print("Image Group: %i, no: %i, size: %i x %i ,offset: (%i , %i), palette %i"%(subfile.groupno,subfile.imageno, 
+            image.size[0],image.size[1],subfile.axisx,subfile.axisy,subfile.palette))
       except IOError:
-          print("ioerror", subfile.groupno, subfile.imageno)
+          print(("ioerror", subfile.groupno, subfile.imageno))
           pass
       else:
 #           image.save(output_dir + "/g{0}-i{1}.png".format(subfile.groupno, subfile.imageno))

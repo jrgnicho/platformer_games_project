@@ -1,4 +1,4 @@
-from StringIO import StringIO
+from io import StringIO
 from PIL import Image
 from panda3d.core import PNMImage, StringStream
 from panda3d.core import Texture
@@ -45,7 +45,7 @@ class SpriteGroup(object):
       self.addSprite(im)
       
   def getSprite(self,im_no):
-    if self.images_dict_.has_key(im_no):
+    if im_no in self.images_dict_:
       return self.images_dict_[im_no]
     else:
       return None
@@ -54,5 +54,5 @@ class SpriteGroup(object):
     return self.images_dict_.values()
     
   def hasSprite(self,im_no):
-    return self.images_dict_.has_key(im_no)
+    return (im_no in self.images_dict_ )
   

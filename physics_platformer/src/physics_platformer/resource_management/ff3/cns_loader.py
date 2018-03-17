@@ -6,7 +6,6 @@ import re
 class CNSLoader(object):
   
   __EXTENSION__ = '.cns'
-  __DEFAULT_HEIGHT_WIDTH_RATIO__ = 0.6
   
   
   class DataTokens(object):
@@ -19,6 +18,7 @@ class CNSLoader(object):
     __XSCALE__= 'xscale\s+=\s+(\d*\.?\d*)'
     __YSCALE__= 'yscale\s+=\s+(\d*\.?\d*)'
     __HEIGHT__ = '^height\s+=\s+(\d*\.?\d*)'
+    __WIDTH__ = '^width\s+=\s+(\d*\.?\d*)'
     
   class VelocityTokens(object):
     __WALK__ = 'walk\.fwd\s+=\s+(\d*\.?\d*)'
@@ -133,9 +133,14 @@ class CNSLoader(object):
     if m is not None:
       h= float(m.group(1))
       self.char_info_.height = float(h)
-      self.char_info_.width = CNSLoader.__DEFAULT_HEIGHT_WIDTH_RATIO__ * self.char_info_.height
       return True
-        
+    
+    m = re.search(CNSLoader.SizeTokens.__WIDTH__,line)
+    if m is not None:
+      w= float(m.group(1))
+      self.char_info_.width = float(w)
+      return True
+       
     return False
   
   def __readVelocityEntries__(self,line):

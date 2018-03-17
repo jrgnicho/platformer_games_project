@@ -30,7 +30,8 @@ class AnimationSpriteAlignment(object):
 class AnimatableObject(GameObject):
     
     def __init__(self,name,size,mass):
-        GameObject.__init__(self,name,size,mass,False) # creating GameObject with a default box shape and no Visual
+        GameObject.__init__(self,name)
+        super(AnimatableObject,self).__initToBox__(name,size,mass,False) # initialize game object to a box with no Visual
         self.setTransparency(TransparencyAttrib.M_alpha)
         self.node().setAngularFactor((0,0,0))  # no rotation
         self.animation_root_np_ = self.attachNewNode('animations_root')
@@ -52,7 +53,7 @@ class AnimatableObject(GameObject):
         
     def setObjectID(self,id):
       GameObject.setObjectID(self,id)    
-      for k in self.animators_.keys():
+      for k in list(self.animators_.keys()):
         animator = self.animators_[k].node().getPythonTag(SpriteAnimator.__name__) 
         animator.setPythonTag(GameObject.ID_PYTHON_TAG,id) 
         
@@ -77,7 +78,7 @@ class AnimatableObject(GameObject):
             self.animators_[k] = np
             
         # selecting first animation
-        keys = sprite_animator_dict.keys()
+        keys = list(sprite_animator_dict.keys())
         self.pose(keys[0])
         
     def addSpriteAnimation(self,name,sprite_animator,
@@ -133,7 +134,7 @@ class AnimatableObject(GameObject):
             
     def clearSpriteAnimations(self):
         
-        for np in self.animators_.values():
+        for np in list(self.animators_.values()):
             np.detachNode()          
         
         self.animators_ = {}
@@ -143,7 +144,7 @@ class AnimatableObject(GameObject):
         
     def pose(self,animation_name, frame = 0):
         
-        if not self.animators_.has_key(animation_name):
+        if animation_name not in self.animators_:
             logging.error( "Invalid animation name '%s'"%(animation_name))
             return False
         
@@ -173,7 +174,7 @@ class AnimatableObject(GameObject):
         if animation_name == None :
             return self.animator_.getNumFrames()
         
-        if self.animators_.has_key(animation_name):
+        if animation_name in self.animators_:
             animator_np = self.animators_[animation_name]   
             animator = animator_np.node().getPythonTag(SpriteAnimator.PANDA_TAG)  
             return animator.getNumFrames()
@@ -190,19 +191,22 @@ class AnimatableObject(GameObject):
         if animation_name == None:
             return  self.animator_.getFrameRate()
         
-        if self.animators_.has_key(animation_name):
+        if animation_name in self.animators_:
             animator_np = self.animators_[animation_name]   
             animator = animator_np.node().getPythonTag(SpriteAnimator.PANDA_TAG)  
             return animator.getFrameRate()
             
     
     def selectFrame(self,frame):
-        """
-        Selects the frame of the current animation
-        """  
-        self.animator_.pose(frame) 
+      """
+      Selects the frame of the current animation
+      """  
+      self.animator_.pose(frame) 
         
-    def animate(self,animation_name):    
+    def animate(self,animation_name):
+      '''
+      Animates the object in either play or loop mode depending on the current animation properties.
+      '''    
       if self.pose(animation_name):            
         self.stop()            
         self.animator_.animate()
@@ -210,11 +214,14 @@ class AnimatableObject(GameObject):
         
         
     def play(self,animation_name):
+      '''
+      Plays the animation once from beggining to end
+      '''
         
-        if self.pose(animation_name):            
-            self.stop()            
-            self.animator_.play()
-            self.__startFrameMonitor__()
+      if self.pose(animation_name):            
+          self.stop()            
+          self.animator_.play()
+          self.__startFrameMonitor__()
             
     def loop(self,animation_name):        
         

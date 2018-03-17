@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from direct.interval.Interval import Interval
 from physics_platformer.test import TestApplication
@@ -110,7 +110,7 @@ class TestCharacterBase(TestApplication):
         box_size = Vec3(BOX_SIDE_LENGTH,BOX_SIDE_LENGTH,BOX_SIDE_LENGTH)
         start_pos = Vec3(-NUM_BOXES*BOX_SIDE_LENGTH*0.5,0,6)
         for i in range(0,NUM_BOXES):            
-            obj = GameObject("obj"+str(i),box_size,True)
+            obj = GameObject.createBox("obj"+str(i),box_size,True)
             obj.setPos(start_pos + Vec3(i*BOX_SIDE_LENGTH*0.5,0,i*BOX_SIDE_LENGTH*1.2))            
             obj.setPhysicsWorld(self.physics_world_)
             obj.reparentTo(self.world_node_)
@@ -182,7 +182,7 @@ if __name__ == '__main__':
             # Configuring logging level
             log_level = getattr(logging, arg.upper(), None)
             if isinstance(log_level, int):                                
-                print "Configuring log level to %s"%(arg.upper())
+                print("Configuring log level to %s"%(arg.upper()))
         
     
     logging.basicConfig(format='%(levelname)s: %(message)s',level=log_level)    

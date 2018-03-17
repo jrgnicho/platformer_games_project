@@ -33,7 +33,7 @@ class State(object):
       
   def hasAction(self,action_key):
       
-      return self.actions_dict_.has_key(action_key)
+      return action_key in self.actions_dict_
       
   def execute(self,action,action_cb_args=()):
       """
@@ -48,7 +48,7 @@ class State(object):
                   
       """
       
-      if self.actions_dict_.has_key(action.key):
+      if action.key in self.actions_dict_:
           
           action_cb = self.actions_dict_[action.key]
           action_cb(action)
@@ -72,7 +72,7 @@ class State(object):
           self.exit_callback_()
           
   def getActionKeys(self):
-      return self.actions_dict_.keys()
+      return list(self.actions_dict_.keys())
         
         
         

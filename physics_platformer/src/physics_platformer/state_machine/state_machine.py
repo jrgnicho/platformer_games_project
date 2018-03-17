@@ -75,7 +75,7 @@ class StateMachine(object):
         
     def addState(self,state_obj):
         
-        if not self.states_dict_.has_key(state_obj.getKey()):
+        if state_obj.getKey() not in self.states_dict_:
             self.states_dict_[state_obj.getKey()] = state_obj
             self.transitions_dict_[state_obj.getKey()]  = {}
         else:
@@ -104,13 +104,13 @@ class StateMachine(object):
         if self.active_state_key_ == None:
             self.active_state_key_ = state_key            
             
-        if self.states_dict_.has_key(state_key): 
+        if state_key in self.states_dict_: 
                         
             # transition rules for the state           
             transition_dict = self.transitions_dict_[state_key]   
             
             # add (next_state_key,condition_callback) tuple to the list
-            if transition_dict.has_key(action_key):
+            if action_key in transition_dict:
                 action_list = transition_dict[action_key]
                 action_list.append( (next_state_key,condition_cb))
               
@@ -136,11 +136,11 @@ class StateMachine(object):
         
         active_state_obj = self.states_dict_[self.active_state_key_]
         action_key = action.key
-        if self.transitions_dict_.has_key(self.active_state_key_):            
+        if self.active_state_key_ in self.transitions_dict_:            
             transition_dict = self.transitions_dict_[self.active_state_key_]
             
             # check if valid transition
-            if transition_dict.has_key(action_key):    
+            if action_key in transition_dict:    
               
               # go through each rule defined for this action and return true on the first one that validates
               action_list = transition_dict[action_key]  

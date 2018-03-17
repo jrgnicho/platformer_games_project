@@ -33,17 +33,15 @@ from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletDebugNode
 
 RESOURCES_DIR = rospkg.RosPack().get_path('physics_platformer') + '/resources'  
-CAM_ZOOM =  4
-CAM_STEP = 0.2
-
 
 class TestApplication(ShowBase):
 
-  def __init__(self,name = 'TestApplication'):
+  def __init__(self,name = 'TestApplication', cam_step = 0.05, cam_zoom = 4):
 
     ShowBase.__init__(self)
     
-    
+    self.cam_step_ = cam_step
+    self.cam_zoom_ = cam_zoom
     self.name_ = name
     self.setupRendering()
     self.setupResources()
@@ -122,13 +120,13 @@ class TestApplication(ShowBase):
     
 
 
-  def setupPhysics(self):
+  def setupPhysics(self, use_default_objs = True):
 
     # setting up physics world and parent node path 
     self.physics_world_ = BulletWorld()
     self.world_node_ = self.render.attachNewNode('world')
     self.cam.reparentTo(self.world_node_)
-    self.cam.setPos(self.world_node_,0, -CAM_ZOOM*6, CAM_STEP*25)
+    self.cam.setPos(self.world_node_,0, -self.cam_zoom_*6, self.cam_step_*25)
     self.physics_world_.setGravity(Vec3(0, 0, -9.81))
 
     self.debug_node_ = self.world_node_.attachNewNode(BulletDebugNode('Debug'))
@@ -141,15 +139,18 @@ class TestApplication(ShowBase):
     self.debug_node_.hide()
     self.object_nodes_ = []
     self.controlled_objects_ = []
+    
+    self.ground_ = None
+    if use_default_objs:
 
-    # setting up ground
-    self.ground_ = self.world_node_.attachNewNode(BulletRigidBodyNode('Ground'))
-    self.ground_.node().addShape(BulletPlaneShape(Vec3(0, 0, 1), 0))
-    self.ground_.setPos(0,0,0)
-    self.ground_.setCollideMask(BitMask32.allOn())
-    self.physics_world_.attachRigidBody(self.ground_.node())
-
-    self.setupLevel()
+      # setting up ground
+      self.ground_ = self.world_node_.attachNewNode(BulletRigidBodyNode('Ground'))
+      self.ground_.node().addShape(BulletPlaneShape(Vec3(0, 0, 1), 0))
+      self.ground_.setPos(0,0,0)
+      self.ground_.setCollideMask(BitMask32.allOn())
+      self.physics_world_.attachRigidBody(self.ground_.node())
+  
+      self.setupLevel()
 
 
   def addBox(self,name,size,pos,visual):
@@ -234,7 +235,7 @@ class TestApplication(ShowBase):
 
   def updateCamera(self):
       
-    #self.cam.setY(-CAM_ZOOM)
+    #self.cam.setY(-self.cam_zoom_)
     pass
 
   def cleanup(self):
@@ -244,8 +245,11 @@ class TestApplication(ShowBase):
       self.physics_world_.removeRigidBody(rb.node())
 
     self.object_nodes_ = []
-    self.physics_world_.removeRigidBody(self.ground_.node())
-    self.ground_ = None
+    
+    if self.ground_ is not None:
+      self.physics_world_.removeRigidBody(self.ground_.node())
+      self.ground_ = None
+      
     self.physics_world_ = None
     self.debug_node_ = None
     self.cam.reparentTo(self.render)
@@ -254,31 +258,27 @@ class TestApplication(ShowBase):
     
   # _____MOVE_METHODS____
   def moveUp(self):
-      global CAM_STEP
-      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,CAM_STEP))
+      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,self.cam_step_))
       
   def moveDown(self):
-      global CAM_STEP
-      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,-CAM_STEP))
+      self.cam.setPos(self.cam.getPos() + Vec3(0, 0,-self.cam_step_))
   
   def moveRight(self):
-      global CAM_STEP
-      self.cam.setPos(self.cam.getPos() + Vec3(CAM_STEP,0,0))
+      self.cam.setPos(self.cam.getPos() + Vec3(self.cam_step_,0,0))
   
   def moveLeft(self):
-      global CAM_STEP
-      self.cam.setPos(self.cam.getPos() + Vec3(-CAM_STEP,0,0))
+      self.cam.setPos(self.cam.getPos() + Vec3(-self.cam_step_,0,0))
 
   # _____HANDLER_____
 
 
   def zoomIn(self):
-    #global CAM_ZOOM
-    self.cam.setY(self.cam.getY()+CAM_ZOOM)
+    #global self.cam_zoom_
+    self.cam.setY(self.cam.getY()+self.cam_zoom_)
 
   def zoomOut(self):
-    #global CAM_ZOOM
-    self.cam.setY(self.cam.getY()-CAM_ZOOM)
+    #global self.cam_zoom_
+    self.cam.setY(self.cam.getY()-self.cam_zoom_)
 
   def doExit(self):
     self.cleanup()

@@ -125,6 +125,7 @@ class CharacterLoader(object):
       logging.error("CNS file %s failed to load"%(cns_file_path))
       return False
     self.character_info_ =  self.cns_loader_.getCharacterInfo()
+    self.character_info_.name = self.name_
        
     # loading air file        
     self.anim_loader_ = AIRLoader()
@@ -142,7 +143,7 @@ class CharacterLoader(object):
       
     # creating animations dictionary
     for anim in self.anim_loader_.animations:
-      if self.anims_dict_.has_key(anim.name):
+      if anim.name in self.anims_dict_:
         logging.warn("Multiple animations with the name %s have been found, only the last one will be stored")        
       self.anims_dict_[anim.name] = anim
       
@@ -186,7 +187,7 @@ class CharacterLoader(object):
     for anim in self.anim_loader_.animations:
       anim.scalex = character_info.scale.getX()
       anim.scaley = character_info.scale.getZ()
-      actor = AnimationActor(anim.name)
+      actor = AnimationActor(anim.name,self.name_)
       actor.loadAnimation(anim)
       #actor.setScale(character_info.scale)
       self.animation_actors_.append(actor)
