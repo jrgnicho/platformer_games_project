@@ -47,7 +47,7 @@ The following python3 libraries need to be installed using the ```sudo pip3 inst
   - Move right or left Use Arrows
   - Climb Up Arrow Up (Hanging on ledge only)
 
-- The demos are located in the `physics_plaformer/demos/` directory.
+- The demos are located in the `platformer_core/demos/` directory.
 - Run demo 1:
   ```
   python3 demo_basic_game.py
