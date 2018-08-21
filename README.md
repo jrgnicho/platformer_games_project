@@ -21,7 +21,11 @@ Project that uses python libraries for creating a platformer style video game.
 
 
 ### Install Dependencies
-The following python3 libraries need to be installed using the ```sudo pip3 install [pkg-name]``` command:
+- Use pip3 to install the game dependencies.  Locate the `requirements.txt` file and run the following command:
+	```
+		sudo pip3 install -r requirements.txt
+	```
+This command will install the following python3 libraries:
 
 - panda3d
 - rospkg
@@ -29,8 +33,6 @@ The following python3 libraries need to be installed using the ```sudo pip3 inst
 - construct
 - docutils
 - pygame
-- ... and more.  Just install the libraries python complains about when you try to run the demos.
-
 
 
 ### Play
