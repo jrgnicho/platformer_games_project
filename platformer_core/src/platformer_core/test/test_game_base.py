@@ -2,8 +2,7 @@ import time
 import logging
 import sys
 
-
-from rospkg import rospack
+from pathlib import Path
 
 from direct.showbase.ShowBase import ShowBase
 from direct.controls.InputState import InputState
@@ -46,7 +45,6 @@ from platformer_core.input import KeyboardController
 from platformer_core.game_object import GameObject
 from platformer_core.camera import CameraController
 from math import cos, asin, sin, acos
-
 
 class TestLevel(Level):
   
@@ -216,8 +214,7 @@ class TestGameBase(ShowBase):
   __CAM_STEP__ = 0.2
   __CAM_ORIENT_STEP__ = 4.0
   
-  __BACKGROUND_IMAGE_PACKAGE__ = 'platformer_core'
-  __BACKGROUND_IMAGE_PATH__ = rospack.RosPack().get_path(__BACKGROUND_IMAGE_PACKAGE__) + '/resources/backgrounds/' + 'sky02.png'
+  __BACKGROUND_IMAGE_PATH__ = str(Path('../resources/backgrounds/sky02.png'))
   __BACKGROUND_POSITION__ = Vec3(0,100,0)
   __BACKGROUND_SCALE__ = 0.2 
 

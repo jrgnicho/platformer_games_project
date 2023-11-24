@@ -1,5 +1,6 @@
-import rospkg
 import logging
+from pathlib import Path
+
 from panda3d.core import ModelPool
 from panda3d.core import TexturePool
 
@@ -34,7 +35,7 @@ Game Object class
 """
 class GameObject(NodePath):
   
-    DEFAULT_RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_core') + '/resources'        
+    DEFAULT_RESOURCES_DIRECTORY = str(Path('../resources'))   
     DEFAULT_TEXTURE = TexturePool.loadTexture(DEFAULT_RESOURCES_DIRECTORY +'/models/limba.jpg')
     DEFAULT_BOX_MODEL = NodePath(ModelPool.loadModel( DEFAULT_RESOURCES_DIRECTORY + '/models/box.egg'))
     
