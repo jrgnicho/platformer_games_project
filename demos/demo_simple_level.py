@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 import sys
 import logging
-import rospkg
 import pygame
 import os
+
+from pathlib import Path
+
+import  context
 
 from panda3d.core import Vec3
 from panda3d.bullet import BulletDebugNode
@@ -20,12 +23,13 @@ from platformer_core.input import KeyboardButtons
 from platformer_core.input import KeyboardController
 from platformer_core.input import JoystickButtons
 from platformer_core.input import JoystickController
-from platformer_core.resource_management import LevelLoader
 from platformer_core.camera import CameraController
+from platformer_core.resource_management.level_loader import LevelLoader
+from platformer_core.resource_management.assets_common import AssetsLocator
 
-LEVEL_RESOURCE_PATH  = os.path.join(rospkg.RosPack().get_path('platformer_resources'),'worlds/PlatformerSimpleLevel.egg')
-RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/characters/Hiei/'
-PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
+LEVEL_RESOURCE_PATH  = str(Path(AssetsLocator.get_platformer_assets_path()) / 'worlds/PlatformerSimpleLevel.egg')
+RESOURCES_DIRECTORY = str(Path(AssetsLocator.get_platformer_assets_path()) / 'characters/Hiei/')
+PLAYER_DEF_FILE = os.path.join(RESOURCES_DIRECTORY, 'player.def')
 ANIMATIONS = ['STANDING','RUNNING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE', 'DASH', 'MIDAIR_DASH','CATCH_LEDGE','CLIMB_LEDGE']
 
 class Hiei(CharacterBase):

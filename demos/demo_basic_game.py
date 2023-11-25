@@ -6,6 +6,8 @@ import pygame
 from pathlib import Path
 
 from panda3d.core import Vec3
+
+import context
 from platformer_core.test import TestGameBase
 from platformer_core.resource_management.ff3 import CharacterLoader
 from platformer_core.character.character_states import CharacterStateKeys
@@ -18,8 +20,9 @@ from platformer_core.input import KeyboardButtons
 from platformer_core.input import KeyboardController
 from platformer_core.input import JoystickButtons
 from platformer_core.input import JoystickController
+from platformer_core.resource_management.assets_common import AssetsLocator
 
-RESOURCES_DIRECTORY = str(Path('../../platformer_resources/characters/Hiei/'))
+RESOURCES_DIRECTORY = str(Path(AssetsLocator.get_platformer_assets_path()) / 'characters/Hiei/')
 PLAYER_DEF_FILE = RESOURCES_DIRECTORY + '/player.def'
 ANIMATIONS = ['STANDING','RUNNING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE', 'DASH', 'MIDAIR_DASH','CATCH_LEDGE','CLIMB_LEDGE']
 

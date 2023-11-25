@@ -2,3 +2,4 @@
 __pycache__/  # Exclude the whole folder
 *~
 *.pyo
+*.meta

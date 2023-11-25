@@ -29,13 +29,15 @@ from direct.showbase.ShowBase import ShowBase
 from platformer_core.collision import *
 from platformer_core.state_machine import Action
 
+from platformer_core.resource_management.assets_common import AssetsLocator
+
 """
 Game Object class
 
 """
 class GameObject(NodePath):
   
-    DEFAULT_RESOURCES_DIRECTORY = str(Path('../resources'))   
+    DEFAULT_RESOURCES_DIRECTORY = str(Path(AssetsLocator.get_simple_assets_path()))   
     DEFAULT_TEXTURE = TexturePool.loadTexture(DEFAULT_RESOURCES_DIRECTORY +'/models/limba.jpg')
     DEFAULT_BOX_MODEL = NodePath(ModelPool.loadModel( DEFAULT_RESOURCES_DIRECTORY + '/models/box.egg'))
     
