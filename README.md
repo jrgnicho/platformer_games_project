@@ -6,12 +6,6 @@ Project that uses python libraries for creating a platformer style video game.
 
 ### Info
 - This game code can be used with python 2.7 and 3.0 (recommended) and has been built with the following libraries:
- 
-  - ROS:
-    - See the [ros wiki](http://wiki.ros.org/indigo/Installation/Ubuntu) for installation instructions. Only the ROS-Base option is needed
-    - This game only uses the **rospkg** module to locate directories and resources
-    - The ROS command tools (roscd, rospack, rosrun, etc) can be used too
-
   - Panda3D:
     - Game engine [Panda3D SDK](http://www.panda3d.org) 
 
@@ -25,15 +19,6 @@ Project that uses python libraries for creating a platformer style video game.
 	```
 		sudo pip3 install -r requirements.txt
 	```
-This command will install the following python3 libraries:
-
-- panda3d
-- rospkg
-- shapely
-- construct
-- docutils
-- pygame
-
 
 ### Play
 - Recomendations:
@@ -52,13 +37,13 @@ This command will install the following python3 libraries:
 - The demos are located in the `platformer_core/demos/` directory.
 - Run demo 1:
   ```
-  python3 demo_basic_game.py
+  python3 demos/demo_basic_game.py
   ```
   The level in this demo was procedurally generated
 
 - Run demo 2:
   ```
-  python3 demo_simple_level.py
+  python3 demos/demo_simple_level.py
   ```
   The level in this demo was created in blender.  More on level creation in blender [here](platformer_resources/README.md)
   This demo is pretty buggy at the moment.
