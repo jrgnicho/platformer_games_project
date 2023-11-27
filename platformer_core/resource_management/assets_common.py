@@ -1,3 +1,5 @@
+import os
+
 class ObjectTypeID(object):
   """
   The egg file should contains Tags with the 'object_type' custom property which is set
@@ -33,3 +35,13 @@ class CustomProperties(object):
   """
   
   OBJECT_TYPE_INT = 'object_type'
+  
+class AssetsLocator:
+  def __init__(self):
+    pass
+  
+  def get_simple_assets_path():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..','resources'))
+  
+  def get_platformer_assets_path():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '../..','platformer_resources'))

@@ -1,6 +1,6 @@
 panda3d
-rospkg
 shapely
 construct
 docutils
 pygame
+Pillow

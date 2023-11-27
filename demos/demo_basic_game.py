@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 import sys
 import logging
-import rospkg
 import pygame
-import os
+
+from pathlib import Path
 
 from panda3d.core import Vec3
-from panda3d.bullet import BulletDebugNode
 
+import context
 from platformer_core.test import TestGameBase
 from platformer_core.resource_management.ff3 import CharacterLoader
 from platformer_core.character.character_states import CharacterStateKeys
@@ -20,12 +20,10 @@ from platformer_core.input import KeyboardButtons
 from platformer_core.input import KeyboardController
 from platformer_core.input import JoystickButtons
 from platformer_core.input import JoystickController
-from platformer_core.resource_management import LevelLoader
-from platformer_core.camera import CameraController
+from platformer_core.resource_management.assets_common import AssetsLocator
 
-LEVEL_RESOURCE_PATH  = os.path.join(rospkg.RosPack().get_path('platformer_resources'),'worlds/PlatformerSimpleLevel.egg')
-RESOURCES_DIRECTORY = rospkg.RosPack().get_path('platformer_resources')+ '/characters/Hiei/'
-PLAYER_DEF_FILE = RESOURCES_DIRECTORY + 'player.def'
+RESOURCES_DIRECTORY = str(Path(AssetsLocator.get_platformer_assets_path()) / 'characters/Hiei/')
+PLAYER_DEF_FILE = RESOURCES_DIRECTORY + '/player.def'
 ANIMATIONS = ['STANDING','RUNNING','TAKEOFF','ASCEND','FALL','LAND','AVOID_FALL','STAND_ON_EDGE','LAND_EDGE', 'DASH', 'MIDAIR_DASH','CATCH_LEDGE','CLIMB_LEDGE']
 
 class Hiei(CharacterBase):
@@ -161,8 +159,6 @@ class Hiei(CharacterBase):
 class TestBasicGame(TestGameBase):
   
   def __init__(self,name):
-    self.sim_substeps_ = 20
-    self.sim_step_size_ = 1/160.0
     TestGameBase.__init__(self,name)
     
   def update(self,task):
@@ -170,40 +166,8 @@ class TestBasicGame(TestGameBase):
     return TestGameBase.update(self,task)
     
   def setupScene(self):
-    #TestGameBase.setupScene(self)
-    
-    # Loading level
-    level_loader = LevelLoader()
-    self.level_ = level_loader.load(LEVEL_RESOURCE_PATH)
-    if self.level_ is None:
-      sys.exit(-1)
-      
-    #self.level_.physics_substeps = self.sim_substeps_
-    #self.level_.physics_step_size = self.sim_step_size_
-    
-    self.level_.reparentTo(self.render)
-    
-    if level_loader.start_location is not None:
-      logging.info('Start location is %s'%(str(level_loader.start_location.getPos(self.level_))))
-    
-    if level_loader.start_sector is not None:
-      logging.info('Level %s start sector is "%s"'%(self.level_.getName(),level_loader.start_sector.getName()) )
-    
-    # enable debug visuals
-    self.debug_node_ = self.level_.attachNewNode(BulletDebugNode('Debug'))
-    self.debug_node_.node().showWireframe(True)
-    self.debug_node_.node().showConstraints(True)
-    self.debug_node_.node().showBoundingBoxes(False)
-    self.debug_node_.node().showNormals(True)    
-    self.level_.getPhysicsWorld().setDebugNode(self.debug_node_.node())    
-    self.debug_node_.hide()
-     
-    self.camera_controller_ = CameraController(self.cam)
-    self.camera_controller_.reparentTo(self.level_)
-    self.camera_controller_.setEnabled(True)             
-
-    # Character setup
-    self.setupCharacter(level_loader.start_location, level_loader.start_sector)  
+    TestGameBase.setupScene(self)
+    self.setupCharacter()    
     
   def setupControls(self):
     
@@ -213,7 +177,7 @@ class TestBasicGame(TestGameBase):
     self.accept('f6', self.toggleCameraController)
     self.instructions_.append(self.createInstruction(0.54, "F6: Toggle Camera Controls"))
     
-  def setupCharacter(self,start_location_np, start_sector):
+  def setupCharacter(self):
     
     logging.info("Loading Character resources")
     self.character_loader_ = CharacterLoader()
@@ -233,10 +197,13 @@ class TestBasicGame(TestGameBase):
       logging.error("Character setup failed")
       sys.exit()
     
-    # placing character in world    
-    sector  = start_sector
+    # placing character in world
+    
+    sector  = self.level_.getSectors()[2]
     self.level_.addGameObject(self.character_)          
-    self.character_.setPos(sector,start_location_np.getPos(sector))  
+    self.character_.setPos(sector,Vec3(18,0,26))  
+    #self.character_.setHpr(sector,Vec3.zero())
+    #self.character_.setReferenceNodePath(sector)
     sector.attach(self.character_)   
     sector.enableTransitions(True)
     self.character_.pose(ANIMATIONS[4])    

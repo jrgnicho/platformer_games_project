@@ -1,6 +1,6 @@
 import sys
 import time
-import rospkg
+from pathlib import Path
 
 from direct.showbase.ShowBase import ShowBase
 from direct.controls.InputState import InputState
@@ -32,7 +32,7 @@ from panda3d.bullet import BulletSphereShape
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletDebugNode
 
-RESOURCES_DIR = rospkg.RosPack().get_path('platformer_core') + '/resources'  
+RESOURCES_DIR = str(Path('../resources'))
 
 class TestApplication(ShowBase):
 
